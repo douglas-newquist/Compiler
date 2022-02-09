@@ -14,11 +14,11 @@ char *current_file;
 /*
 	Reads the current file stored in yyin
 */
-struct tokenlist *scan_yyin()
+Tokens *scan_yyin()
 {
 	line = 1;
 
-	struct tokenlist *tokens = NULL;
+	Tokens *tokens = NULL;
 
 	for (int token = yylex(); token != EOF; token = yylex())
 		tokens = add(tokens, create_token(token));
@@ -29,7 +29,7 @@ struct tokenlist *scan_yyin()
 /*
 	Opens and reads from the given filename
 */
-struct tokenlist *scan_file(char *filename)
+Tokens *scan_file(char *filename)
 {
 	current_file = filename;
 	yyin = fopen(filename, "r");
@@ -40,7 +40,7 @@ struct tokenlist *scan_file(char *filename)
 		exit(-1);
 	}
 
-	struct tokenlist *result = scan_yyin();
+	Tokens *result = scan_yyin();
 	fclose(yyin);
 	return result;
 }
@@ -81,7 +81,7 @@ int main(int argc, char const *argv[])
 	{
 		yyin = stdin;
 		current_file = "stdin";
-		struct tokenlist *tokens = scan_yyin();
+		Tokens *tokens = scan_yyin();
 
 		print_tokens(tokens);
 		free_tokens(tokens);
@@ -92,7 +92,7 @@ int main(int argc, char const *argv[])
 		{
 			char *filename = fix_extension((char *)argv[i]);
 
-			struct tokenlist *tokens = scan_file(filename);
+			Tokens *tokens = scan_file(filename);
 
 			print_tokens(tokens);
 			free_tokens(tokens);

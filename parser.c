@@ -20,7 +20,7 @@ int parse_int(char *text)
 	if (a == b)
 		return a;
 
-	yyerror(INVALID_LITERAL, "Integer out of bounds");
+	error(INVALID_LITERAL, "Integer out of bounds");
 	exit(ERROR);
 }
 
@@ -40,7 +40,7 @@ double parse_double(char *text)
 	if (abs(a - b) <= abs(a / 100) && ((a < 0) == (b < 0)))
 		return a;
 
-	yyerror(INVALID_LITERAL, "Float out of bounds");
+	error(INVALID_LITERAL, "Float out of bounds");
 	exit(ERROR);
 }
 
@@ -55,7 +55,7 @@ int parse_bool(char *text)
 	if (strcmp(text, "false") == 0)
 		return FALSE;
 
-	yyerror(INVALID_LITERAL, "Invalid boolean value");
+	error(INVALID_LITERAL, "Invalid boolean value");
 	exit(ERROR);
 }
 
@@ -94,7 +94,7 @@ char get_escaped_char(char c)
 		return '\b';
 	}
 
-	yyerror(INVALID_LITERAL, "Invalid escaped character");
+	error(INVALID_LITERAL, "Invalid escaped character");
 	exit(ERROR);
 }
 
@@ -143,7 +143,7 @@ char parse_char(char *text)
 		return get_escaped_char(text[2]);
 
 	default:
-		yyerror(INVALID_LITERAL, "Invalid character");
+		error(INVALID_LITERAL, "Invalid character");
 		exit(ERROR);
 	}
 }

@@ -128,7 +128,7 @@ void comment()
 
 void whitespace() {}
 
-void yyerror(int code, char *message)
+void error(int code, char *message)
 {
 	printf("Error(%d) in %s on line %d\n%s: %s\n",
 		   code,
@@ -139,4 +139,4 @@ void yyerror(int code, char *message)
 	exit(code);
 }
 
-void yyerror(char *message) { yyerror(ERROR, message); }
+void yyerror(char *message) { error(TOKEN_ERROR, message); }

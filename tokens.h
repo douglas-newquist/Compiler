@@ -10,16 +10,6 @@
 #define LITERAL (5 << TYPE_SHIFT)
 #define OTHER (6 << TYPE_SHIFT)
 
-// Token errors
-#define ERROR 1
-#define UNKNOWN_TOKEN ERROR
-#define TOKEN_ERROR 1
-#define ILLEGAL 1
-#define NOT_JZERO_RESERVED_WORD 1
-#define INVALID_OPERATOR 1
-#define INVALID_PUNCTUATION 1
-#define INVALID_LITERAL 1
-
 // Generic tokens
 #define ID (OTHER | 1)
 

@@ -132,34 +132,34 @@ false           return LITERAL_BOOL;
 
 0|[1-9][0-9]{0,9}       return LITERAL_INT;
 0[lL]?|[1-9][0-9]*[lL]  return LITERAL_INT;
-[1-9][0-9]{10,}         error(INVALID_LITERAL, "Integer too long");
-0[0-9]+                 error(INVALID_LITERAL, "Octals not supported");
-0x[0-9a-fA-F]+          error(INVALID_LITERAL, "Hexadecimals not supported");
-0b[01]+                 error(INVALID_LITERAL, "Binary not supported");
+[1-9][0-9]{10,}         error(INVALID, "Integer too long");
+0[0-9]+                 error(INVALID, "Octals not supported");
+0x[0-9a-fA-F]+          error(INVALID, "Hexadecimals not supported");
+0b[01]+                 error(INVALID, "Binary not supported");
 
 [0-9]+\.?[0-9]*[fF]     return LITERAL_DOUBLE;
 [0-9]*\.[0-9]+[fF]      return LITERAL_DOUBLE;
 [0-9]+\.?[0-9]*[dD]     return LITERAL_DOUBLE;
 [0-9]*\.[0-9]+[dD]      return LITERAL_DOUBLE;
-[0-9]+\.\.+[0-9]*[fF]   error(INVALID_LITERAL, "Too many dots in float");
-[0-9]+\.[0-9]*          error(INVALID_LITERAL, "Floats must end with f");
-[0-9]*\.[0-9]+          error(INVALID_LITERAL, "Floats must end with f");
+[0-9]+\.\.+[0-9]*[fF]   error(INVALID, "Too many dots in float");
+[0-9]+\.[0-9]*          error(INVALID, "Floats must end with f");
+[0-9]*\.[0-9]+          error(INVALID, "Floats must end with f");
 
 [0-9]+[eE][+-]?[0-9]+[fF] return LITERAL_DOUBLE;
-[0-9]+[eE][+-]?[0-9]+   error(INVALID_LITERAL, "Floats must end with f");
-[0-9]+[eE][+-][+-]+     error(INVALID_LITERAL, "Too many signs");
-[0-9]+[eE]              error(INVALID_LITERAL, "Exponent missing");
+[0-9]+[eE][+-]?[0-9]+   error(INVALID, "Floats must end with f");
+[0-9]+[eE][+-][+-]+     error(INVALID, "Too many signs");
+[0-9]+[eE]              error(INVALID, "Exponent missing");
 
-[0-9]+[0-9a-zA-Z]*      error(INVALID_LITERAL, "Unknown number format");
+[0-9]+[0-9a-zA-Z]*      error(INVALID, "Unknown number format");
 
 \"([^\\"]|\\.)*\"       return LITERAL_STRING;
-\"([^\\"]|\\.)*         error(INVALID_LITERAL, "String was not closed");
+\"([^\\"]|\\.)*         error(INVALID, "String was not closed");
 
 '[^\\]'                 return LITERAL_CHAR;
 '\\.'                   return LITERAL_CHAR;
-'\\'                    error(INVALID_LITERAL, "Escape character must be escaped");
-'[^']{0,2}              error(INVALID_LITERAL, "Character was not closed");
-'.*'                    error(INVALID_LITERAL, "Invalid character");
+'\\'                    error(INVALID, "Escape character must be escaped");
+'[^']{0,2}              error(INVALID, "Character was not closed");
+'.*'                    error(INVALID, "Invalid character");
 
 [a-zA-Z_][a-zA-Z0-9_]*  return ID;
 

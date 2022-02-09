@@ -4,6 +4,7 @@ JavaSamples
 *.o
 *.zip
 *.yy.c
+*.tab.*
 
 j0
 j0lex.l

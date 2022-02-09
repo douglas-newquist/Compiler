@@ -37,7 +37,7 @@ Tokens *scan_file(char *filename)
 	if (yyin == 0)
 	{
 		printf("The file '%s' does not exist\n", filename);
-		exit(-1);
+		exit(ERROR);
 	}
 
 	Tokens *result = scan_yyin();
@@ -72,7 +72,7 @@ char *fix_extension(char *filename)
 		return strcat(filename, ".java");
 
 	printf("%s is not a .java file\n", filename);
-	exit(-1);
+	exit(ERROR);
 }
 
 int main(int argc, char const *argv[])
@@ -114,7 +114,7 @@ int count_chars(char *str, char c)
 {
 	int count = 0;
 
-	for (int i = 0; i < strlen(str); i++)
+	for (size_t i = 0; i < strlen(str); i++)
 		if (str[i] == c)
 			count++;
 

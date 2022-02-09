@@ -1,5 +1,5 @@
 TARGETS=j0 j0lex.l
-ZIP_TARGETS=*.c *.h *.l Makefile JavaSamples
+ZIP_TARGETS=*.c *.h *.l Makefile
 
 all: ${TARGETS}
 

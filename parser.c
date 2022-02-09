@@ -104,7 +104,7 @@ char get_escaped_char(char c)
 char *parse_string(char *text)
 {
 	int size = strlen(text);
-	char *string = malloc(sizeof(char) * size);
+	char *string = (char *)malloc(sizeof(char) * size);
 	// Skip first quote
 	int offset = 1;
 

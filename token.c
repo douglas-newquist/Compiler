@@ -14,13 +14,13 @@
 */
 struct token *create_token(int category)
 {
-	struct token *token = malloc(sizeof(struct token));
+	struct token *token = (struct token *)malloc(sizeof(struct token));
 	token->category = category;
 	token->filename = current_file;
 	token->line = line;
 
 	// Copy yytext to the token
-	token->text = malloc(sizeof(char) * (strlen(yytext) + 1));
+	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
 	strcpy(token->text, yytext);
 
 	// Zero values
@@ -132,7 +132,7 @@ void print_tokens(struct tokenlist *tokens)
 
 struct tokenlist *create_tokens(struct token *token)
 {
-	struct tokenlist *tokens = malloc(sizeof(struct tokenlist));
+	struct tokenlist *tokens = (struct tokenlist *)malloc(sizeof(struct tokenlist));
 	tokens->token = token;
 	tokens->next = NULL;
 	return tokens;

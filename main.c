@@ -21,7 +21,7 @@ Tokens *scan_yyin()
 
 	Tokens *tokens = NULL;
 
-	for (int token = yylex(); token != EOF; token = yylex())
+	for (int token = yylex(); token != 0; token = yylex())
 		tokens = add(tokens, create_token(token));
 
 	return tokens;

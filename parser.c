@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
-#include "tokens.h"
+#include "jzero.y.tab.h"
 #include "main.h"
 #include "errors.h"
 

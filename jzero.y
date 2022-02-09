@@ -1,6 +1,4 @@
 %{
-	#include "tokens.h"
-	#include "main.h"
 %}
 // Operators
 %token INCREMENT DECREMENT AND NOT OR
@@ -48,14 +46,13 @@ Field: Type VarsDef ';';
 VarsDef: VarDef | VarsDef ',' VarDef;
 VarDef: ID | VarDef '[' ']';
 
+
 // public static type name(args) { ... }
 Method: MethodHead Block;
 MethodHead: Visability Owner AnyType ID '(' ArgsDef ')';
 
 
 Block: '{' Statements '}' | '{' '}';
-
-
 
 
 Statements: Statement | Statements Statement;

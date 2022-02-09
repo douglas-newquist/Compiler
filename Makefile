@@ -1,4 +1,4 @@
-TARGETS=j0 j0lex.l
+TARGETS=j0 j0lex.l jzero.y.tab.h
 ZIP_TARGETS=*.c *.h *.l Makefile
 
 all: ${TARGETS}
@@ -6,7 +6,7 @@ all: ${TARGETS}
 %.yy.c: %.l *.h jzero.y.tab.h
 	flex -o $@ $<
 
-%.o: %.c *.h
+%.o: %.c *.h jzero.y.tab.h
 	gcc -Wall -c $<
 
 %.tab.c %.tab.h: %

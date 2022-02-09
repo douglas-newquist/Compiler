@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "main.h"
-#include "tokens.h"
+#include "jzero.y.tab.h"
 #include "token.h"
 #include "errors.h"
 

@@ -17,4 +17,5 @@ int yylex();
 void newline();
 void comment();
 void whitespace();
-void error(int code, char *message);
+void yyerror(int code, char *message);
+void yyerror(char *message);

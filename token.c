@@ -8,6 +8,7 @@
 #include "tokens.h"
 #include "main.h"
 #include "parser.h"
+#include "errors.h"
 
 /*
 	Creates a new token with the given category

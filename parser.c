@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "tokens.h"
 #include "main.h"
+#include "errors.h"
 
 int parse_int(char *text)
 {

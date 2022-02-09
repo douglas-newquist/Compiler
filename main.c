@@ -8,6 +8,7 @@
 #include "main.h"
 #include "tokens.h"
 #include "token.h"
+#include "errors.h"
 
 char *current_file;
 

@@ -3,11 +3,14 @@ ZIP_TARGETS=*.c *.h *.l Makefile
 
 all: ${TARGETS}
 
-%.yy.c: %.l *.h
+%.yy.c: %.l *.h jzero.y.tab.h
 	flex -o $@ $<
 
 %.o: %.c *.h
 	gcc -Wall -c $<
+
+%.tab.c %.tab.h: %
+	yacc -b $< -dd $<
 
 j0lex.l:
 	ln -s jzero.l j0lex.l
@@ -21,4 +24,4 @@ hw2_douglas_newquist.zip: ${ZIP_TARGETS}
 	zip $@ -r ${ZIP_TARGETS}
 
 clean:
-	rm -rf ${TARGETS} *.o *.yy.c
+	rm -rf ${TARGETS} *.o *.yy.c *.tab.*

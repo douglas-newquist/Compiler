@@ -2,31 +2,32 @@
 %option noinput
 %option nounput
     #include "main.h"
-    #include "tokens.h"
+    #include "jzero.y.tab.h"
+    #include "errors.h"
 
 %%
-<<EOF>>         return EOF;
+<<EOF>>         return 0;
 [ \t\r\f]       whitespace();
 \n		        newline();
 
 "++"            return INCREMENT;
 "--"            return DECREMENT;
-"+"             return ADD;
-"-"             return SUB;
-"*"             return MULT;
-"/"             return DIV;
-"="             return EQUAL;
-"%"             return MODULO;
+"+"             return '+';
+"-"             return '-';
+"*"             return '*';
+"/"             return '/';
+"="             return '=';
+"%"             return '%';
 "&&"            return AND;
-"!"             return NOT;
+"!"             return '!';
 "||"            return OR;
-"."             return DOT;
+"."             return '.';
 
 "=="            return EQUALS;
 "!="            return NOT_EQUAL;
-"<"             return LESS;
+"<"             return '<';
 "<="            return LESS_EQUAL;
-">"             return GREATER;
+">"             return '<';
 ">="            return GREATER_EQUAL;
 
 "~"             error(ILLEGAL, "Illegal operator");
@@ -46,15 +47,15 @@
 "?:"            error(ILLEGAL, "Illegal operator");
 ref             error(ILLEGAL, "Illegal operator");
 
-"{"             return OPEN_CURLY;
-"}"             return CLOSE_CURLY;
-"("             return OPEN_PAREN;
-")"             return CLOSE_PAREN;
-"["             return OPEN_SQUARE;
-"]"             return CLOSE_SQUARE;
-";"             return SEMICOLON;
-":"             return COLON;
-","             return COMMA;
+"{"             return '{';
+"}"             return '}';
+"("             return '(';
+")"             return ')';
+"["             return '[';
+"]"             return ']';
+";"             return ';';
+":"             return ':';
+","             return ',';
 
 "#"             error(ILLEGAL, "Illegal character");
 "$"             error(ILLEGAL, "Illegal character");
@@ -64,16 +65,16 @@ ref             error(ILLEGAL, "Illegal operator");
 
 boolean         return BOOLEAN;
 char            return CHAR;
-float           return FLOAT;
+double          return DOUBLE;
+float           return DOUBLE;
 int             return INT;
-long            return LONG;
+long            return INT;
 
 break           return BREAK;
 case            return CASE;
 class           return CLASS;
 continue        return CONTINUE;
 default         return DEFAULT;
-double          return DOUBLE;
 else            return ELSE;
 for             return FOR;
 if              return IF;
@@ -124,25 +125,27 @@ volatile        error(ILLEGAL, "Illegal reserved word");
 ^#.*$                   comment();
 "/*"([^*]|\*[^/])*      error(TOKEN_ERROR, "Unterminated multiline comment");
 
+null            return LITERAL_NULL;
+
 true            return LITERAL_BOOL;
 false           return LITERAL_BOOL;
 
 0|[1-9][0-9]{0,9}       return LITERAL_INT;
-0[lL]?|[1-9][0-9]*[lL]  return LITERAL_LONG;
+0[lL]?|[1-9][0-9]*[lL]  return LITERAL_INT;
 [1-9][0-9]{10,}         error(INVALID_LITERAL, "Integer too long");
 0[0-9]+                 error(INVALID_LITERAL, "Octals not supported");
 0x[0-9a-fA-F]+          error(INVALID_LITERAL, "Hexadecimals not supported");
 0b[01]+                 error(INVALID_LITERAL, "Binary not supported");
 
-[0-9]+\.?[0-9]*[fF]     return LITERAL_FLOAT;
-[0-9]*\.[0-9]+[fF]      return LITERAL_FLOAT;
+[0-9]+\.?[0-9]*[fF]     return LITERAL_DOUBLE;
+[0-9]*\.[0-9]+[fF]      return LITERAL_DOUBLE;
 [0-9]+\.?[0-9]*[dD]     return LITERAL_DOUBLE;
 [0-9]*\.[0-9]+[dD]      return LITERAL_DOUBLE;
 [0-9]+\.\.+[0-9]*[fF]   error(INVALID_LITERAL, "Too many dots in float");
 [0-9]+\.[0-9]*          error(INVALID_LITERAL, "Floats must end with f");
 [0-9]*\.[0-9]+          error(INVALID_LITERAL, "Floats must end with f");
 
-[0-9]+[eE][+-]?[0-9]+[fF] return LITERAL_FLOAT;
+[0-9]+[eE][+-]?[0-9]+[fF] return LITERAL_DOUBLE;
 [0-9]+[eE][+-]?[0-9]+   error(INVALID_LITERAL, "Floats must end with f");
 [0-9]+[eE][+-][+-]+     error(INVALID_LITERAL, "Too many signs");
 [0-9]+[eE]              error(INVALID_LITERAL, "Exponent missing");

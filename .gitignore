@@ -1,2 +1,9 @@
+JavaSamples
+.vscode
+
 *.o
 *.zip
+*.yy.c
+
+j0
+j0lex.l

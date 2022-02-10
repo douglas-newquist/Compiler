@@ -1,24 +1,31 @@
-TARGETS=j0 j0lex.l jzero.y.tab.h
+TARGETS=j0 j0lex.l
 ZIP_TARGETS=*.c *.h *.l Makefile
+HEADERS=*.h jzero.tab.h
+
+CC=gcc -Wall
 
 all: ${TARGETS}
 
-%.yy.c: %.l *.h jzero.y.tab.h
+force-all:
+	make clean
+	make all
+
+%.tab.c %.tab.h: %.y
+	bison -W -d $<
+
+%.yy.c: %.l
 	flex -o $@ $<
 
-%.o: %.c *.h jzero.y.tab.h
-	gcc -Wall -c $<
-
-%.tab.c %.tab.h: %
-	yacc -b $< -dd $<
+%.o: %.c ${HEADERS}
+	${CC} -c $<
 
 j0lex.l:
 	ln -s jzero.l j0lex.l
 
-j0: main.o jzero.yy.o token.o parser.o
-	gcc -Wall -o $@ $^
+j0: main.o jzero.yy.o token.o parser.o jzero.tab.o ${HEADERS}
+	${CC} -o $@ $^
 
-hw2_douglas_newquist.zip: ${ZIP_TARGETS}
+hw3_douglas_newquist.zip: ${ZIP_TARGETS}
 	make clean
 	rm -f $@
 	zip $@ -r ${ZIP_TARGETS}

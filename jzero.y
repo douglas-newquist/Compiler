@@ -1,4 +1,5 @@
 %{
+	#include "main.h"
 %}
 // Operators
 %token INCREMENT DECREMENT AND NOT OR
@@ -28,7 +29,6 @@ Value: Literal | '(' Exp ')' | FieldAccess;
 FieldAccess: Value '.' ID;
 
 Visability: PUBLIC;
-Owner: STATIC ;
 
 ArgsDef: ArgDef | ArgsDef ',' ArgDef | ;
 ArgDef: Type ID;
@@ -36,7 +36,7 @@ Args: Arg | Args ',' Arg;
 Arg: Value;
 
 // public class name { ... }
-Class: Visability CLASS ID ClassBody;
+Class: Visability  CLASS ID ClassBody;
 ClassBody: '{' ClassBodyDecls '}' | '{' '}';
 ClassBodyDecls: ClassBodyDecl | ClassBodyDecls ClassBodyDecl;
 ClassBodyDecl: Field | Method;
@@ -49,14 +49,14 @@ VarDef: ID | VarDef '[' ']';
 
 // public static type name(args) { ... }
 Method: MethodHead Block;
-MethodHead: Visability Owner AnyType ID '(' ArgsDef ')';
+MethodHead: Visability STATIC AnyType ID '(' ArgsDef ')';
 
 
 Block: '{' Statements '}' | '{' '}';
 
 
 Statements: Statement | Statements Statement;
-Statement: ';' | Block | If | IfElse | IfElseIf | IfElseIfElse | While | For | Break | Return;
+Statement: ';' | Block | If | IfElse | IfElseIf | IfElseIfElse | While | For | Break | Return | QualifiedName '(' Literal ')' ';';
 
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
 IfElseIfElse: IfElseIf ELSE Block;

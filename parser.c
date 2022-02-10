@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
-#include "jzero.y.tab.h"
+#include "jzero.tab.h"
 #include "main.h"
 #include "errors.h"
 
@@ -21,8 +21,8 @@ int parse_int(char *text)
 	if (a == b)
 		return a;
 
-	error(INVALID, "Integer out of bounds");
-	exit(ERROR);
+	yyerror("Integer out of bounds");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -41,8 +41,8 @@ double parse_double(char *text)
 	if (abs(a - b) <= abs(a / 100) && ((a < 0) == (b < 0)))
 		return a;
 
-	error(INVALID, "Float out of bounds");
-	exit(ERROR);
+	yyerror("Float out of bounds");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -56,8 +56,8 @@ int parse_bool(char *text)
 	if (strcmp(text, "false") == 0)
 		return FALSE;
 
-	error(INVALID, "Invalid boolean value");
-	exit(ERROR);
+	yyerror("Invalid boolean value");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -95,8 +95,8 @@ char get_escaped_char(char c)
 		return '\b';
 	}
 
-	error(INVALID, "Invalid escaped character");
-	exit(ERROR);
+	yyerror("Invalid escaped character");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -144,7 +144,7 @@ char parse_char(char *text)
 		return get_escaped_char(text[2]);
 
 	default:
-		error(INVALID, "Invalid character");
-		exit(ERROR);
+		yyerror("Invalid character");
+		exit(LEX_ERROR);
 	}
 }

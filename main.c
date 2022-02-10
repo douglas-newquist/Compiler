@@ -6,23 +6,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include "main.h"
-#include "jzero.y.tab.h"
+#include "jzero.tab.h"
 #include "token.h"
 #include "errors.h"
 
-char *current_file;
+Tokens *tokens = NULL;
 
 /*
 	Reads the current file stored in yyin
 */
 Tokens *scan_yyin()
 {
-	line = 1;
+	line = 1, column = 1;
 
-	Tokens *tokens = NULL;
+	tokens = NULL;
 
-	for (int token = yylex(); token != 0; token = yylex())
-		tokens = add(tokens, create_token(token));
+	if (yyparse() != 0)
+		error(SYNTAX_ERROR, "Invalid syntax");
 
 	return tokens;
 }
@@ -38,7 +38,7 @@ Tokens *scan_file(char *filename)
 	if (yyin == 0)
 	{
 		printf("The file '%s' does not exist\n", filename);
-		exit(ERROR);
+		exit(LEX_ERROR);
 	}
 
 	Tokens *result = scan_yyin();
@@ -73,7 +73,7 @@ char *fix_extension(char *filename)
 		return strcat(filename, ".java");
 
 	printf("%s is not a .java file\n", filename);
-	exit(ERROR);
+	exit(LEX_ERROR);
 }
 
 int main(int argc, char const *argv[])
@@ -105,39 +105,42 @@ int main(int argc, char const *argv[])
 
 void newline()
 {
+	column = 1;
 	line++;
-}
-
-/*
-	Counts the number of times c appears in the string
-*/
-int count_chars(char *str, char c)
-{
-	int count = 0;
-
-	for (size_t i = 0; i < strlen(str); i++)
-		if (str[i] == c)
-			count++;
-
-	return count;
 }
 
 void comment()
 {
-	line += count_chars(yytext, '\n');
+	size_t size = strlen(yytext);
+	for (size_t i = 0; i < size; i++)
+	{
+		if (yytext[i] == '\n')
+			newline();
+		else
+			column++;
+	}
 }
 
-void whitespace() {}
+void whitespace()
+{
+	column += strlen(yytext);
+}
+
+int token(int category)
+{
+	tokens = add(tokens, create_token(category));
+	column += strlen(yytext);
+	return category;
+}
 
 void error(int code, char *message)
 {
-	printf("Error(%d) in %s on line %d\n%s: %s\n",
-		   code,
-		   current_file,
-		   line,
-		   message,
-		   yytext);
+	fprintf(stderr, "Error in %s:%d:%d\n%s: %s\n",
+			current_file,
+			line, column,
+			message,
+			yytext);
 	exit(code);
 }
 
-void yyerror(char *message) { error(TOKEN_ERROR, message); }
+void yyerror(char *message) { error(LEX_ERROR, message); }

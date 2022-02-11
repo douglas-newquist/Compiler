@@ -2,6 +2,7 @@
 	Douglas Newquist
 */
 
+#ifndef Token
 #define Token struct token
 #define Tokens struct tokenlist
 
@@ -52,3 +53,4 @@ void print_tokens(Tokens *tokens);
 	Adds a token to the linked list
 */
 Tokens *add(Tokens *tokens, Token *token);
+#endif

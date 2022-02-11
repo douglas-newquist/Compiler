@@ -11,7 +11,7 @@ force-all:
 	make all
 
 %.tab.c %.tab.h: %.y
-	bison -W -d $<
+	bison -d $<
 
 %.yy.c: %.l
 	flex -o $@ $<

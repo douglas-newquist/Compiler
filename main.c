@@ -78,6 +78,16 @@ char *fix_extension(char *filename)
 
 int main(int argc, char const *argv[])
 {
+	for (int i = 1; i < argc; i++)
+	{
+		char *filename = fix_extension((char *)argv[i]);
+
+		Tokens *tokens = scan_file(filename);
+
+		print_tokens(tokens);
+		free_tokens(tokens);
+	}
+
 	if (argc == 1)
 	{
 		yyin = stdin;
@@ -86,18 +96,6 @@ int main(int argc, char const *argv[])
 
 		print_tokens(tokens);
 		free_tokens(tokens);
-	}
-	else
-	{
-		for (int i = 1; i < argc; i++)
-		{
-			char *filename = fix_extension((char *)argv[i]);
-
-			Tokens *tokens = scan_file(filename);
-
-			print_tokens(tokens);
-			free_tokens(tokens);
-		}
 	}
 
 	return 0;
@@ -128,7 +126,8 @@ void whitespace()
 
 int token(int category)
 {
-	tokens = add(tokens, create_token(category));
+	ctoken = create_token(category);
+	tokens = add(tokens, ctoken);
 	column += strlen(yytext);
 	return category;
 }
@@ -144,3 +143,8 @@ void error(int code, char *message)
 }
 
 void yyerror(char *message) { error(LEX_ERROR, message); }
+
+void pattern(char *message)
+{
+	printf("%s\n", message);
+}

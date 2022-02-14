@@ -19,6 +19,8 @@ Node
 	Node **children;
 };
 
+void free_node(Node *node, int recursively);
+
 Node *nnode(char *message, int op, Token *t, int children);
 
 Node *token_node();

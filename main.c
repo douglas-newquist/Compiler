@@ -89,6 +89,7 @@ int main(int argc, char const *argv[])
 
 		print_tokens(tokens);
 		free_tokens(tokens);
+		free_node(program, TRUE);
 	}
 
 	if (argc == 1)
@@ -99,6 +100,7 @@ int main(int argc, char const *argv[])
 
 		print_tokens(tokens);
 		free_tokens(tokens);
+		free_node(program, TRUE);
 	}
 
 	return 0;

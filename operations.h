@@ -1,0 +1,8 @@
+
+#ifndef OPERATIONS
+enum OPERATIONS
+{
+	DECLARE = 257,
+	SEQUENCE
+};
+#endif

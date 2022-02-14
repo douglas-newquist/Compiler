@@ -9,6 +9,7 @@
 #include "jzero.tab.h"
 #include "token.h"
 #include "errors.h"
+#include "tree.h"
 
 Tokens *tokens = NULL;
 
@@ -23,6 +24,8 @@ Tokens *scan_yyin()
 
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
+
+	print_node(program, 0);
 
 	return tokens;
 }

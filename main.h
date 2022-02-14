@@ -5,6 +5,7 @@
 #ifndef comment
 #include <stdio.h>
 #include "token.h"
+#include "tree.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -12,6 +13,8 @@
 int line, column;
 char *current_file;
 FILE *yyin;
+
+Node *program;
 
 char *yytext;
 int yylex();

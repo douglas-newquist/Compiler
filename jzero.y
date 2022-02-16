@@ -23,7 +23,8 @@
 %token <integer> ID
 
 %type <node> Literal
-%type <node> VarDef
+%type <node> NamesList
+%type <node> VarDef VarsDef
 %type <node> AnyType Type ArrayType SingleType SimpleType
 %type <node> Name QualifiedName
 %type <node> Exp Negated
@@ -38,8 +39,12 @@ Program: Class { program=$$; };
 
 Class: PUBLIC CLASS Id '{' ClassBody '}' { $$=binary_op("Class", DECLARE, $3, $5); };
 ClassBody	: { $$=NULL; }
-			| ClassBodyDef ClassBody { $$=sequence($1, $2); }
-ClassBodyDef: Method
+			| ClassBodyDef ClassBody { $$=sequence($1, $2); };
+ClassBodyDef
+			: Method
+			| VarDef ';' { $$=$1; }
+			| VarsDef ';' { $$=$1; }
+			| Create;
 
 Creates: Create | Create Creates { $$=sequence($1, $2); };
 Create: VarDef '=' Exp ';' { $$=binary_op("Assign", '=', $1, $3); };
@@ -48,8 +53,11 @@ Method: PUBLIC STATIC AnyType Id '(' ParamsDef ')' '{' '}' { $$=trinary_op("Meth
 ParamsDef:{$$=NULL;}	| VarDef
 			| VarDef ',' ParamsDef { $$=binary_op("Params", DECLARE, $1, $3); };
 
+NamesList	: Name
+			| Name ',' NamesList { $$=binary_op("Names", DECLARE, $1, $3); }
 
-VarDef: Type Name {  $$=binary_op("Define Var", DECLARE, $1, $2); };
+VarsDef: Type NamesList { $$=binary_op("Define Vars", DECLARE, $1, $2); }
+VarDef: Type Name {  $$=binary_op("Define", DECLARE, $1, $2); };
 
 Value: Literal;
 
@@ -72,7 +80,7 @@ ArrayType: SingleType '[' ']'	{ $$=unary_op("Array", '[', $1); }
 		| ArrayType '[' ']'		{ $$=unary_op("Array", '[', $1); };
 
 SingleType	: SimpleType
-			| QualifiedName
+			| Name
 
 SimpleType	: BOOLEAN	{ $$=token_node(); }
 			| CHAR		{ $$=token_node(); }

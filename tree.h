@@ -27,9 +27,12 @@ Node *token_node();
 
 Node *sequence(Node *s1, Node *s2);
 
+/*
+	Creates a unary operation node
+*/
 Node *unary_op(char *message, int op, Node *v1);
-
 Node *binary_op(char *message, int op, Node *v1, Node *v2);
+Node *trinary_op(char *message, int op, Node *v1, Node *v2, Node *v3);
 
 void print_node(Node *node, int indents);
 

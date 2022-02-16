@@ -11,29 +11,25 @@
 #include "errors.h"
 #include "tree.h"
 
-Tokens *tokens = NULL;
-
 /*
 	Reads the current file stored in yyin
 */
-Tokens *scan_yyin()
+void scan_tree_yyin()
 {
 	line = 1, column = 1;
-
-	tokens = NULL;
 
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
 
-	print_node(program, 0);
+	printf("dsada\n");
 
-	return tokens;
+	print_node(program, 0);
 }
 
 /*
 	Opens and reads from the given filename
 */
-Tokens *scan_file(char *filename)
+void scan_tree_file(char *filename)
 {
 	current_file = filename;
 	yyin = fopen(filename, "r");
@@ -44,9 +40,8 @@ Tokens *scan_file(char *filename)
 		exit(LEX_ERROR);
 	}
 
-	Tokens *result = scan_yyin();
+	scan_tree_yyin();
 	fclose(yyin);
-	return result;
 }
 
 /*
@@ -85,22 +80,20 @@ int main(int argc, char const *argv[])
 	{
 		char *filename = fix_extension((char *)argv[i]);
 
-		Tokens *tokens = scan_file(filename);
+		scan_tree_file(filename);
 
-		print_tokens(tokens);
-		free_tokens(tokens);
 		free_node(program, TRUE);
+		free_tokens(tokens);
 	}
 
 	if (argc == 1)
 	{
 		yyin = stdin;
 		current_file = "stdin";
-		Tokens *tokens = scan_yyin();
+		scan_tree_yyin();
 
-		print_tokens(tokens);
-		free_tokens(tokens);
 		free_node(program, TRUE);
+		free_tokens(tokens);
 	}
 
 	return 0;

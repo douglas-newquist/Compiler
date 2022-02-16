@@ -11,6 +11,8 @@
 #define FALSE 0
 
 int line, column;
+Token *ctoken;
+Tokens *tokens;
 char *current_file;
 FILE *yyin;
 
@@ -19,8 +21,6 @@ Node *program;
 char *yytext;
 int yylex();
 int yyparse();
-
-Token *ctoken;
 
 void newline();
 void comment();

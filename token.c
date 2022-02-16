@@ -63,8 +63,6 @@ Token *create_token(int category)
 */
 void free_token(Token *token)
 {
-	printf("Freeing token %s\n", token->text);
-
 	if (token == NULL)
 		return;
 

@@ -24,21 +24,31 @@
 
 %type <node> Literal
 %type <node> VarDef
-%type <node> AnyType Type ListType SimpleType
+%type <node> AnyType Type ArrayType SingleType SimpleType
 %type <node> Name QualifiedName
 %type <node> Exp Negated
-%type <node> Value Create Program
+%type <node> Value Create Creates Class  Program
+%type <node> Id
+%type <node> ParamsDef
+%type <node> Method
 
 %start Program
 %%
-Program	: Create { $$=$1; }
-		| Create Program { program=sequence($1, $2); $$=program; };
+Program: Class { program=$$; };
 
+Class: PUBLIC CLASS Id '{' Method '}' { $$=binary_op("class", DECLARE, $3, $5); };
+
+Creates: Create | Create Creates { $$=sequence($1, $2); };
 Create: VarDef '=' Exp ';' { $$=binary_op("Assign", '=', $1, $3); };
 
-VarDef: Type Name {  $$=binary_op("Define", DECLARE, $1, $2); };
+Method: PUBLIC STATIC AnyType Id '(' ParamsDef ')' '{' '}' { $$=trinary_op("Method", DECLARE, $3, $4, $6); }
+ParamsDef:{$$=NULL;}	| VarDef
+			| VarDef ',' ParamsDef { $$=binary_op("Params", DECLARE, $1, $3); };
 
-Value: Literal	{ $$=token_node(); };
+
+VarDef: Type Name {  $$=binary_op("Define Var", DECLARE, $1, $2); };
+
+Value: Literal;
 
 Literal	: LITERAL_BOOL		{ $$=token_node(); }
 		| LITERAL_CHAR		{ $$=token_node(); }
@@ -48,25 +58,28 @@ Literal	: LITERAL_BOOL		{ $$=token_node(); }
 		| LITERAL_NULL		{ $$=token_node(); };
 
 // Non-void or void type
-AnyType	: Type { $$=$1; }
+AnyType	: Type
 		| VOID { $$=token_node(); };
 
 // Non-void type
-Type: SimpleType
-	| ListType;
+Type: SingleType
+	| ArrayType;
 
-ListType: SimpleType '[' ']'
-		| ListType '[' ']';
+ArrayType: SingleType '[' ']'	{ $$=unary_op("Array", '[', $1); }
+		| ArrayType '[' ']'		{ $$=unary_op("Array", '[', $1); };
+
+SingleType	: SimpleType
+			| QualifiedName
 
 SimpleType	: BOOLEAN	{ $$=token_node(); }
 			| CHAR		{ $$=token_node(); }
 			| INT 		{ $$=token_node(); }
 			| DOUBLE	{ $$=token_node(); };
 
-Name: ID				{ $$=token_node(); }
-	| QualifiedName;
+Id: ID { $$=token_node(); }
+Name: Id | QualifiedName;
 
-QualifiedName: Name '.' ID;
+QualifiedName: Name '.' Id { $$=binary_op("Access", '.', $1, $3); };
 
 Exp: Value | Negated | '(' Exp ')';
 Negated: '-' Exp { $$=unary_op("Negate", '-', $2); };

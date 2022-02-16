@@ -21,8 +21,6 @@ void scan_tree_yyin()
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
 
-	printf("dsada\n");
-
 	print_node(program, 0);
 }
 

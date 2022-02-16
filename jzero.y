@@ -27,7 +27,7 @@
 %type <node> AnyType Type ArrayType SingleType SimpleType
 %type <node> Name QualifiedName
 %type <node> Exp Negated
-%type <node> Value Create Creates Class  Program
+%type <node> Value Create Creates Class ClassBody ClassBodyDef Program
 %type <node> Id
 %type <node> ParamsDef
 %type <node> Method
@@ -36,7 +36,10 @@
 %%
 Program: Class { program=$$; };
 
-Class: PUBLIC CLASS Id '{' Method '}' { $$=binary_op("class", DECLARE, $3, $5); };
+Class: PUBLIC CLASS Id '{' ClassBody '}' { $$=binary_op("Class", DECLARE, $3, $5); };
+ClassBody	: { $$=NULL; }
+			| ClassBodyDef ClassBody { $$=sequence($1, $2); }
+ClassBodyDef: Method
 
 Creates: Create | Create Creates { $$=sequence($1, $2); };
 Create: VarDef '=' Exp ';' { $$=binary_op("Assign", '=', $1, $3); };

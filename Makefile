@@ -22,7 +22,7 @@ force-all:
 j0lex.l:
 	ln -s jzero.l j0lex.l
 
-j0: main.o jzero.yy.o token.o parser.o jzero.tab.o tree.o ${HEADERS}
+j0: main.o jzero.yy.o token.o list.o parser.o jzero.tab.o tree.o ${HEADERS}
 	${CC} -o $@ $^
 
 hw3_douglas_newquist.zip: ${ZIP_TARGETS}
@@ -31,4 +31,4 @@ hw3_douglas_newquist.zip: ${ZIP_TARGETS}
 	zip $@ -r ${ZIP_TARGETS}
 
 clean:
-	rm -rf ${TARGETS} *.o *.yy.c *.tab.*
+	rm -rf ${TARGETS} *.o *.yy.* *.tab.*

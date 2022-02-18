@@ -1,39 +1,31 @@
-
-#ifndef TokenTree
+/*
+	Douglas Newquist
+*/
 
 #include "token.h"
-#include "operations.h"
+#include "list.h"
 
-#define TokenTree struct tokentree
-#define Node struct node
-#define NodeList Node *
+#ifndef Tree
+#define Tree struct tree
+#define Trees List
 
-TokenTree{};
+Trees *trees;
 
-Node
+Tree
 {
-	char *message;
-	int op;
-	Token *token;
+	int rule;
+	char *name;
 	int count;
-	Node **children;
+	Token *token;
+	Tree **children;
 };
 
-void free_node(Node *node, int recursively);
+Tree *tree_token(Token *token);
 
-Node *nnode(char *message, int op, Token *t, int children);
+void print_tree(Tree *tree, int indent_level, char *indent);
 
-Node *token_node();
+Tree *tree(char *message, int rule, Token *token, int argc, ...);
 
-Node *sequence(Node *s1, Node *s2);
-
-/*
-	Creates a unary operation node
-*/
-Node *unary_op(char *message, int op, Node *v1);
-Node *binary_op(char *message, int op, Node *v1, Node *v2);
-Node *trinary_op(char *message, int op, Node *v1, Node *v2, Node *v3);
-
-void print_node(Node *node, int indents);
+void free_trees();
 
 #endif

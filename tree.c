@@ -1,105 +1,101 @@
+/*
+	Douglas Newquist
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "token.h"
+#include <stdarg.h>
 #include "tree.h"
-#include "main.h"
+#include "token.h"
 
-void free_node(Node *node, int recursively)
+Tree *create_tree(char *message, int rule, int child_count, Token *token)
 {
-	if (node == NULL)
-		return;
+	Tree *tree = (Tree *)malloc(sizeof(Tree));
 
-	if (recursively)
-		for (int i = 0; i < node->count; i++)
-			free_node(node->children[i], recursively);
+	tree->rule = rule;
+	tree->name = message;
+	tree->count = child_count;
+	tree->token = token;
 
-	if (node->children)
-		free(node->children);
-
-	free(node);
-}
-
-Node *nnode(char *message, int op, Token *token, int children)
-{
-	if (token)
-		printf("Creating node for %s\n", token->text);
-	Node *n = (Node *)malloc(sizeof(Node));
-
-	n->message = message;
-	n->op = op;
-	n->token = token;
-	n->count = children;
-
-	if (children > 0)
-		n->children = (Node **)malloc(sizeof(Node *) * children);
+	if (child_count > 0)
+		tree->children = (Tree **)malloc(sizeof(Tree *) * child_count);
 	else
-		n->children = NULL;
+		tree->children = NULL;
 
-	return n;
+	trees = add(trees, tree);
+
+	return tree;
 }
 
-Node *token_node()
+Tree *tree_token(Token *token)
 {
-	return nnode("T:", ctoken->category, ctoken, 0);
+	return create_tree(token->text, token->category, 0, token);
 }
 
-Node *sequence(Node *s1, Node *s2)
+void free_tree(Tree *tree)
 {
-	Node *n = nnode("Sequence", SEQUENCE, NULL, 2);
-
-	n->children[0] = s1;
-	n->children[1] = s2;
-
-	return n;
-}
-
-Node *unary_op(char *message, int op, Node *v1)
-{
-	printf("Creating unary op %d %s\n", op, v1->token->text);
-	Node *n = nnode(message, op, NULL, 1);
-	n->children[0] = v1;
-	return n;
-}
-
-Node *binary_op(char *message, int op, Node *v1, Node *v2)
-{
-	printf("Creating binary op\n");
-	Node *n = nnode(message, op, NULL, 2);
-
-	n->children[0] = v1;
-	n->children[1] = v2;
-
-	return n;
-}
-
-Node *trinary_op(char *message, int op, Node *v1, Node *v2, Node *v3)
-{
-	printf("Creating trinary op %d\t%d\t%d\n", v1->op, v2->op, v3->op);
-	Node *n = nnode(message, op, NULL, 3);
-
-	n->children[0] = v1;
-	n->children[1] = v2;
-	n->children[2] = v3;
-
-	return n;
-}
-
-void print_node(Node *node, int indents)
-{
-	if (node == NULL)
+	if (tree == NULL)
 		return;
 
-	for (int i = 0; i < indents; i++)
-		printf("| ");
+	free(tree->children);
+	free(tree);
+}
 
-	printf("%s", node->message);
+void free_list_tree(void *tree)
+{
+	free_tree((Tree *)tree);
+}
 
-	if (node->token)
-		printf("%s\n", node->token->text);
+void free_trees()
+{
+	trees = free_list(trees, free_list_tree);
+}
+
+void print_tree(Tree *tree, int indent_level, char *indent)
+{
+	for (int i = 0; i < indent_level; i++)
+		printf("%s", indent);
+
+	if (tree == NULL)
+	{
+		printf("NULL\n");
+		return;
+	}
+
+	printf("%s(R:%d, C:%d)",
+		   tree->name,
+		   tree->rule,
+		   tree->count);
+
+	if (tree->token)
+		printf(" on line %d\n", tree->token->line);
 	else
 		printf("\n");
 
-	for (int i = 0; i < node->count; i++)
-		print_node(node->children[i], indents + 1);
+	for (int i = 0; i < tree->count; i++)
+		print_tree(tree->children[i], indent_level + 1, indent);
+}
+/**
+ * @brief Creates a tree with n children
+ *
+ * @param message
+ * @param rule Syntax rule used for this tree
+ * @param argc Number of trees being passed
+ * @param ... Trees to be added as children
+ */
+Tree *tree(char *message, int rule, Token *token, int argc, ...)
+{
+	Tree *tree = create_tree(message, rule, argc, token);
+
+	// Begin array of input trees
+	va_list args;
+	va_start(args, argc);
+
+	for (int i = 0; i < argc; i++)
+		tree->children[i] = va_arg(args, Tree *);
+
+	// End array of trees
+	va_end(args);
+
+	return tree;
 }

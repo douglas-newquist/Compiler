@@ -11,6 +11,12 @@
 #include "errors.h"
 #include "tree.h"
 
+void free_all()
+{
+	free_trees();
+	free_tokens();
+}
+
 /*
 	Reads the current file stored in yyin
 */
@@ -21,7 +27,7 @@ void scan_tree_yyin()
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
 
-	print_node(program, 0);
+	print_tree(yylval.tree, 0, "| ");
 }
 
 /*
@@ -80,8 +86,7 @@ int main(int argc, char const *argv[])
 
 		scan_tree_file(filename);
 
-		free_node(program, TRUE);
-		free_tokens(tokens);
+		free_all();
 	}
 
 	if (argc == 1)
@@ -90,8 +95,7 @@ int main(int argc, char const *argv[])
 		current_file = "stdin";
 		scan_tree_yyin();
 
-		free_node(program, TRUE);
-		free_tokens(tokens);
+		free_all();
 	}
 
 	return 0;
@@ -122,8 +126,9 @@ void whitespace()
 
 int token(int category)
 {
-	ctoken = create_token(category);
-	tokens = add(tokens, ctoken);
+	Token *ctoken = create_token(category);
+	yylval.token = ctoken;
+	yylval.tree = tree_token(ctoken);
 	column += strlen(yytext);
 	return category;
 }
@@ -139,8 +144,3 @@ void error(int code, char *message)
 }
 
 void yyerror(char *message) { error(LEX_ERROR, message); }
-
-void pattern(char *message)
-{
-	printf("%s\n", message);
-}

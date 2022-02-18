@@ -4,11 +4,12 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
+#include "errors.h"
 #include "jzero.tab.h"
+#include "list.h"
 #include "main.h"
 #include "parser.h"
-#include "errors.h"
+#include "token.h"
 
 /*
 	Creates a new token with the given category
@@ -55,6 +56,8 @@ Token *create_token(int category)
 		break;
 	}
 
+	tokens = add(tokens, token);
+
 	return token;
 }
 
@@ -75,15 +78,14 @@ void free_token(Token *token)
 	free(token);
 }
 
-void free_tokens(Tokens *tokens)
+void free_list_token(void *token)
 {
-	while (tokens != NULL)
-	{
-		Tokens *next = tokens->next;
-		free_token(tokens->token);
-		free(tokens);
-		tokens = next;
-	}
+	free_token((Token *)token);
+}
+
+void free_tokens()
+{
+	tokens = free_list(tokens, free_list_token);
 }
 
 void print_token(Token *token)
@@ -128,47 +130,9 @@ void print_tokens(Tokens *tokens)
 
 	while (tokens != NULL)
 	{
-		print_token(tokens->token);
+		print_token((Token *)tokens->value);
 		tokens = tokens->next;
 	}
 
 	printf("--------------------------------------------------------------\n");
-}
-
-Tokens *create_tokens(Token *token)
-{
-	Tokens *tokens = (Tokens *)malloc(sizeof(Tokens));
-	tokens->token = token;
-	tokens->next = NULL;
-	return tokens;
-}
-
-/*
-	Gets the tail element of the token list\
-*/
-Tokens *tail(Tokens *tokens)
-{
-	if (tokens == NULL)
-		return NULL;
-
-	while (tokens->next != NULL)
-		tokens = tokens->next;
-
-	return tokens;
-}
-
-/*
-	Adds a token to the linked list
-*/
-Tokens *add(Tokens *tokens, Token *token)
-{
-	Tokens *current = create_tokens(token);
-
-	if (tokens != NULL)
-	{
-		tail(tokens)->next = current;
-		return tokens;
-	}
-
-	return current;
 }

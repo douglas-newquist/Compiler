@@ -5,92 +5,91 @@
 %}
 
 %union{
-	struct node *node;
+	struct tree *tree;
 	struct token *token;
-	int integer;
 }
 
 // Operators
-%token <integer> INCREMENT DECREMENT AND NOT OR
+%token <token> INCREMENT DECREMENT AND NOT OR
 // Comparators
-%token <integer> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
+%token <token> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
 // Types
-%token <integer> BOOLEAN CHAR DOUBLE INT
+%token <token> BOOLEAN CHAR DOUBLE INT
 // Reserved words
-%token <integer> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
+%token <token> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
 // Literals
-%token <integer> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
-%token <integer> ID
+%token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
+%token <token> ID
 
-%type <node> Literal
-%type <node> NamesList
-%type <node> VarDef VarsDef
-%type <node> AnyType Type ArrayType SingleType SimpleType
-%type <node> Name QualifiedName
-%type <node> Exp Negated
-%type <node> Value Create Creates Class ClassBody ClassBodyDef Program
-%type <node> Id
-%type <node> ParamsDef
-%type <node> Method
+%type <tree> Literal
+%type <tree> NamesList
+%type <tree> VarDef VarsDef
+%type <tree> AnyType Type ArrayType SingleType SimpleType
+%type <tree> Name QualifiedName
+%type <tree> Exp Negated
+%type <tree> Value Create Creates Class ClassBody ClassBodyDef Program
+%type <tree> ParamsDef
+%type <tree> Method
+
+%type <token> '-'
 
 %start Program
 %%
-Program: Class { program=$$; };
+Program: Class { yylval.tree=$$; };
 
-Class: PUBLIC CLASS Id '{' ClassBody '}' { $$=binary_op("Class", DECLARE, $3, $5); };
-ClassBody	: { $$=NULL; }
-			| ClassBodyDef ClassBody { $$=sequence($1, $2); };
+Class: PUBLIC CLASS ID '{' ClassBody '}' { $$=tree("Class", 1000, NULL, 2, $3, $5); };
+ClassBody	: { $$=tree("Block", 1000, NULL, 0); }
+			| ClassBodyDef ClassBody { $$=tree("Chain", 1000, NULL, 2, $1, $2); };
 ClassBodyDef
 			: Method
 			| VarDef ';' { $$=$1; }
 			| VarsDef ';' { $$=$1; }
 			| Create;
 
-Creates: Create | Create Creates { $$=sequence($1, $2); };
-Create: VarDef '=' Exp ';' { $$=binary_op("Assign", '=', $1, $3); };
+Creates: Create | Create Creates { $$=tree("Chain", 1000, NULL, 2, $1, $2); };
+Create: VarDef '=' Exp ';' { $$=tree("Assign", 1000, NULL, 2, $1, $3); };
 
-Method: PUBLIC STATIC AnyType Id '(' ParamsDef ')' '{' '}' { $$=trinary_op("Method", DECLARE, $3, $4, $6); }
+Method: PUBLIC STATIC AnyType ID '(' ParamsDef ')' '{' '}' { $$=tree("Method", 1000, NULL, 3, $3, $4, $6); }
 ParamsDef:{$$=NULL;}	| VarDef
-			| VarDef ',' ParamsDef { $$=binary_op("Params", DECLARE, $1, $3); };
+			| VarDef ',' ParamsDef { $$=tree("Params", 1000, NULL, 2, $1, $3); };
 
 NamesList	: Name
-			| Name ',' NamesList { $$=binary_op("Names", DECLARE, $1, $3); }
+			| Name ',' NamesList { $$=tree("Names", 1000, NULL, 2, $1, $3); }
 
-VarsDef: Type NamesList { $$=binary_op("Define Vars", DECLARE, $1, $2); }
-VarDef: Type Name {  $$=binary_op("Define", DECLARE, $1, $2); };
+VarsDef: Type NamesList { $$=tree("Define Vars", 1000, NULL, 2, $1, $2); }
+VarDef: Type Name {  $$=tree("Define", 1000, NULL, 2, $1, $2); };
 
 Value: Literal;
 
-Literal	: LITERAL_BOOL		{ $$=token_node(); }
-		| LITERAL_CHAR		{ $$=token_node(); }
-		| LITERAL_STRING	{ $$=token_node(); }
-		| LITERAL_INT		{ $$=token_node(); }
-		| LITERAL_DOUBLE	{ $$=token_node(); }
-		| LITERAL_NULL		{ $$=token_node(); };
+Literal	: LITERAL_BOOL
+		| LITERAL_CHAR
+		| LITERAL_STRING
+		| LITERAL_INT
+		| LITERAL_DOUBLE
+		| LITERAL_NULL;
 
 // Non-void or void type
 AnyType	: Type
-		| VOID { $$=token_node(); };
+		| VOID ;
 
 // Non-void type
 Type: SingleType
 	| ArrayType;
 
-ArrayType: SingleType '[' ']'	{ $$=unary_op("Array", '[', $1); }
-		| ArrayType '[' ']'		{ $$=unary_op("Array", '[', $1); };
+ArrayType: SingleType '[' ']'	{ $$=tree("Array", 1000, NULL, 1, $1); }
+		| ArrayType '[' ']'		{ $$=tree("Array", 1000, NULL, 1, $1); };
 
 SingleType	: SimpleType
 			| Name
 
-SimpleType	: BOOLEAN	{ $$=token_node(); }
-			| CHAR		{ $$=token_node(); }
-			| INT 		{ $$=token_node(); }
-			| DOUBLE	{ $$=token_node(); };
+SimpleType	: BOOLEAN
+			| CHAR
+			| INT
+			| DOUBLE;
 
-Id: ID { $$=token_node(); }
-Name: Id | QualifiedName;
+Name: ID | QualifiedName;
 
-QualifiedName: Name '.' Id { $$=binary_op("Access", '.', $1, $3); };
+QualifiedName: Name '.' ID { $$=tree("Access", 1000, NULL, 2, $1, $3); };
 
 Exp: Value | Negated | '(' Exp ')';
-Negated: '-' Exp { $$=unary_op("Negate", '-', $2); };
+Negated: '-' Exp { $$=tree("Negate", 1000, $1, 1, $2); };

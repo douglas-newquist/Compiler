@@ -1,0 +1,9 @@
+
+#ifndef RULES
+enum RULES
+{
+	VAR_DEFINE = 257,
+	VARS_DEFINE,
+	VAR_DEF_ASSIGN
+};
+#endif

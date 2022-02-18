@@ -15,6 +15,9 @@ void free_all()
 {
 	free_trees();
 	free_tokens();
+
+	if (yyin && yyin != stdin)
+		fclose(yyin);
 }
 
 /*
@@ -140,6 +143,8 @@ void error(int code, char *message)
 			line, column,
 			message,
 			yytext);
+
+	free_all();
 	exit(code);
 }
 

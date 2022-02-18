@@ -1,4 +1,4 @@
-TARGETS=j0 j0lex.l
+TARGETS=j0
 ZIP_TARGETS=*.c *.h *.l Makefile
 HEADERS=*.h jzero.tab.h
 
@@ -18,9 +18,6 @@ force-all:
 
 %.o: %.c ${HEADERS}
 	${CC} -c $<
-
-j0lex.l:
-	ln -s jzero.l j0lex.l
 
 j0: main.o jzero.yy.o token.o list.o parser.o jzero.tab.o tree.o ${HEADERS}
 	${CC} -o $@ $^

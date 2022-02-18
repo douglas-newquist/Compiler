@@ -11,12 +11,21 @@ List
 	List *next;
 };
 
+/**
+ * @brief Adds an element to the end of the list
+ *
+ * @param list Linked list to append to
+ * @param value Element being added
+ */
 List *add(List *list, void *value);
 
+/**
+ * @brief Gets the tail node
+ */
 List *tail(List *list);
 
 /**
- * Frees the given linked list
+ * @brief Frees the given linked list
  *
  * @param list
  * @param freer Function to free an individual element

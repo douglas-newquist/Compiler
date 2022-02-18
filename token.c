@@ -56,6 +56,7 @@ Token *create_token(int category)
 		break;
 	}
 
+	// Add token to list
 	tokens = add(tokens, token);
 
 	return token;

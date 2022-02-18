@@ -29,14 +29,16 @@ Token
 	char cval;
 };
 
-/*
-	Creates a new token with the given category
-*/
+/**
+ * @brief Creates a new token with the given category
+ *
+ * @param category What category this token falls in
+ */
 Token *create_token(int category);
 
-/*
-	Frees the given token from memory
-*/
+/**
+ *	@brief Frees the given token from memory
+ */
 void free_token(Token *token);
 
 /*

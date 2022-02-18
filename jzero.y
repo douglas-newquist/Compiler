@@ -172,8 +172,8 @@ Value	: Literal 		{ $$=tree_token($1); }
 
 Exp: Value | OrExp
 
-Step: Name INCREMENT { $$=tree("++", 1131, $2, 1, $1); }
-	| Name DECREMENT { $$=tree("--", 1131, $2, 1, $1); };
+Step: Name INCREMENT { $$=tree("++", 1000, $2, 1, $1); }
+	| Name DECREMENT { $$=tree("--", 1000, $2, 1, $1); };
 
 OrExp	: OrExp AND AndExp { $$=tree("Or", R_AND, $2, 2, $1, $3); }
 		| AndExp

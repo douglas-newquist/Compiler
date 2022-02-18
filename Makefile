@@ -13,8 +13,13 @@ force-all:
 	make clean
 	make all
 
+debug: jzero.output
+
 %.tab.c %.tab.h: %.y
 	bison -d $<
+
+%.output: %.y
+	bison -v -d $<
 
 %.yy.c: %.l
 	flex -o $@ $<

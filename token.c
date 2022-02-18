@@ -8,19 +8,20 @@
 #include "tokens.h"
 #include "main.h"
 #include "parser.h"
+#include "errors.h"
 
 /*
 	Creates a new token with the given category
 */
-struct token *create_token(int category)
+Token *create_token(int category)
 {
-	struct token *token = malloc(sizeof(struct token));
+	Token *token = (Token *)malloc(sizeof(Token));
 	token->category = category;
 	token->filename = current_file;
 	token->line = line;
 
 	// Copy yytext to the token
-	token->text = malloc(sizeof(char) * (strlen(yytext) + 1));
+	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
 	strcpy(token->text, yytext);
 
 	// Zero values
@@ -60,7 +61,7 @@ struct token *create_token(int category)
 /*
 	Frees the given token from memory
 */
-void free_token(struct token *token)
+void free_token(Token *token)
 {
 	free(token->text);
 
@@ -70,18 +71,18 @@ void free_token(struct token *token)
 	free(token);
 }
 
-void free_tokens(struct tokenlist *tokens)
+void free_tokens(Tokens *tokens)
 {
 	while (tokens != NULL)
 	{
-		struct tokenlist *next = tokens->next;
+		Tokens *next = tokens->next;
 		free_token(tokens->token);
 		free(tokens);
 		tokens = next;
 	}
 }
 
-void print_token(struct token *token)
+void print_token(Token *token)
 {
 	printf("%d\t%d\t%s\t\t%s\t",
 		   token->line,
@@ -116,7 +117,7 @@ void print_token(struct token *token)
 	}
 }
 
-void print_tokens(struct tokenlist *tokens)
+void print_tokens(Tokens *tokens)
 {
 	printf("Line\tToken\tText\t\tFile\t\t\tValue\n");
 	printf("--------------------------------------------------------------\n");
@@ -130,9 +131,9 @@ void print_tokens(struct tokenlist *tokens)
 	printf("--------------------------------------------------------------\n");
 }
 
-struct tokenlist *create_tokens(struct token *token)
+Tokens *create_tokens(Token *token)
 {
-	struct tokenlist *tokens = malloc(sizeof(struct tokenlist));
+	Tokens *tokens = (Tokens *)malloc(sizeof(Tokens));
 	tokens->token = token;
 	tokens->next = NULL;
 	return tokens;
@@ -141,7 +142,7 @@ struct tokenlist *create_tokens(struct token *token)
 /*
 	Gets the tail element of the token list\
 */
-struct tokenlist *tail(struct tokenlist *tokens)
+Tokens *tail(Tokens *tokens)
 {
 	if (tokens == NULL)
 		return NULL;
@@ -155,9 +156,9 @@ struct tokenlist *tail(struct tokenlist *tokens)
 /*
 	Adds a token to the linked list
 */
-struct tokenlist *add(struct tokenlist *tokens, struct token *token)
+Tokens *add(Tokens *tokens, Token *token)
 {
-	struct tokenlist *current = create_tokens(token);
+	Tokens *current = create_tokens(token);
 
 	if (tokens != NULL)
 	{

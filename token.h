@@ -2,7 +2,10 @@
 	Douglas Newquist
 */
 
-struct token
+#define Token struct token
+#define Tokens struct tokenlist
+
+Token
 {
 	int category;
 	char *text;
@@ -21,31 +24,31 @@ struct token
 	char cval;
 };
 
-struct tokenlist
+Tokens
 {
-	struct token *token;
-	struct tokenlist *next;
+	Token *token;
+	Tokens *next;
 };
 
 /*
 	Creates a new token with the given category
 */
-struct token *create_token(int category);
+Token *create_token(int category);
 
 /*
 	Frees the given token from memory
 */
-void free_token(struct token *token);
+void free_token(Token *token);
 
 /*
 	Frees the given token list from memory
 */
-void free_tokens(struct tokenlist *tokens);
+void free_tokens(Tokens *tokens);
 
-void print_token(struct token *token);
-void print_tokens(struct tokenlist *tokens);
+void print_token(Token *token);
+void print_tokens(Tokens *tokens);
 
 /*
 	Adds a token to the linked list
 */
-struct tokenlist *add(struct tokenlist *tokens, struct token *token);
+Tokens *add(Tokens *tokens, Token *token);

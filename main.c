@@ -8,17 +8,18 @@
 #include "main.h"
 #include "tokens.h"
 #include "token.h"
+#include "errors.h"
 
 char *current_file;
 
 /*
 	Reads the current file stored in yyin
 */
-struct tokenlist *scan_yyin()
+Tokens *scan_yyin()
 {
 	line = 1;
 
-	struct tokenlist *tokens = NULL;
+	Tokens *tokens = NULL;
 
 	for (int token = yylex(); token != EOF; token = yylex())
 		tokens = add(tokens, create_token(token));
@@ -29,7 +30,7 @@ struct tokenlist *scan_yyin()
 /*
 	Opens and reads from the given filename
 */
-struct tokenlist *scan_file(char *filename)
+Tokens *scan_file(char *filename)
 {
 	current_file = filename;
 	yyin = fopen(filename, "r");
@@ -37,10 +38,10 @@ struct tokenlist *scan_file(char *filename)
 	if (yyin == 0)
 	{
 		printf("The file '%s' does not exist\n", filename);
-		exit(-1);
+		exit(ERROR);
 	}
 
-	struct tokenlist *result = scan_yyin();
+	Tokens *result = scan_yyin();
 	fclose(yyin);
 	return result;
 }
@@ -72,7 +73,7 @@ char *fix_extension(char *filename)
 		return strcat(filename, ".java");
 
 	printf("%s is not a .java file\n", filename);
-	exit(-1);
+	exit(ERROR);
 }
 
 int main(int argc, char const *argv[])
@@ -81,7 +82,7 @@ int main(int argc, char const *argv[])
 	{
 		yyin = stdin;
 		current_file = "stdin";
-		struct tokenlist *tokens = scan_yyin();
+		Tokens *tokens = scan_yyin();
 
 		print_tokens(tokens);
 		free_tokens(tokens);
@@ -92,7 +93,7 @@ int main(int argc, char const *argv[])
 		{
 			char *filename = fix_extension((char *)argv[i]);
 
-			struct tokenlist *tokens = scan_file(filename);
+			Tokens *tokens = scan_file(filename);
 
 			print_tokens(tokens);
 			free_tokens(tokens);
@@ -114,7 +115,7 @@ int count_chars(char *str, char c)
 {
 	int count = 0;
 
-	for (int i = 0; i < strlen(str); i++)
+	for (size_t i = 0; i < strlen(str); i++)
 		if (str[i] == c)
 			count++;
 
@@ -138,3 +139,5 @@ void error(int code, char *message)
 		   yytext);
 	exit(code);
 }
+
+void yyerror(char *message) { error(TOKEN_ERROR, message); }

@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "tokens.h"
 #include "main.h"
+#include "errors.h"
 
 int parse_int(char *text)
 {
@@ -21,7 +22,7 @@ int parse_int(char *text)
 		return a;
 
 	error(INVALID_LITERAL, "Integer out of bounds");
-	exit(-1);
+	exit(ERROR);
 }
 
 /*
@@ -41,7 +42,7 @@ double parse_double(char *text)
 		return a;
 
 	error(INVALID_LITERAL, "Float out of bounds");
-	exit(-1);
+	exit(ERROR);
 }
 
 /*
@@ -56,7 +57,7 @@ int parse_bool(char *text)
 		return FALSE;
 
 	error(INVALID_LITERAL, "Invalid boolean value");
-	exit(-1);
+	exit(ERROR);
 }
 
 /*
@@ -95,7 +96,7 @@ char get_escaped_char(char c)
 	}
 
 	error(INVALID_LITERAL, "Invalid escaped character");
-	exit(-1);
+	exit(ERROR);
 }
 
 /*
@@ -104,7 +105,7 @@ char get_escaped_char(char c)
 char *parse_string(char *text)
 {
 	int size = strlen(text);
-	char *string = malloc(sizeof(char) * size);
+	char *string = (char *)malloc(sizeof(char) * size);
 	// Skip first quote
 	int offset = 1;
 
@@ -144,6 +145,6 @@ char parse_char(char *text)
 
 	default:
 		error(INVALID_LITERAL, "Invalid character");
-		exit(-1);
+		exit(ERROR);
 	}
 }

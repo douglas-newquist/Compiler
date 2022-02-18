@@ -17,7 +17,10 @@ void free_all()
 	free_tokens();
 
 	if (yyin && yyin != stdin)
+	{
 		fclose(yyin);
+		yyin = NULL;
+	}
 }
 
 /*
@@ -77,6 +80,7 @@ void read_file(char *filename)
 	read_yyin();
 
 	fclose(yyin);
+	yyin = NULL;
 }
 
 void post_read()

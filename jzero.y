@@ -23,49 +23,53 @@
 %token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
 %token <token> ID
 
-%type <tree> Program
-%type <tree> Class ClassBody ClassBodyDecl ClassBodyDecls
-%type <token> Visability
+%token <token> '.' '='
+
 %type <token> FixedType
-%type <tree> SingleType ListType Type AnyType
-%type <tree> Value
-%type <tree> Exp
-%type <tree> ArgDef ArgsDef
-%type <tree> Arg Args
-%type <tree> Field
-%type <tree> VarDef VarsDef
-%type <tree> Method MethodHead
-%type <tree> Block
-%type <tree> Statement Statements
-%type <tree> IfThen IfThenElse IfThenElseIf IfElseIfElse
-%type <tree> Name
 %type <token> Literal
-%type <tree> Return
-%type <tree> Step
+%type <token> Visability
+%type <tree> Arg Args
+%type <tree> ArgDef ArgsDef
+%type <tree> Block
+%type <tree> Class ClassBody ClassBodyDecl ClassBodyDecls
+%type <tree> Exp
+%type <tree> Field
+%type <tree> FieldAccess
+%type <tree> FieldDecl FieldDecls
+%type <tree> IfThen IfThenElse IfThenElseIf IfElseIfElse
 %type <tree> Instantiate
+%type <tree> Method
+%type <tree> MethodCall
+%type <tree> Name
+%type <tree> Program
+%type <tree> QualifiedName
+%type <tree> Return
+%type <tree> SingleType Type AnyType
+%type <tree> Statement Statements
+%type <tree> Step
+%type <tree> Value
 
 %%
+
 Program: Class { program=$$; }
 
 Name	: ID { $$=tree_token($1); }
 		| QualifiedName;
-QualifiedName: Name '.' ID;
+
+QualifiedName: Name '.' ID { $$=tree("Name", 1998, $2, 2, $1, $3); };
 
 AnyType	: VOID { $$=tree_token($1); }
 		| Type;
 
-Type: SingleType | ListType;
+Type: SingleType
+	| Type '[' ']' { $$=tree("Array", 1865, NULL, 1, $1); };
 
-ListType: SingleType '[' ']' 	{ $$=tree("Array", 1865, NULL, 1, $1); }
-		| ListType '[' ']'		{ $$=tree("Array", 1114, NULL, 1, $1); };
-
-SingleType	: FixedType
+SingleType	: FixedType { $$=tree_token($1); }
 			| Name;
 
 FixedType: INT | DOUBLE | BOOLEAN | CHAR;
 
 Value	: Literal		{ $$=tree_token($1); }
-		| Exp
 		| Instantiate;
 
 Literal	: LITERAL_INT
@@ -82,8 +86,10 @@ Visability: PUBLIC;
 ArgsDef	: ArgDef
 		| ArgsDef ',' ArgDef 	{ $$=tree("Args", 1829, NULL, 2, $1, $3); }
 		| 						{ $$=tree("Args", 1908, NULL, 0); };
+
 ArgDef: Type ID { $$=tree("Define", 1365, $2, 1, $1); };
-Args: Arg | Args ',' Arg;
+
+Args: { $$=EMPTY_TREE; } | Arg | Args ',' Arg;
 Arg: Value;
 
 // public class name { ... }
@@ -98,10 +104,13 @@ ClassBodyDecls	: ClassBodyDecl
 ClassBodyDecl: Field | Method;
 
 // type something = value;
-Field: Type VarsDef ';';
-VarsDef: VarDef | VarsDef ',' VarDef;
-VarDef: ID | VarDef '[' ']';
+Field: Type FieldDecls ';' { $$=tree("Field", 1803, NULL, 2, $1, $2); };
 
+FieldDecls	: FieldDecl
+			| FieldDecls ',' FieldDecl { $$=tree("Names", 1199, NULL, 2, $1, $3); }
+
+FieldDecl	: ID			{ $$=tree_token($1); }
+			| ID '=' Exp	{ $$=tree("Let", 1873, $1, 1, $3); }
 
 // public static type name(args) { ... }
 Method: Visability STATIC AnyType ID '(' ArgsDef ')' Block
@@ -112,48 +121,28 @@ Block	: '{' Statements '}'{ $$=tree("Block", 1711, NULL, 1, $2); }
 		| '{' '}' 			{ $$=tree("Block", 1591, NULL, 0); };
 
 
-Statements: Statement | Statements Statement;
-Statement: ';' | Block | IfThen | IfThenElse | IfThenElseIf | IfElseIfElse | WhileStmt | For | BREAK ';' | Return | QualifiedName '(' Literal ')' ';';
+Statements: Statement | Statements Statement { $$=tree("Chain", 1049, NULL, 2, $1, $2); };
+Statement: ';' { $$=tree("DNO", 0, NULL, 0); } | Block | IfThen | IfThenElse | IfThenElseIf | IfElseIfElse | Return | MethodCall | Field;
+
+MethodCall: Name '(' Args ')' ';' { $$=tree("Call", 1879, NULL, 2, $1, $3); }
 
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
 IfElseIfElse: IfThenElseIf ELSE Block;
 // if (condition) { ... } else if (condition) { ... } ...
 IfThenElseIf: IfThen ELSE IfThen | IfThenElseIf ELSE IfThen;
 // if (condition) { ... } else { ... }
-IfThenElse: IfThen ELSE Block;
+IfThenElse: IfThen ELSE Block { $$=tree("IfE", 1587, $2, 2, $1, $3); };
 // if (condition) { ... }
-IfThen: IF '(' Exp ')' Block
+IfThen: IF '(' Exp ')' Block { $$=tree("If", 1111, $1, 2, $3, $5); }
 
-// while (conditon) { ... }
-WhileStmt: WHILE '(' Exp ')' Block;
+Return	: RETURN Exp ';' 	{ $$=tree("Return", 1934, $1, 1, $2); }
+		| RETURN ';'		{ $$=tree("Return", 1283, $1, 0); }
 
-Return	: RETURN Exp ';' 	{ $$=tree("Return", 1009, $1, 1, $2); }
-		| RETURN ';'		{ $$=tree("Return", 1100, $1, 0); };
-SwitchCase: CASE Value ':' Statements BREAK ';';
-Continue: CONTINUE ';';
-Default: DEFAULT ':';
+Instantiate: NEW Type '[' Exp ']' { $$=tree("New", 1361, $1, 2, $2, $4); }
 
-For: FOR '(' ForInit ';' ForCond ';' ForInc  ')' Block
-ForInit: VarDef | ;
-ForCond: Condition | ;
-ForInc: Statement | ;
-
-Instantiate: NEW Type '[' Value ']'
-
-Condition: BOOLEAN;
-
-Exp	: AddSub
-	| Value
-	| '(' Exp ')' { $$=$2; };
+Exp	:  Value
+	| Name
+	| '(' Exp ')' 	{ $$=$2; };
 
 Step: Name INCREMENT { $$=tree("++", 1131, $2, 1, $1); }
 	| Name DECREMENT { $$=tree("--", 1131, $2, 1, $1); };
-
-RelationOp: LESS_EQUAL | GREATER_EQUAL | '>' | '<';
-Relation: AddSub | Relation RelationOp AddSub;
-Assigment	: Name '=' Exp
-			| FieldAccess '=' Exp;
-
-AddSub: MultDiv | AddSub '+' MultDiv | AddSub '-' MultDiv;
-MultDiv: UnaryExp | MultDiv '*' UnaryExp | MultDiv '/' UnaryExp;
-UnaryExp: '-' UnaryExp | '!' UnaryExp ;

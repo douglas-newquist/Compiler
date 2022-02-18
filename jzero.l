@@ -158,8 +158,9 @@ false           return token(LITERAL_BOOL);
 '[^\\]'                 return token(LITERAL_CHAR);
 '\\.'                   return token(LITERAL_CHAR);
 '\\'                    yyerror("Escape character must be escaped");
-'..+|'                  yyerror("Character was not closed");
+'..+'                   yyerror("Character too long");
 '.*'                    yyerror("Invalid character");
+'                       yyerror("Character not closed");
 
 [a-zA-Z_][a-zA-Z0-9_]*  return token(ID);
 

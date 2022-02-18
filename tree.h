@@ -9,6 +9,8 @@
 #define Tree struct tree
 #define Trees List
 
+#define EMPTY_TREE tree("END", 0, NULL, 0)
+
 Trees *trees;
 
 Tree

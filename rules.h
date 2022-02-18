@@ -18,6 +18,10 @@ enum RULES
 	R_IF4,
 	R_RETURN1,
 	R_RETURN2,
-	R_ADD
+	R_NEW1,
+	R_AND,
+	R_OR,
+	R_EQUALS,
+	R_NOT_EQUAL
 };
 #endif

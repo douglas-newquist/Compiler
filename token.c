@@ -20,6 +20,7 @@ Token *create_token(int category)
 	token->category = category;
 	token->filename = current_file;
 	token->line = line;
+	token->column = column;
 
 	// Copy yytext to the token
 	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
@@ -91,8 +92,9 @@ void free_tokens()
 
 void print_token(Token *token)
 {
-	printf("%d\t%d\t%s\t\t%s\t",
+	printf("%d:%d\t%d\t%s\t\t%s\t",
 		   token->line,
+		   token->column,
 		   token->category,
 		   token->text,
 		   token->filename);

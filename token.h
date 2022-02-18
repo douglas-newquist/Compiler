@@ -14,7 +14,7 @@ Token
 {
 	int category;
 	char *text;
-	int line;
+	int line, column;
 	char *filename;
 
 	// Integer value

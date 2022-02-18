@@ -98,9 +98,12 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 
 	// If a token is present print its text
 	if (tree->token)
-		printf(" %s on line %d\n", tree->token->text, tree->token->line);
-	else
-		printf("\n");
+		printf(" %s at %d:%d",
+			   tree->token->text,
+			   tree->token->line,
+			   tree->token->column);
+
+	printf("\n");
 
 	// Print children
 	for (int i = 0; i < tree->count; i++)

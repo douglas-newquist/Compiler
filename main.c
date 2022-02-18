@@ -137,6 +137,7 @@ int token(int category)
 {
 	yylval.token = create_token(category);
 	yylval.tree = tree_token(yylval.token);
+	// FIXME Line number broken
 	column += strlen(yytext);
 	return category;
 }

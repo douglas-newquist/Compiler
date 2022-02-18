@@ -127,9 +127,8 @@ void whitespace()
 
 int token(int category)
 {
-	Token *ctoken = create_token(category);
-	yylval.token = ctoken;
-	yylval.tree = tree_token(ctoken);
+	yylval.token = create_token(category);
+	yylval.tree = tree_token(yylval.token);
 	column += strlen(yytext);
 	return category;
 }

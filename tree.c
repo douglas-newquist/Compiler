@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include "tree.h"
 #include "token.h"
+#include "rules.h"
 
 Tree *create_tree(char *message, int rule, int child_count, Token *token)
 {

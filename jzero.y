@@ -17,36 +17,60 @@
 
 // Operators
 %token <token> INCREMENT DECREMENT AND NOT OR
+
 // Comparators
 %token <token> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
+
 // Types
 %token <token> BOOLEAN CHAR DOUBLE INT
+
 // Reserved words
 %token <token> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
+
 // Literals
 %token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
+
 %token <token> ID
 
-%token <token> '.' '=' '!' '<' '>' '-' '+' '*' '/' '%'
+// Character tokens
+%token <token> '-'
+%token <token> '!'
+%token <token> '.'
+%token <token> '*'
+%token <token> '/'
+%token <token> '%'
+%token <token> '+'
+%token <token> '<'
+%token <token> '='
+%token <token> '>'
 
 %type <token> FixedType
 %type <token> Literal
 %type <token> RelationOp
 %type <token> Visability
+
 %type <tree> AddSub
 %type <tree> AndExp
+%type <tree> AnyType
 %type <tree> Arg Args
-%type <tree> ArgDef ArgDefs
+%type <tree> ArgDef
+%type <tree> ArgDefs
 %type <tree> Block
-%type <tree> Class ClassBody ClassBodyDecl ClassBodyDecls
+%type <tree> Class
+%type <tree> ClassBody
+%type <tree> ClassBodyDecl
+%type <tree> ClassBodyDecls
 %type <tree> EqualExp
 %type <tree> Exp
 %type <tree> Field
 %type <tree> FieldAccess
-%type <tree> FieldDecl FieldDecls
+%type <tree> FieldDecl
+%type <tree> FieldDecls
 %type <tree> IfStmt
-%type <tree> IfThen IfThenElse IfThenChainElse
+%type <tree> IfThen
 %type <tree> IfThenChain
+%type <tree> IfThenChainElse
+%type <tree> IfThenElse
 %type <tree> Instantiate
 %type <tree> Method
 %type <tree> MethodCall
@@ -57,9 +81,11 @@
 %type <tree> QualifiedName
 %type <tree> Relation
 %type <tree> Return
-%type <tree> SingleType Type AnyType
-%type <tree> Statement Statements
+%type <tree> SingleType
+%type <tree> Statement
+%type <tree> Statements
 %type <tree> Step
+%type <tree> Type
 %type <tree> Unary
 %type <tree> Value
 
@@ -146,10 +172,11 @@ IfStmt: IfThen | IfThenElse | IfThenChain | IfThenChainElse
 
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
 IfThenChainElse: IfThenChain ELSE IfThenElse
-					{ $$=tree("If", R_IF4, $2, 2, $1, $3); };
+					{ $$=tree("If+ Else", R_IF4, $2, 2, $1, $3); };
 
+// FIXME If chains not working
 // if (condition) { ... } else if (condition) { ... } ...
-IfThenChain	: IfThen ELSE IfThenChain { $$=tree("If If", R_IF3, $2, 2, $1, $3); }
+IfThenChain	: IfThen ELSE IfThenChain { $$=tree("If+", R_IF3, $2, 2, $1, $3); }
 			| IfThen;
 
 // if (condition) { ... } else { ... }

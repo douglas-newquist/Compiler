@@ -2,11 +2,13 @@
 	#include "main.h"
 	#include "token.h"
 	#include "tree.h"
+
+	extern int yylex();
 %}
 
 %union{
-	struct tree *tree;
 	struct token *token;
+	struct tree*tree;
 }
 
 // Operators
@@ -21,75 +23,137 @@
 %token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
 %token <token> ID
 
-%type <tree> Literal
-%type <tree> NamesList
+%type <tree> Program
+%type <tree> Class ClassBody ClassBodyDecl ClassBodyDecls
+%type <token> Visability
+%type <token> FixedType
+%type <tree> SingleType ListType Type AnyType
+%type <tree> Value
+%type <tree> Exp
+%type <tree> ArgDef ArgsDef
+%type <tree> Arg Args
+%type <tree> Field
 %type <tree> VarDef VarsDef
-%type <tree> AnyType Type ArrayType SingleType SimpleType
-%type <tree> Name QualifiedName
-%type <tree> Exp Negated
-%type <tree> Value Create Creates Class ClassBody ClassBodyDef Program
-%type <tree> ParamsDef
-%type <tree> Method
+%type <tree> Method MethodHead
+%type <tree> Block
+%type <tree> Statement Statements
+%type <tree> IfThen IfThenElse IfThenElseIf IfElseIfElse
+%type <tree> Name
+%type <token> Literal
+%type <tree> Return
+%type <tree> Step
+%type <tree> Instantiate
 
-%type <token> '-'
-
-%start Program
 %%
-Program: Class { yylval.tree=$$; };
+Program: Class { program=$$; }
 
-Class: PUBLIC CLASS ID '{' ClassBody '}' { $$=tree("Class", 1000, NULL, 2, $3, $5); };
-ClassBody	: { $$=tree("Block", 1000, NULL, 0); }
-			| ClassBodyDef ClassBody { $$=tree("Chain", 1000, NULL, 2, $1, $2); };
-ClassBodyDef
-			: Method
-			| VarDef ';' { $$=$1; }
-			| VarsDef ';' { $$=$1; }
-			| Create;
+Name	: ID { $$=tree_token($1); }
+		| QualifiedName;
+QualifiedName: Name '.' ID;
 
-Creates: Create | Create Creates { $$=tree("Chain", 1000, NULL, 2, $1, $2); };
-Create: VarDef '=' Exp ';' { $$=tree("Assign", 1000, NULL, 2, $1, $3); };
+AnyType	: VOID { $$=tree_token($1); }
+		| Type;
 
-Method: PUBLIC STATIC AnyType ID '(' ParamsDef ')' '{' '}' { $$=tree("Method", 1000, NULL, 3, $3, $4, $6); }
-ParamsDef:{$$=NULL;}	| VarDef
-			| VarDef ',' ParamsDef { $$=tree("Params", 1000, NULL, 2, $1, $3); };
+Type: SingleType | ListType;
 
-NamesList	: Name
-			| Name ',' NamesList { $$=tree("Names", 1000, NULL, 2, $1, $3); }
+ListType: SingleType '[' ']' 	{ $$=tree("Array", 1865, NULL, 1, $1); }
+		| ListType '[' ']'		{ $$=tree("Array", 1114, NULL, 1, $1); };
 
-VarsDef: Type NamesList { $$=tree("Define Vars", 1000, NULL, 2, $1, $2); }
-VarDef: Type Name {  $$=tree("Define", 1000, NULL, 2, $1, $2); };
+SingleType	: FixedType
+			| Name;
 
-Value: Literal;
+FixedType: INT | DOUBLE | BOOLEAN | CHAR;
 
-Literal	: LITERAL_BOOL
-		| LITERAL_CHAR
+Value	: Literal		{ $$=tree_token($1); }
+		| Exp
+		| Instantiate;
+
+Literal	: LITERAL_INT
+		| LITERAL_BOOL
 		| LITERAL_STRING
-		| LITERAL_INT
+		| LITERAL_CHAR
 		| LITERAL_DOUBLE
 		| LITERAL_NULL;
 
-// Non-void or void type
-AnyType	: Type
-		| VOID ;
+FieldAccess: Value '.' ID;
 
-// Non-void type
-Type: SingleType
-	| ArrayType;
+Visability: PUBLIC;
 
-ArrayType: SingleType '[' ']'	{ $$=tree("Array", 1000, NULL, 1, $1); }
-		| ArrayType '[' ']'		{ $$=tree("Array", 1000, NULL, 1, $1); };
+ArgsDef	: ArgDef
+		| ArgsDef ',' ArgDef 	{ $$=tree("Args", 1829, NULL, 2, $1, $3); }
+		| 						{ $$=tree("Args", 1908, NULL, 0); };
+ArgDef: Type ID { $$=tree("Define", 1365, $2, 1, $1); };
+Args: Arg | Args ',' Arg;
+Arg: Value;
 
-SingleType	: SimpleType
-			| Name
+// public class name { ... }
+Class: Visability CLASS ID ClassBody { $$=tree("Class", 1196, $3, 1, $4); };
 
-SimpleType	: BOOLEAN
-			| CHAR
-			| INT
-			| DOUBLE;
+ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
+			| '{' '}' 				{ $$=tree("Block", 1990, NULL, 0); };
 
-Name: ID | QualifiedName;
+ClassBodyDecls	: ClassBodyDecl
+				| ClassBodyDecls ClassBodyDecl { $$=tree("Chain", 1049, NULL, 2, $1, $2); };
 
-QualifiedName: Name '.' ID { $$=tree("Access", 1000, NULL, 2, $1, $3); };
+ClassBodyDecl: Field | Method;
 
-Exp: Value | Negated | '(' Exp ')';
-Negated: '-' Exp { $$=tree("Negate", 1000, $1, 1, $2); };
+// type something = value;
+Field: Type VarsDef ';';
+VarsDef: VarDef | VarsDef ',' VarDef;
+VarDef: ID | VarDef '[' ']';
+
+
+// public static type name(args) { ... }
+Method: Visability STATIC AnyType ID '(' ArgsDef ')' Block
+		{ $$=tree("Method", 1825, NULL, 5, $1, $3, $4, $6, $8); };
+
+
+Block	: '{' Statements '}'{ $$=tree("Block", 1711, NULL, 1, $2); }
+		| '{' '}' 			{ $$=tree("Block", 1591, NULL, 0); };
+
+
+Statements: Statement | Statements Statement;
+Statement: ';' | Block | IfThen | IfThenElse | IfThenElseIf | IfElseIfElse | WhileStmt | For | BREAK ';' | Return | QualifiedName '(' Literal ')' ';';
+
+// if (condition) { ... } else if (condition) { ... } ... else { ... }
+IfElseIfElse: IfThenElseIf ELSE Block;
+// if (condition) { ... } else if (condition) { ... } ...
+IfThenElseIf: IfThen ELSE IfThen | IfThenElseIf ELSE IfThen;
+// if (condition) { ... } else { ... }
+IfThenElse: IfThen ELSE Block;
+// if (condition) { ... }
+IfThen: IF '(' Exp ')' Block
+
+// while (conditon) { ... }
+WhileStmt: WHILE '(' Exp ')' Block;
+
+Return	: RETURN Exp ';' 	{ $$=tree("Return", 1009, $1, 1, $2); }
+		| RETURN ';'		{ $$=tree("Return", 1100, $1, 0); };
+SwitchCase: CASE Value ':' Statements BREAK ';';
+Continue: CONTINUE ';';
+Default: DEFAULT ':';
+
+For: FOR '(' ForInit ';' ForCond ';' ForInc  ')' Block
+ForInit: VarDef | ;
+ForCond: Condition | ;
+ForInc: Statement | ;
+
+Instantiate: NEW Type '[' Value ']'
+
+Condition: BOOLEAN;
+
+Exp	: AddSub
+	| Value
+	| '(' Exp ')' { $$=$2; };
+
+Step: Name INCREMENT { $$=tree("++", 1131, $2, 1, $1); }
+	| Name DECREMENT { $$=tree("--", 1131, $2, 1, $1); };
+
+RelationOp: LESS_EQUAL | GREATER_EQUAL | '>' | '<';
+Relation: AddSub | Relation RelationOp AddSub;
+Assigment	: Name '=' Exp
+			| FieldAccess '=' Exp;
+
+AddSub: MultDiv | AddSub '+' MultDiv | AddSub '-' MultDiv;
+MultDiv: UnaryExp | MultDiv '*' UnaryExp | MultDiv '/' UnaryExp;
+UnaryExp: '-' UnaryExp | '!' UnaryExp ;

@@ -20,32 +20,12 @@ void free_all()
 /*
 	Reads the current file stored in yyin
 */
-void scan_tree_yyin()
+void read_yyin()
 {
 	line = 1, column = 1;
 
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
-
-	print_tree(yylval.tree, 0, "| ");
-}
-
-/*
-	Opens and reads from the given filename
-*/
-void scan_tree_file(char *filename)
-{
-	current_file = filename;
-	yyin = fopen(filename, "r");
-
-	if (yyin == 0)
-	{
-		printf("The file '%s' does not exist\n", filename);
-		exit(LEX_ERROR);
-	}
-
-	scan_tree_yyin();
-	fclose(yyin);
 }
 
 /*
@@ -78,25 +58,46 @@ char *fix_extension(char *filename)
 	exit(LEX_ERROR);
 }
 
+void read_file(char *filename)
+{
+	strcpy(current_file, filename);
+	fix_extension(current_file);
+
+	yyin = fopen(current_file, "r");
+
+	if (yyin == 0)
+	{
+		printf("The file '%s' does not exist\n", filename);
+		exit(LEX_ERROR);
+	}
+
+	read_yyin();
+
+	fclose(yyin);
+}
+
+void post_read()
+{
+	print_tokens(tokens);
+	print_tree(program, 0, "| ");
+}
+
 int main(int argc, char const *argv[])
 {
 	for (int i = 1; i < argc; i++)
 	{
-		char *filename = fix_extension((char *)argv[i]);
-
-		scan_tree_file(filename);
-
-		free_all();
+		read_file((char *)argv[i]);
+		post_read();
 	}
 
 	if (argc == 1)
 	{
 		yyin = stdin;
-		current_file = "stdin";
-		scan_tree_yyin();
-
-		free_all();
+		strcpy(current_file, "stdin");
+		post_read();
 	}
+
+	free_all();
 
 	return 0;
 }

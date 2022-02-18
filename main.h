@@ -10,13 +10,13 @@
 #define TRUE 1
 #define FALSE 0
 
-int line, column;
-char *current_file;
-FILE *yyin;
+#define FILE_LENGTH 256
 
+int line, column;
+char current_file[FILE_LENGTH];
+FILE *yyin;
 char *yytext;
-int yylex();
-int yyparse();
+Tree *program;
 
 void newline();
 void comment();

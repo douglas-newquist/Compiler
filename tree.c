@@ -68,21 +68,14 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 		   tree->count);
 
 	if (tree->token)
-		printf(" on line %d\n", tree->token->line);
+		printf(" %s on line %d\n", tree->token->text, tree->token->line);
 	else
 		printf("\n");
 
 	for (int i = 0; i < tree->count; i++)
 		print_tree(tree->children[i], indent_level + 1, indent);
 }
-/**
- * @brief Creates a tree with n children
- *
- * @param message
- * @param rule Syntax rule used for this tree
- * @param argc Number of trees being passed
- * @param ... Trees to be added as children
- */
+
 Tree *tree(char *message, int rule, Token *token, int argc, ...)
 {
 	Tree *tree = create_tree(message, rule, argc, token);

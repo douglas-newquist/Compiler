@@ -1,9 +1,11 @@
+%{
+    #include "main.h"
+    #include "jzero.tab.h"
+%}
+
 %option noyywrap
 %option noinput
 %option nounput
-    #include "main.h"
-    #include "jzero.tab.h"
-
 %%
 [ \t\r\f]+      whitespace();
 \n		        newline();
@@ -130,7 +132,7 @@ false           return token(LITERAL_BOOL);
 
 0|[1-9][0-9]{0,9}       return token(LITERAL_INT);
 0[lL]?|[1-9][0-9]*[lL]  return token(LITERAL_INT);
-[1-9][0-9]{10,}         yyerror("Integer too long");
+[1-9][0-9]{9}[0-9]+     yyerror("Integer too large");
 0[0-9]+                 yyerror("Octals not supported");
 0x[0-9a-fA-F]+          yyerror("Hexadecimals not supported");
 0b[01]+                 yyerror("Binary not supported");
@@ -156,7 +158,7 @@ false           return token(LITERAL_BOOL);
 '[^\\]'                 return token(LITERAL_CHAR);
 '\\.'                   return token(LITERAL_CHAR);
 '\\'                    yyerror("Escape character must be escaped");
-'[^']{0,2}              yyerror("Character was not closed");
+'..+|'                  yyerror("Character was not closed");
 '.*'                    yyerror("Invalid character");
 
 [a-zA-Z_][a-zA-Z0-9_]*  return token(ID);

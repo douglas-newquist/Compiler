@@ -1,6 +1,9 @@
 JavaSamples
 .vscode
 
+*.out
+*.output
+
 *.o
 *.zip
 *.yy.c

@@ -18,9 +18,21 @@ FILE *yyin;
 char *yytext;
 Tree *program;
 
+/**
+ * @brief Marks the current token as a newline
+ */
 void newline();
+
+/**
+ * @brief Marks the current token as a comment
+ */
 void comment();
+
+/**
+ * @brief Marks the current toke as whitespace
+ */
 void whitespace();
+
 int token(int category);
 
 void error(int code, char *message);

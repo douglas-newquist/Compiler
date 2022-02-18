@@ -41,6 +41,7 @@ Tree *create_tree(char *message, int rule, int child_count, Token *token)
 
 Tree *tree_token(Token *token)
 {
+	// FIXME Line number is broken here
 	return create_tree(token->text, token->category, 0, token);
 }
 

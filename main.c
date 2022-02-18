@@ -18,6 +18,7 @@ void free_all()
 
 	if (yyin && yyin != stdin)
 	{
+		// Close file if not closed for some reason
 		fclose(yyin);
 		yyin = NULL;
 	}

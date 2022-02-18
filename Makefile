@@ -9,13 +9,6 @@ CC=gcc -Wall
 
 all: ${TARGETS}
 
-print:
-	echo ${HEADERS}
-	echo
-	echo ${SOURCES}
-	echo
-	echo ${OBJECTS}
-
 force-all:
 	make clean
 	make all

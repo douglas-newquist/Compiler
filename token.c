@@ -90,6 +90,32 @@ void free_tokens()
 	tokens = free_list(tokens, free_list_token);
 }
 
+void print_token_value(Token *token)
+{
+	switch (token->category)
+	{
+	case LITERAL_DOUBLE:
+		printf("%f", token->dval);
+		break;
+
+	case LITERAL_INT:
+		printf("%d", token->ival);
+		break;
+
+	case LITERAL_BOOL:
+		printf("%d", token->bval);
+		break;
+
+	case LITERAL_STRING:
+		printf("%s", token->sval);
+		break;
+
+	case LITERAL_CHAR:
+		printf("%c", token->cval);
+		break;
+	}
+}
+
 void print_token(Token *token)
 {
 	printf("%d:%d\t%d\t%s\t\t%s\t",
@@ -99,31 +125,9 @@ void print_token(Token *token)
 		   token->text,
 		   token->filename);
 
-	switch (token->category)
-	{
-	case LITERAL_DOUBLE:
-		printf("%f\n", token->dval);
-		break;
+	print_token_value(token);
 
-	case LITERAL_INT:
-		printf("%d\n", token->ival);
-		break;
-
-	case LITERAL_BOOL:
-		printf("%d\n", token->bval);
-		break;
-
-	case LITERAL_STRING:
-		printf("%s\n", token->sval);
-		break;
-
-	case LITERAL_CHAR:
-		printf("%c\n", token->cval);
-		break;
-
-	default:
-		printf("\n");
-	}
+	printf("\n");
 }
 
 void print_tokens(Tokens *tokens)

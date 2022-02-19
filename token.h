@@ -46,6 +46,10 @@ void free_token(Token *token);
 */
 void free_tokens();
 
+/**
+ * @brief Prints the parsed version of this token's text
+ */
+void print_token_value(Token *token);
 void print_token(Token *token);
 void print_tokens(Tokens *tokens);
 

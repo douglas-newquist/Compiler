@@ -51,8 +51,6 @@
 %type <token> RelationOp
 %type <token> Visability
 
-%type <tree> AddSub
-%type <tree> AndExp
 %type <tree> AnyType
 %type <tree> Arg Args
 %type <tree> ArgDef
@@ -62,8 +60,17 @@
 %type <tree> ClassBody
 %type <tree> ClassBodyDecl
 %type <tree> ClassBodyDecls
-%type <tree> EqualExp
 %type <tree> Exp
+%type <tree> Exp01
+%type <tree> Exp03
+%type <tree> Exp04
+%type <tree> Exp08
+%type <tree> Exp09
+%type <tree> Exp11
+%type <tree> Exp12
+%type <tree> Exp13
+%type <tree> Exp14
+%type <tree> Exp15
 %type <tree> Field
 %type <tree> FieldAccess
 %type <tree> FieldDecl
@@ -76,24 +83,19 @@
 %type <tree> Instantiate
 %type <tree> Method
 %type <tree> MethodCall
-%type <tree> MultDiv
 %type <tree> Name
-%type <tree> OrExp
 %type <tree> Program
 %type <tree> QualifiedName
-%type <tree> Relation
 %type <tree> Return
 %type <tree> SingleType
 %type <tree> Statement
 %type <tree> Statements
-%type <tree> Step
 %type <tree> Switch
 %type <tree> SwitchBlock
 %type <tree> SwitchCase
 %type <tree> SwitchCaseBlock
 %type <tree> SwitchCases
 %type <tree> Type
-%type <tree> Unary
 %type <tree> Value
 
 %%
@@ -178,7 +180,7 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| Return
 			| MethodCall ';'
 			| Field
-			| Step ';';
+			| Exp ';';
 
 MethodCall: Name '(' Args ')' { $$=tree("Call", R_CALL1, NULL, 2, $1, $3); };
 
@@ -220,42 +222,49 @@ Instantiate	: NEW Type '[' Exp ']' { $$=tree("New", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
 Value	: Literal 		{ $$=tree_token($1); }
-		| Instantiate
 		| MethodCall
 		| Name
 		| FieldAccess
 		| '(' Exp ')'	{ $$=$2; };
 
-Exp: Value | OrExp;
+Exp: Value | Exp01;
 
-Step: Name INCREMENT { $$=tree("++", 1000, $2, 1, $1); }
-	| Name DECREMENT { $$=tree("--", 1000, $2, 1, $1); };
+Exp15	: Name INCREMENT { $$=tree("++", 1000, $2, 1, $1); }
+		| Name DECREMENT { $$=tree("--", 1000, $2, 1, $1); }
+		| Value;
 
-OrExp	: OrExp OR AndExp { $$=tree("Or", R_AND, $2, 2, $1, $3); };
-		| AndExp
+Exp14	: '-' Exp14 { $$=tree("Negate", '-', $1, 1, $2); }
+		| '!' Exp14 { $$=tree("Not", '!', $1, 1, $2); }
+		| Exp15;
 
-AndExp	: AndExp AND EqualExp { $$=tree("And", R_AND, $2, 2, $1, $3); };
-		| EqualExp
+Exp13	: Instantiate
+		| '(' Type ')' Name { $$=tree("Cast", 1000, NULL, 2, $2, $4); }
+		| Exp14;
 
-EqualExp: EqualExp EQUALS Relation  	{ $$=tree("Equal", R_EQUALS, $2, 2, $1, $3); }
-		| EqualExp NOT_EQUAL Relation 	{ $$=tree("Not Equal", R_NOT_EQUAL, $2, 2, $1, $3); }
-		| Relation;
+Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", '*', $2, 2, $1, $3); }
+		| Exp12 '/' Exp14 { $$=tree("Div", '/', $2, 2, $1, $3); }
+		| Exp12 '%' Exp14 { $$=tree("Mod", '%', $2, 2, $1, $3); }
+		| Exp13;
+
+Exp11	: Exp11 '+' Exp12 { $$=tree("Add", '+', $2, 2, $1, $3); }
+		| Exp11 '-' Exp12 { $$=tree("Sub", '-', $2, 2, $1, $3); }
+		| Exp12;
+
+Exp09	: Exp09 RelationOp Exp11
+		{ $$=tree("Compare", $2->category, $2, 2, $1, $3); }
+		| Name INSTANCEOF Type { $$=tree("Is", 1000, $2, 2, $1, $3); }
+		| Exp11;
+
+Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_EQUALS, $2, 2, $1, $3); }
+		| Exp08 NOT_EQUAL Exp09 { $$=tree("Not Equal", R_NOT_EQUAL, $2, 2, $1, $3); }
+		| Exp09;
+
+Exp04	: Exp04 AND Exp08 { $$=tree("And", R_AND, $2, 2, $1, $3); };
+		| Exp08;
+
+Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_AND, $2, 2, $1, $3); }
+		| Exp04;
+
+Exp01	: Exp03;
 
 RelationOp: '<' | '>' | LESS_EQUAL | GREATER_EQUAL;
-
-Relation: Relation RelationOp AddSub
-		{ $$=tree("Compare", $2->category, $2, 2, $1, $3); }
-		| AddSub;
-
-AddSub	: AddSub '+' MultDiv { $$=tree("Add", '+', $2, 2, $1, $3); }
-		| AddSub '-' MultDiv { $$=tree("Sub", '-', $2, 2, $1, $3); }
-		| MultDiv;
-
-MultDiv	: MultDiv '*' Unary { $$=tree("Mult", '*', $2, 2, $1, $3); }
-		| MultDiv '/' Unary { $$=tree("Div", '/', $2, 2, $1, $3); }
-		| MultDiv '%' Unary { $$=tree("Mod", '%', $2, 2, $1, $3); }
-		| Unary;
-
-Unary	: '-' Unary { $$=tree("Negate", '-', $1, 1, $2); }
-		| '!' Unary { $$=tree("Not", '!', $1, 1, $2); }
-		| Value;

@@ -7,8 +7,9 @@
 #include "token.h"
 #include "tree.h"
 
-#if (DEBUG & 2)
+#if DEBUG
 #define YYDEBUG 1
+int yydebug;
 #endif
 
 #define TRUE 1

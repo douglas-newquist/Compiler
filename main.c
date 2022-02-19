@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "errors.h"
+#include "flags.h"
 #include "jzero.tab.h"
 #include "main.h"
 #include "token.h"
@@ -86,29 +87,41 @@ void read_file(char *filename)
 
 void post_read()
 {
-#if DEBUG
-	print_tokens(tokens);
-#endif
-	print_tree(program, 0, "| ");
+	if (options & TOKENS_FLAG)
+		print_tokens(tokens);
+
+	if (options & TREE_FLAG)
+		print_tree(program, 0, "| ");
 }
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
-	// s
-#if (DEBUG & 2)
-	yydebug = 1;
-#endif
+	options = TREE_FLAG;
 
 	for (int i = 1; i < argc; i++)
 	{
-		read_file((char *)argv[i]);
-		post_read();
+		switch (flag(argv[i]))
+		{
+#if DEBUG
+		case BISON_FLAG:
+			yydebug = 1;
+			break;
+#endif
+
+		case 0:
+			read_file((char *)argv[i]);
+			post_read();
+			break;
+		}
 	}
+
+	argc -= flag_count;
 
 	if (argc == 1)
 	{
 		yyin = stdin;
 		strcpy(current_file, "stdin");
+		read_yyin();
 		post_read();
 	}
 

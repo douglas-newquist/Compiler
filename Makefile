@@ -16,9 +16,6 @@ force-all:
 debug: DEBUG = -DDEBUG
 debug: jzero.output ${TARGETS}
 
-debug-bison: DEBUG = -DDEBUG=2
-debug-bison: jzero.output ${TARGETS}
-
 %.tab.c %.tab.h: %.y
 	bison -d $<
 
@@ -40,4 +37,4 @@ hw3_douglas_newquist.zip: ${ZIP_TARGETS}
 	zip $@ -r ${ZIP_TARGETS}
 
 clean:
-	rm -rf ${TARGETS} *.o *.yy.* *.tab.*
+	rm -rf ${TARGETS} *.o *.yy.* *.tab.* *.output

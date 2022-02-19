@@ -131,25 +131,25 @@ null            return token(LITERAL_NULL);
 true            return token(LITERAL_BOOL);
 false           return token(LITERAL_BOOL);
 
-0|-?[1-9][0-9]{0,9}       return token(LITERAL_INT);
-0[lL]?|[1-9][0-9]*[lL]  return token(LITERAL_INT);
-[1-9][0-9]{9}[0-9]+     error(LEX_ERROR, "Integer too large");
-0[0-9]+                 error(LEX_ERROR, "Octals not supported");
-0x[0-9a-fA-F]+          error(LEX_ERROR, "Hexadecimals not supported");
-0b[01]+                 error(LEX_ERROR, "Binary not supported");
+0|-?[1-9][0-9]{0,9}         return token(LITERAL_INT);
+0[lL]?|-?[1-9][0-9]*[lL]    return token(LITERAL_INT);
+[1-9][0-9]{9}[0-9]+         error(LEX_ERROR, "Integer too large");
+0[0-9]+                     error(LEX_ERROR, "Octals not supported");
+0x[0-9a-fA-F]+              error(LEX_ERROR, "Hexadecimals not supported");
+0b[01]+                     error(LEX_ERROR, "Binary not supported");
 
-[0-9]+\.?[0-9]*[fF]     return token(LITERAL_DOUBLE);
-[0-9]*\.[0-9]+[fF]      return token(LITERAL_DOUBLE);
-[0-9]+\.?[0-9]*[dD]     return token(LITERAL_DOUBLE);
-[0-9]*\.[0-9]+[dD]      return token(LITERAL_DOUBLE);
+-?[0-9]+\.?[0-9]*[fF]   return token(LITERAL_DOUBLE);
+-?[0-9]*\.[0-9]+[fF]    return token(LITERAL_DOUBLE);
+-?[0-9]+\.?[0-9]*[dD]   return token(LITERAL_DOUBLE);
+-?[0-9]*\.[0-9]+[dD]    return token(LITERAL_DOUBLE);
 [0-9]+\.\.+[0-9]*[fF]   error(LEX_ERROR, "Too many dots in float");
 [0-9]+\.[0-9]*          error(LEX_ERROR, "Floats must end with f");
 [0-9]*\.[0-9]+          error(LEX_ERROR, "Floats must end with f");
 
-[0-9]+[eE][+-]?[0-9]+[fF] return token(LITERAL_DOUBLE);
-[0-9]+[eE][+-]?[0-9]+   error(LEX_ERROR, "Floats must end with f");
-[0-9]+[eE][+-][+-]+     error(LEX_ERROR, "Too many signs");
-[0-9]+[eE]              error(LEX_ERROR, "Exponent missing");
+-?[0-9]+[eE][+-]?[0-9]+[fF] return token(LITERAL_DOUBLE);
+[0-9]+[eE][+-]?[0-9]+       error(LEX_ERROR, "Floats must end with f");
+[0-9]+[eE][+-][+-]+         error(LEX_ERROR, "Too many signs");
+[0-9]+[eE]                  error(LEX_ERROR, "Exponent missing");
 
 [0-9]+[0-9a-zA-Z]*      error(LEX_ERROR, "Unknown number format");
 

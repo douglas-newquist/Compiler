@@ -157,9 +157,7 @@ void whitespace()
 
 int token(int category)
 {
-	yylval.token = create_token(category);
-	yylval.tree = tree_token(yylval.token);
-	// FIXME Line number broken
+	yylval.tree = tree_token(create_token(category));
 	column += strlen(yytext);
 	return category;
 }

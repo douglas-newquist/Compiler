@@ -44,7 +44,7 @@ void print_trees(Tree *tree);
  * @param argc Number of trees being passed
  * @param ... Trees to be added as children
  */
-Tree *tree(char *message, int rule, Token *token, int argc, ...);
+Tree *tree(char *message, int rule, Tree *leaf, int argc, ...);
 
 /**
  * @brief Frees all loaded trees

@@ -8,11 +8,13 @@
 #include "main.h"
 #include "errors.h"
 
+#define BUFFER 128
+
 int parse_int(char *text)
 {
 	int a = atoi(text);
 
-	char parsed[64];
+	char parsed[BUFFER];
 	int b;
 	sprintf(parsed, "%d", a);
 	sscanf(parsed, "%d", &b);
@@ -31,7 +33,7 @@ double parse_double(char *text)
 {
 	double a = atof(text);
 
-	char parsed[64];
+	char parsed[BUFFER];
 	double b;
 	sprintf(parsed, "%lf", a);
 	sscanf(parsed, "%lf", &b);

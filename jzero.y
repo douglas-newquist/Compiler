@@ -11,45 +11,44 @@
 %}
 
 %union{
-	struct token *token;
-	struct tree*tree;
+	struct tree* tree;
 }
 
 // Operators
-%token <token> INCREMENT DECREMENT AND NOT OR
+%token <tree> INCREMENT DECREMENT AND NOT OR
 
 // Comparators
-%token <token> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
+%token <tree> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
 
 // Types
-%token <token> BOOLEAN CHAR DOUBLE INT
+%token <tree> BOOLEAN CHAR DOUBLE INT
 
 // Reserved words
-%token <token> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
+%token <tree> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
 
 // Literals
-%token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
+%token <tree> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
 
 // Generic token
-%token <token> ID
+%token <tree> ID
 
 // Character tokens
-%token <token> '-'
-%token <token> '!'
-%token <token> '.'
-%token <token> '*'
-%token <token> '/'
-%token <token> '%'
-%token <token> '+'
-%token <token> '<'
-%token <token> '='
-%token <token> '>'
+%token <tree> '-'
+%token <tree> '!'
+%token <tree> '.'
+%token <tree> '*'
+%token <tree> '/'
+%token <tree> '%'
+%token <tree> '+'
+%token <tree> '<'
+%token <tree> '='
+%token <tree> '>'
 
 // Non-terminal tokens
-%type <token> FixedType
-%type <token> Literal
-%type <token> RelationOp
-%type <token> Visability
+%type <tree> FixedType
+%type <tree> Literal
+%type <tree> RelationOp
+%type <tree> Visability
 
 %type <tree> AnyType
 %type <tree> Arg Args
@@ -102,18 +101,18 @@
 
 Program: Class { program=$$; }
 
-Name	: ID { $$=tree_token($1); }
+Name	: ID
 		| QualifiedName;
 
 QualifiedName: Name '.' ID { $$=tree("Name", 1000, $2, 2, $1, $3); };
 
-AnyType	: VOID { $$=tree_token($1); }
+AnyType	: VOID
 		| Type;
 
 Type: SingleType
 	| Type '[' ']' { $$=tree("Array", R_ARRAY1, NULL, 1, $1); };
 
-SingleType	: FixedType { $$=tree_token($1); }
+SingleType	: FixedType
 			| Name;
 
 FixedType: INT | DOUBLE | BOOLEAN | CHAR;
@@ -158,7 +157,7 @@ Field: Type FieldDecls ';' { $$=tree("Field", R_FIELD1, NULL, 2, $1, $2); };
 FieldDecls	: FieldDecl ',' FieldDecls { $$=tree("Names", R_FIELD3, NULL, 2, $1, $3); }
 			| FieldDecl;
 
-FieldDecl	: ID			{ $$=tree_token($1); }
+FieldDecl	: ID
 			| ID '=' Exp	{ $$=tree("Let", R_FIELD2, $1, 1, $3); };
 
 // public static type name(args) { ... }
@@ -221,7 +220,7 @@ Return	: RETURN Exp ';' 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
 Instantiate	: NEW Type '[' Exp ']' { $$=tree("New", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
-Value	: Literal 		{ $$=tree_token($1); }
+Value	: Literal
 		| MethodCall
 		| Name
 		| FieldAccess
@@ -251,7 +250,7 @@ Exp11	: Exp11 '+' Exp12 { $$=tree("Add", '+', $2, 2, $1, $3); }
 		| Exp12;
 
 Exp09	: Exp09 RelationOp Exp11
-		{ $$=tree("Compare", $2->category, $2, 2, $1, $3); }
+		{ $$=tree("Compare", $2->token->category, $2, 2, $1, $3); }
 		| Name INSTANCEOF Type { $$=tree("Is", 1000, $2, 2, $1, $3); }
 		| Exp11;
 

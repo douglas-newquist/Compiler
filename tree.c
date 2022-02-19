@@ -17,7 +17,7 @@
  * @param child_count Number of child trees
  * @param token
  */
-Tree *create_tree(char *message, int rule, int child_count, Token *token)
+Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 {
 	Tree *tree = (Tree *)malloc(sizeof(Tree));
 
@@ -25,7 +25,7 @@ Tree *create_tree(char *message, int rule, int child_count, Token *token)
 	tree->rule = rule;
 	tree->name = message;
 	tree->count = child_count;
-	tree->token = token;
+	tree->token = leaf;
 
 	// Create array for children if needed
 	if (child_count > 0)
@@ -41,8 +41,7 @@ Tree *create_tree(char *message, int rule, int child_count, Token *token)
 
 Tree *tree_token(Token *token)
 {
-	// FIXME Line number is broken here
-	return create_tree(token->text, token->category, 0, token);
+	return create_tree("Token", token->category, 0, token);
 }
 
 /**
@@ -98,7 +97,10 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 
 	// If a token is present print its text
 	if (tree->token)
-		printf(" %s", tree->token->text);
+	{
+		printf(" %s ", tree->token->text);
+		print_token_value(tree->token);
+	}
 
 	printf("\n");
 
@@ -122,9 +124,14 @@ void print_trees(Tree *tree)
  * @param argc Number of trees being passed
  * @param ... Trees to be added as children
  */
-Tree *tree(char *message, int rule, Token *token, int argc, ...)
+Tree *tree(char *message, int rule, Tree *leaf, int argc, ...)
 {
-	Tree *tree = create_tree(message, rule, argc, token);
+	Tree *tree;
+
+	if (leaf)
+		tree = create_tree(message, rule, argc, leaf->token);
+	else
+		tree = create_tree(message, rule, argc, NULL);
 
 	// Begin array of input trees
 	va_list args;

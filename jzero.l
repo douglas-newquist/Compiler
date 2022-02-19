@@ -48,12 +48,12 @@
 "?:"            error(LEX_ERROR, "Illegal operator");
 ref             error(LEX_ERROR, "Illegal operator");
 
-"{"             return token('{');
-"}"             return token('}');
-"("             return token('(');
-")"             return token(')');
-"["             return token('[');
-"]"             return token(']');
+\{             return token('{');
+\}             return token('}');
+\(             return token('(');
+\)             return token(')');
+\[             return token('[');
+\]             return token(']');
 ";"             return token(';');
 ":"             return token(':');
 ","             return token(',');
@@ -147,6 +147,7 @@ false           return token(LITERAL_BOOL);
 [0-9]*\.[0-9]+          error(LEX_ERROR, "Floats must end with f");
 
 -?[0-9]+[eE][+-]?[0-9]+[fF] return token(LITERAL_DOUBLE);
+-?[0-9]+[eE][+-]?[0-9]+[dD] return token(LITERAL_DOUBLE);
 [0-9]+[eE][+-]?[0-9]+       error(LEX_ERROR, "Floats must end with f");
 [0-9]+[eE][+-][+-]+         error(LEX_ERROR, "Too many signs");
 [0-9]+[eE]                  error(LEX_ERROR, "Exponent missing");
@@ -165,4 +166,4 @@ false           return token(LITERAL_BOOL);
 
 [a-zA-Z_][a-zA-Z0-9_]*  return token(ID);
 
-.		        error(LEX_ERROR, "Unknown token");
+.       		        error(LEX_ERROR, "Unknown token");

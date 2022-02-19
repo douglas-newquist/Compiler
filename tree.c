@@ -107,6 +107,13 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 		print_tree(tree->children[i], indent_level + 1, indent);
 }
 
+void print_trees(Tree *tree)
+{
+	printf("--------------------------------------------------------------\n");
+	print_tree(tree, 0, "| ");
+	printf("--------------------------------------------------------------\n");
+}
+
 /**
  * @brief Creates a tree with n children
  *

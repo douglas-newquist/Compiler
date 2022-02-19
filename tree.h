@@ -34,6 +34,8 @@ Tree *tree_token(Token *token);
  */
 void print_tree(Tree *tree, int indent_level, char *indent);
 
+void print_trees(Tree *tree);
+
 /**
  * @brief Creates a tree with n children
  *

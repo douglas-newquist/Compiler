@@ -198,19 +198,19 @@ SwitchCase	: CASE Literal ':' SwitchCaseBlock { $$=tree("Case", 1000, $1, 2, $2,
 SwitchCaseBlock	: Statements BREAK ';' 	{ $$=$1; }
 				| Statements Return		{ $$=tree("Return Case", 1000, NULL, 2, $1, $2); }
 
-IfStmt: IfThen | IfThenElse ;
+IfStmt: IfThen | IfThenElse | IfThenChain ;
 
+// FIXME If chain else not working
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
-IfThenChainElse: IfThenChain ELSE IfThenElse
-					{ $$=tree("If+ Else", R_IF4, $2, 2, $1, $3); };
+IfThenChainElse	: IfThenChain ELSE Block
+				{ $$=tree("If+ Else", R_IF4, $2, 2, $1, $3); };
 
-// FIXME If chains not working
 // if (condition) { ... } else if (condition) { ... } ...
-IfThenChain	: IfThen ELSE IfThenChain { $$=tree("If+", R_IF3, $2, 2, $1, $3); }
-			| IfThen;
+IfThenChain	: IfThen ELSE IfThen 		{ $$=tree("If+", R_IF3, $2, 2, $1, $3); }
+			| IfThenChain ELSE IfThen	{ $$=tree("If+", R_IF3, $2, 2, $1, $3); };
 
 // if (condition) { ... } else { ... }
-IfThenElse: IF '(' Exp ')' Block ELSE Block { $$=tree("If Else", R_IF2, $1, 3, $3, $5, $7); };
+IfThenElse: IfThen ELSE Block { $$=tree("If Else", R_IF2, $2, 2, $1, $3); };
 
 // if (condition) { ... }
 IfThen: IF '(' Exp ')' Block { $$=tree("If", R_IF1, $1, 2, $3, $5); };

@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main.h"
-#include "jzero.tab.h"
-#include "token.h"
 #include "errors.h"
+#include "jzero.tab.h"
+#include "main.h"
+#include "token.h"
 #include "tree.h"
 
 void free_all()
@@ -86,12 +86,19 @@ void read_file(char *filename)
 
 void post_read()
 {
+#if DEBUG
 	print_tokens(tokens);
+#endif
 	print_tree(program, 0, "| ");
 }
 
 int main(int argc, char const *argv[])
 {
+	// s
+#if (DEBUG & 2)
+	yydebug = 1;
+#endif
+
 	for (int i = 1; i < argc; i++)
 	{
 		read_file((char *)argv[i]);

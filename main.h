@@ -7,6 +7,10 @@
 #include "token.h"
 #include "tree.h"
 
+#if (DEBUG & 2)
+#define YYDEBUG 1
+#endif
+
 #define TRUE 1
 #define FALSE 0
 

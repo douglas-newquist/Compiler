@@ -30,6 +30,7 @@
 // Literals
 %token <token> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
 
+// Generic token
 %token <token> ID
 
 // Character tokens
@@ -44,6 +45,7 @@
 %token <token> '='
 %token <token> '>'
 
+// Non-terminal tokens
 %type <token> FixedType
 %type <token> Literal
 %type <token> RelationOp
@@ -85,14 +87,14 @@
 %type <tree> Statement
 %type <tree> Statements
 %type <tree> Step
-%type <tree> Type
-%type <tree> Unary
-%type <tree> Value
 %type <tree> Switch
 %type <tree> SwitchBlock
 %type <tree> SwitchCase
-%type <tree> SwitchCases
 %type <tree> SwitchCaseBlock
+%type <tree> SwitchCases
+%type <tree> Type
+%type <tree> Unary
+%type <tree> Value
 
 %%
 

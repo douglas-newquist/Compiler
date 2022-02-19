@@ -13,7 +13,11 @@ force-all:
 	make clean
 	make all
 
-debug: jzero.output
+debug: DEBUG = -DDEBUG
+debug: jzero.output ${TARGETS}
+
+debug-bison: DEBUG = -DDEBUG=2
+debug-bison: jzero.output ${TARGETS}
 
 %.tab.c %.tab.h: %.y
 	bison -d $<
@@ -25,10 +29,10 @@ debug: jzero.output
 	flex -o $@ $<
 
 %.o: %.c ${HEADERS}
-	${CC} -c $<
+	${CC} ${DEBUG} -c $<
 
 j0: ${OBJECTS} ${HEADERS}
-	${CC} -o $@ ${OBJECTS}
+	${CC} ${DEBUG} -o $@ ${OBJECTS}
 
 hw3_douglas_newquist.zip: ${ZIP_TARGETS}
 	make clean

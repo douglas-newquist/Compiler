@@ -1,6 +1,7 @@
 %{
     #include "main.h"
     #include "jzero.tab.h"
+    #include "errors.h"
 %}
 
 %option noyywrap
@@ -30,22 +31,22 @@
 ">"             return token('<');
 ">="            return token(GREATER_EQUAL);
 
-"~"             yyerror("Illegal operator");
-"<<"            yyerror("Illegal operator");
-">>"            yyerror("Illegal operator");
-">>|"           yyerror("Illegal operator");
-"&="            yyerror("Illegal operator");
-"|="            yyerror("Illegal operator");
-"^="            yyerror("Illegal operator");
-">>="           yyerror("Illegal operator");
-"<<="           yyerror("Illegal operator");
-"&"             yyerror("Illegal operator");
-"|"             yyerror("Illegal operator");
-"^"             yyerror("Illegal operator");
-"-+"            yyerror("Illegal operator");
-"?"             yyerror("Illegal operator");
-"?:"            yyerror("Illegal operator");
-ref             yyerror("Illegal operator");
+"~"             error(LEX_ERROR, "Illegal operator");
+"<<"            error(LEX_ERROR, "Illegal operator");
+">>"            error(LEX_ERROR, "Illegal operator");
+">>|"           error(LEX_ERROR, "Illegal operator");
+"&="            error(LEX_ERROR, "Illegal operator");
+"|="            error(LEX_ERROR, "Illegal operator");
+"^="            error(LEX_ERROR, "Illegal operator");
+">>="           error(LEX_ERROR, "Illegal operator");
+"<<="           error(LEX_ERROR, "Illegal operator");
+"&"             error(LEX_ERROR, "Illegal operator");
+"|"             error(LEX_ERROR, "Illegal operator");
+"^"             error(LEX_ERROR, "Illegal operator");
+"-+"            error(LEX_ERROR, "Illegal operator");
+"?"             error(LEX_ERROR, "Illegal operator");
+"?:"            error(LEX_ERROR, "Illegal operator");
+ref             error(LEX_ERROR, "Illegal operator");
 
 "{"             return token('{');
 "}"             return token('}');
@@ -57,11 +58,11 @@ ref             yyerror("Illegal operator");
 ":"             return token(':');
 ","             return token(',');
 
-"#"             yyerror("Illegal character");
-"$"             yyerror("Illegal character");
-"@"             yyerror("Illegal character");
-"\\"            yyerror("Illegal character");
-"`"             yyerror("Illegal character");
+"#"             error(LEX_ERROR, "Illegal character");
+"$"             error(LEX_ERROR, "Illegal character");
+"@"             error(LEX_ERROR, "Illegal character");
+"\\"            error(LEX_ERROR, "Illegal character");
+"`"             error(LEX_ERROR, "Illegal character");
 
 boolean         return token(BOOLEAN);
 char            return token(CHAR);
@@ -87,81 +88,81 @@ switch          return token(SWITCH);
 void            return token(VOID);
 while           return token(WHILE);
 
-abstract        yyerror("Illegal reserved word");
-assert          yyerror("Illegal reserved word");
-byte            yyerror("Illegal reserved word");
-catch           yyerror("Illegal reserved word");
-const           yyerror("Illegal reserved word");
-do              yyerror("Illegal reserved word");
-enum            yyerror("Illegal reserved word");
-exports         yyerror("Illegal reserved word");
-extends         yyerror("Illegal reserved word");
-final           yyerror("Illegal reserved word");
-finally         yyerror("Illegal reserved word");
-goto            yyerror("Illegal reserved word");
-implements      yyerror("Illegal reserved word");
-import          yyerror("Illegal reserved word");
-interface       yyerror("Illegal reserved word");
-module          yyerror("Illegal reserved word");
-native          yyerror("Illegal reserved word");
-package         yyerror("Illegal reserved word");
-private         yyerror("Illegal reserved word");
-protected       yyerror("Illegal reserved word");
-requires        yyerror("Illegal reserved word");
-short           yyerror("Illegal reserved word");
-strictfp        yyerror("Illegal reserved word");
-super           yyerror("Illegal reserved word");
-synchronized    yyerror("Illegal reserved word");
-this            yyerror("Illegal reserved word");
-throw           yyerror("Illegal reserved word");
-throws          yyerror("Illegal reserved word");
-transient       yyerror("Illegal reserved word");
-try             yyerror("Illegal reserved word");
-var             yyerror("Illegal reserved word");
-volatile        yyerror("Illegal reserved word");
+abstract        error(LEX_ERROR, "Illegal reserved word");
+assert          error(LEX_ERROR, "Illegal reserved word");
+byte            error(LEX_ERROR, "Illegal reserved word");
+catch           error(LEX_ERROR, "Illegal reserved word");
+const           error(LEX_ERROR, "Illegal reserved word");
+do              error(LEX_ERROR, "Illegal reserved word");
+enum            error(LEX_ERROR, "Illegal reserved word");
+exports         error(LEX_ERROR, "Illegal reserved word");
+extends         error(LEX_ERROR, "Illegal reserved word");
+final           error(LEX_ERROR, "Illegal reserved word");
+finally         error(LEX_ERROR, "Illegal reserved word");
+goto            error(LEX_ERROR, "Illegal reserved word");
+implements      error(LEX_ERROR, "Illegal reserved word");
+import          error(LEX_ERROR, "Illegal reserved word");
+interface       error(LEX_ERROR, "Illegal reserved word");
+module          error(LEX_ERROR, "Illegal reserved word");
+native          error(LEX_ERROR, "Illegal reserved word");
+package         error(LEX_ERROR, "Illegal reserved word");
+private         error(LEX_ERROR, "Illegal reserved word");
+protected       error(LEX_ERROR, "Illegal reserved word");
+requires        error(LEX_ERROR, "Illegal reserved word");
+short           error(LEX_ERROR, "Illegal reserved word");
+strictfp        error(LEX_ERROR, "Illegal reserved word");
+super           error(LEX_ERROR, "Illegal reserved word");
+synchronized    error(LEX_ERROR, "Illegal reserved word");
+this            error(LEX_ERROR, "Illegal reserved word");
+throw           error(LEX_ERROR, "Illegal reserved word");
+throws          error(LEX_ERROR, "Illegal reserved word");
+transient       error(LEX_ERROR, "Illegal reserved word");
+try             error(LEX_ERROR, "Illegal reserved word");
+var             error(LEX_ERROR, "Illegal reserved word");
+volatile        error(LEX_ERROR, "Illegal reserved word");
 
 "//".*$                 comment();
 "/*"([^*]|\*[^/])*"*/"  comment();
 ^#.*$                   comment();
-"/*"([^*]|\*[^/])*      yyerror("Unterminated multiline comment");
+"/*"([^*]|\*[^/])*      error(LEX_ERROR, "Unterminated multiline comment");
 
 null            return token(LITERAL_NULL);
 
 true            return token(LITERAL_BOOL);
 false           return token(LITERAL_BOOL);
 
-0|[1-9][0-9]{0,9}       return token(LITERAL_INT);
+0|-?[1-9][0-9]{0,9}       return token(LITERAL_INT);
 0[lL]?|[1-9][0-9]*[lL]  return token(LITERAL_INT);
-[1-9][0-9]{9}[0-9]+     yyerror("Integer too large");
-0[0-9]+                 yyerror("Octals not supported");
-0x[0-9a-fA-F]+          yyerror("Hexadecimals not supported");
-0b[01]+                 yyerror("Binary not supported");
+[1-9][0-9]{9}[0-9]+     error(LEX_ERROR, "Integer too large");
+0[0-9]+                 error(LEX_ERROR, "Octals not supported");
+0x[0-9a-fA-F]+          error(LEX_ERROR, "Hexadecimals not supported");
+0b[01]+                 error(LEX_ERROR, "Binary not supported");
 
 [0-9]+\.?[0-9]*[fF]     return token(LITERAL_DOUBLE);
 [0-9]*\.[0-9]+[fF]      return token(LITERAL_DOUBLE);
 [0-9]+\.?[0-9]*[dD]     return token(LITERAL_DOUBLE);
 [0-9]*\.[0-9]+[dD]      return token(LITERAL_DOUBLE);
-[0-9]+\.\.+[0-9]*[fF]   yyerror("Too many dots in float");
-[0-9]+\.[0-9]*          yyerror("Floats must end with f");
-[0-9]*\.[0-9]+          yyerror("Floats must end with f");
+[0-9]+\.\.+[0-9]*[fF]   error(LEX_ERROR, "Too many dots in float");
+[0-9]+\.[0-9]*          error(LEX_ERROR, "Floats must end with f");
+[0-9]*\.[0-9]+          error(LEX_ERROR, "Floats must end with f");
 
 [0-9]+[eE][+-]?[0-9]+[fF] return token(LITERAL_DOUBLE);
-[0-9]+[eE][+-]?[0-9]+   yyerror("Floats must end with f");
-[0-9]+[eE][+-][+-]+     yyerror("Too many signs");
-[0-9]+[eE]              yyerror("Exponent missing");
+[0-9]+[eE][+-]?[0-9]+   error(LEX_ERROR, "Floats must end with f");
+[0-9]+[eE][+-][+-]+     error(LEX_ERROR, "Too many signs");
+[0-9]+[eE]              error(LEX_ERROR, "Exponent missing");
 
-[0-9]+[0-9a-zA-Z]*      yyerror("Unknown number format");
+[0-9]+[0-9a-zA-Z]*      error(LEX_ERROR, "Unknown number format");
 
 \"([^\\"]|\\.)*\"       return token(LITERAL_STRING);
-\"([^\\"]|\\.)*         yyerror("String was not closed");
+\"([^\\"]|\\.)*         error(LEX_ERROR, "String was not closed");
 
 '[^\\]'                 return token(LITERAL_CHAR);
 '\\.'                   return token(LITERAL_CHAR);
-'\\'                    yyerror("Escape character must be escaped");
-'..+'                   yyerror("Character too long");
-'.*'                    yyerror("Invalid character");
-'                       yyerror("Character not closed");
+'\\'                    error(LEX_ERROR, "Escape character must be escaped");
+'..+'                   error(LEX_ERROR, "Character too long");
+'.*'                    error(LEX_ERROR, "Invalid character");
+'.{0,3}                 error(LEX_ERROR, "Character not closed");
 
 [a-zA-Z_][a-zA-Z0-9_]*  return token(ID);
 
-.		        yyerror("Unknown token");
+.		        error(LEX_ERROR, "Unknown token");

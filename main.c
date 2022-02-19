@@ -173,7 +173,12 @@ void error(int code, char *message)
 			yytext);
 
 	free_all();
+
+#if DEBUG
+	printf("Exit: %d\n", code);
+#endif
+
 	exit(code);
 }
 
-void yyerror(char *message) { error(LEX_ERROR, message); }
+void yyerror(char *message) { error(SYNTAX_ERROR, message); }

@@ -91,7 +91,11 @@ void post_read()
 		print_tokens(tokens);
 
 	if (options & TREE_FLAG)
+	{
+		printf("--------------------------------------------------------------\n");
 		print_tree(program, 0, "| ");
+		printf("--------------------------------------------------------------\n");
+	}
 }
 
 int main(int argc, char *argv[])

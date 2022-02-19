@@ -2,8 +2,8 @@
 #ifndef RULES
 enum RULES
 {
-	R_EMPTY = 257,
-	R_CHAIN,
+	R_EMPTY = 1000,
+	R_GROUP,
 	R_CLASS1,
 	R_METHOD1,
 	R_FIELD1,

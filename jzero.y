@@ -5,7 +5,7 @@
 	#include "tree.h"
 
 	#define EMPTY_TREE tree("<EMPTY>", R_EMPTY, NULL, 0)
-	#define chain(a, b) tree("Chain", R_CHAIN, NULL, 2, a, b);
+	#define group(a, b) tree("Group", R_GROUP, NULL, 2, a, b);
 
 	extern int yylex();
 %}
@@ -128,14 +128,14 @@ FieldAccess: Value '.' ID { $$=tree("Access", 1000, $2, 2, $1, $2); };
 Visability: PUBLIC;
 
 ArgDefs	: ArgDef
-		| ArgDef ',' ArgDefs 	{ $$=chain($1, $3); }
+		| ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
 		| 						{ $$=EMPTY_TREE; };
 
 ArgDef: Type ID { $$=tree("Define", 1000, $2, 1, $1); };
 
 Args: { $$=EMPTY_TREE; }
 	| Arg
-	| Args ',' Arg { $$=chain($1, $3); };
+	| Args ',' Arg { $$=group($1, $3); };
 
 Arg: Exp;
 
@@ -146,7 +146,7 @@ ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
 			| '{' '}' 				{ $$=EMPTY_TREE; };
 
 ClassBodyDecls	: ClassBodyDecl
-				| ClassBodyDecls ClassBodyDecl { $$=chain($1, $2); };
+				| ClassBodyDecl ClassBodyDecls { $$=group($1, $2); };
 
 ClassBodyDecl: Field | Method;
 
@@ -161,7 +161,7 @@ FieldDecl	: ID			{ $$=tree_token($1); }
 
 // public static type name(args) { ... }
 Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
-		{ $$=tree("Method", R_METHOD1, NULL, 5, $1, $3, $4, $6, $8); };
+		{ $$=tree("Method", R_METHOD1, $4, 4, $1, $3, $6, $8); };
 
 
 Block	: '{' Statements '}'{ $$=tree("Block", 1000, NULL, 1, $2); }
@@ -169,7 +169,7 @@ Block	: '{' Statements '}'{ $$=tree("Block", 1000, NULL, 1, $2); }
 
 
 Statements	: Statement
-			| Statement Statements { $$=chain($1, $2); };
+			| Statement Statements { $$=group($1, $2); };
 
 Statement	: ';' { $$=EMPTY_TREE; }
 			| Block

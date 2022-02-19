@@ -23,6 +23,8 @@ FILE *yyin;
 char *yytext;
 Tree *program;
 
+int yylex_destroy();
+
 /**
  * @brief Marks the current token as a newline
  */

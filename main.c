@@ -23,6 +23,8 @@ void free_all()
 		fclose(yyin);
 		yyin = NULL;
 	}
+
+	yylex_destroy();
 }
 
 /*
@@ -168,7 +170,7 @@ int token(int category)
 
 void error(int code, char *message)
 {
-	fprintf(stderr, "Error in %s:%d:%d\n%s: %s\n",
+	fprintf(stderr, "Error in %s at %d:%d\n%s: %s\n",
 			current_file,
 			line, column,
 			message,

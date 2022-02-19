@@ -162,7 +162,7 @@ false           return token(LITERAL_BOOL);
 '\\'                    error(LEX_ERROR, "Escape character must be escaped");
 '..+'                   error(LEX_ERROR, "Character too long");
 '.*'                    error(LEX_ERROR, "Invalid character");
-'.{0,3}                 error(LEX_ERROR, "Character not closed");
+'.?                     error(LEX_ERROR, "Character not closed");
 
 [a-zA-Z_][a-zA-Z0-9_]*  return token(ID);
 

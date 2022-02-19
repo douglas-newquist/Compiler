@@ -34,6 +34,10 @@ void read_yyin()
 {
 	line = 1, column = 1;
 
+#if DEBUG
+	printf("Reading from %s\n", current_file);
+#endif
+
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
 }
@@ -77,8 +81,8 @@ void read_file(char *filename)
 
 	if (yyin == 0)
 	{
-		printf("The file '%s' does not exist\n", filename);
-		exit(LEX_ERROR);
+		yytext = current_file;
+		error(LEX_ERROR, "File not found");
 	}
 
 	read_yyin();

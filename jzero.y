@@ -96,6 +96,8 @@
 %type <tree> SwitchCases
 %type <tree> Type
 %type <tree> Value
+%type <tree> While
+%type <tree> ZeroStatments
 
 %%
 
@@ -165,9 +167,10 @@ Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
 		{ $$=tree("Method", R_METHOD1, $4, 4, $1, $3, $6, $8); };
 
 
-Block	: '{' Statements '}'{ $$=tree("Block", 1000, NULL, 1, $2); }
-		| '{' '}' 			{ $$=EMPTY_TREE; };
+Block	: '{' ZeroStatments '}' { $$=tree("Block", 1000, NULL, 1, $2); };
 
+// Zero or more statments
+ZeroStatments : Statements | { $$=EMPTY_TREE; }
 
 Statements	: Statement
 			| Statement Statements { $$=group($1, $2); };
@@ -176,6 +179,7 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| Block
 			| IfStmt
 			| Switch
+			| While
 			| Return
 			| MethodCall ';'
 			| Field
@@ -192,14 +196,16 @@ SwitchCases	: SwitchCase SwitchCases { $$=tree("Cases", 1000, NULL, 2, $1, $2); 
 			| SwitchCase
 
 SwitchCase	: CASE Literal ':' SwitchCaseBlock { $$=tree("Case", 1000, $1, 2, $2, $4); }
-			| DEFAULT ':' SwitchCaseBlock { $$=tree("Case", 1000, $1, 1, $3); }
+			| DEFAULT ':' SwitchCaseBlock { $$=tree("Default", 1000, $1, 1, $3); }
 
-SwitchCaseBlock	: Statements BREAK ';' 	{ $$=$1; }
-				| Statements Return		{ $$=tree("Return Case", 1000, NULL, 2, $1, $2); }
+// FIXME returns in cases
+SwitchCaseBlock	: ZeroStatments BREAK ';' 	{ $$=$1; }
+				| ZeroStatments Return		{ $$=tree("Return Case", 1000, NULL, 2, $1, $2); }
 
-IfStmt: IfThen | IfThenElse | IfThenChain ;
+While: WHILE '(' Exp ')' Block { $$=tree("While", 1000, $1, 2, $3, $5); }
 
-// FIXME If chain else not working
+IfStmt: IfThen | IfThenElse | IfThenChain | IfThenChainElse;
+
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
 IfThenChainElse	: IfThenChain ELSE Block
 				{ $$=tree("If+ Else", R_IF4, $2, 2, $1, $3); };

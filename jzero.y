@@ -50,11 +50,13 @@
 %type <tree> Visability
 
 %type <tree> AnyType
-%type <tree> Arg Args
+%type <tree> Args
 %type <tree> ArgDef
 %type <tree> ArgDefs
 %type <tree> Block
 %type <tree> Break
+%type <tree> Case
+%type <tree> Cases
 %type <tree> Class
 %type <tree> ClassBody
 %type <tree> ClassBodyDecl
@@ -85,6 +87,7 @@
 %type <tree> Method
 %type <tree> MethodCall
 %type <tree> Name
+%type <tree> Primary
 %type <tree> Program
 %type <tree> QualifiedName
 %type <tree> Return
@@ -93,9 +96,6 @@
 %type <tree> Statements
 %type <tree> Switch
 %type <tree> SwitchBlock
-%type <tree> Case
-%type <tree> CaseEnd
-%type <tree> Cases
 %type <tree> Type
 %type <tree> Value
 %type <tree> VarDecl
@@ -131,7 +131,7 @@ Literal	: LITERAL_INT
 		| LITERAL_DOUBLE
 		| LITERAL_NULL;
 
-FieldAccess: Value '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $2); };
+FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $2); };
 
 Visability: PUBLIC;
 
@@ -141,11 +141,9 @@ ArgDefs	: ArgDef
 
 ArgDef: Type ID { $$=tree("Define", R_DEFINE1, $2, 1, $1); };
 
-Args: { $$=EMPTY_TREE; }
-	| Arg
-	| Args ',' Arg { $$=group($1, $3); };
-
-Arg: Exp;
+Args: Args ',' Exp { $$=group($1, $3); };
+	| Exp
+	| { $$=EMPTY_TREE; }
 
 // public class name { ... }
 Class: Visability CLASS ID ClassBody { $$=tree("Class", R_CLASS1, $3, 1, $4); };
@@ -207,9 +205,6 @@ Cases	: Case Cases { $$=group($1, $2); }
 Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $1, 2, $2, $4); }
 		| DEFAULT ':' Statements { $$=tree("Default", R_DEFAULT_CASE, $1, 1, $3); }
 
-CaseEnd	: Break ';'
-		| Return ';'
-
 While: WHILE '(' Exp ')' Block { $$=tree("While", R_WHILE, $1, 2, $3, $5); }
 
 For: FOR '(' ForInit ';' ForCondition ';' ForIncrement ')' Block
@@ -246,13 +241,15 @@ Return	: RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
 Instantiate	: NEW Type '[' Exp ']' { $$=tree("New", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
-Value	: Literal
+Primary	: Literal
 		| MethodCall
-		| Name
 		| FieldAccess
 		| '(' Exp ')'	{ $$=$2; };
 
-Exp: Value | Exp01;
+Value	: Primary
+		| Name;
+
+Exp: Exp01;
 
 Exp15	: Name INCREMENT { $$=tree("++", R_STEP, $2, 1, $1); }
 		| Name DECREMENT { $$=tree("--", R_STEP, $2, 1, $1); }

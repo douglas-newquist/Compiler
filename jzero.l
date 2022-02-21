@@ -70,6 +70,7 @@ double          return token(DOUBLE);
 float           return token(DOUBLE);
 int             return token(INT);
 long            return token(INT);
+short           return token(INT);
 
 break           return token(BREAK);
 case            return token(CASE);
@@ -109,7 +110,6 @@ package         error(LEX_ERROR, "Illegal reserved word");
 private         error(LEX_ERROR, "Illegal reserved word");
 protected       error(LEX_ERROR, "Illegal reserved word");
 requires        error(LEX_ERROR, "Illegal reserved word");
-short           error(LEX_ERROR, "Illegal reserved word");
 strictfp        error(LEX_ERROR, "Illegal reserved word");
 super           error(LEX_ERROR, "Illegal reserved word");
 synchronized    error(LEX_ERROR, "Illegal reserved word");

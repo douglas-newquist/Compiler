@@ -63,6 +63,7 @@
 %type <tree> ClassBody
 %type <tree> ClassBodyDecl
 %type <tree> ClassBodyDecls
+%type <tree> Constructor
 %type <tree> Exp
 %type <tree> Exp01
 %type <tree> Exp03
@@ -157,7 +158,7 @@ ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
 ClassBodyDecls	: ClassBodyDecl
 				| ClassBodyDecl ClassBodyDecls { $$=group($1, $2); };
 
-ClassBodyDecl: VarDefs ';' | Method;
+ClassBodyDecl: VarDefs ';' | Method | Constructor;
 
 VarDefs: Type VarDecls { $$=tree("Variable", R_DEFINE2, NULL, 2, $1, $2); };
 
@@ -171,6 +172,8 @@ VarDecl	: ID
 Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
 		{ $$=tree("Method", R_METHOD1, $4, 4, $1, $3, $6, $8); };
 
+Constructor	: Visability ID '(' ArgDefs ')' Block
+			{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
 
 Block: '{' ZeroStatments '}' { $$=$2; }
 

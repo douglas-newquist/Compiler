@@ -91,6 +91,7 @@
 %type <tree> Method
 %type <tree> MethodCall
 %type <tree> Name
+%type <tree> Owner
 %type <tree> Primary
 %type <tree> Program
 %type <tree> QualifiedName
@@ -139,6 +140,8 @@ FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $3); };
 
 Visability: PUBLIC;
 
+Owner: STATIC | { $$=EMPTY_TREE; }
+
 ArgDefs	: ArgDef
 		| ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
 		| 						{ $$=EMPTY_TREE; };
@@ -169,8 +172,8 @@ VarDecl	: ID
 		| ID '=' Exp	{ $$=tree("Define", R_DEFINE4, $1, 1, $3); };
 
 // public static type name(args) { ... }
-Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
-		{ $$=tree("Method", R_METHOD1, $4, 4, $1, $3, $6, $8); };
+Method: Visability Owner AnyType ID '(' ArgDefs ')' Block
+		{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); };
 
 Constructor	: Visability ID '(' ArgDefs ')' Block
 			{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }

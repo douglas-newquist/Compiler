@@ -50,9 +50,11 @@
 %type <tree> Visability
 
 %type <tree> AnyType
-%type <tree> Args
 %type <tree> ArgDef
 %type <tree> ArgDefs
+%type <tree> Args
+%type <tree> ArrayAccess
+%type <tree> Assignment
 %type <tree> Block
 %type <tree> Break
 %type <tree> Case
@@ -104,7 +106,6 @@
 %type <tree> VarDefs
 %type <tree> While
 %type <tree> ZeroStatments
-
 %%
 
 Program: Class { program=$$; }
@@ -189,9 +190,12 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| CONTINUE ';'
 			| ExpStatement ';';
 
+Assignment: Name '=' Exp { $$=tree("Assign", R_ASSIGN, $2, 2, $1, $3); }
+
 ExpStatement: MethodCall
 			| VarDefs
 			| Exp
+			| Assignment
 
 ExpList	: ExpList ',' ExpStatement { $$=group($1, $3); }
 		| ExpStatement
@@ -246,12 +250,16 @@ Return	: RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
 Instantiate	: NEW Type '[' Exp ']' { $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
+ArrayAccess	: Name '[' Exp ']'		{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
+			| Primary '[' Exp ']'	{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
+
 Primary	: Literal
 		| MethodCall
 		| FieldAccess
 		| '(' Exp ')'	{ $$=$2; };
 
 Value	: Primary
+		| ArrayAccess
 		| Name;
 
 Exp: Exp01;

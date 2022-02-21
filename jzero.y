@@ -15,7 +15,7 @@
 }
 
 // Operators
-%token <tree> INCREMENT DECREMENT AND NOT OR
+%token <tree> INCREMENT DECREMENT AND OR
 
 // Comparators
 %token <tree> EQUALS NOT_EQUAL LESS_EQUAL GREATER_EQUAL
@@ -55,6 +55,7 @@
 %type <tree> ArgDef
 %type <tree> ArgDefs
 %type <tree> Block
+%type <tree> Break
 %type <tree> Class
 %type <tree> ClassBody
 %type <tree> ClassBodyDecl
@@ -70,10 +71,12 @@
 %type <tree> Exp13
 %type <tree> Exp14
 %type <tree> Exp15
-%type <tree> Field
+%type <tree> ExpStatement
 %type <tree> FieldAccess
-%type <tree> FieldDecl
-%type <tree> FieldDecls
+%type <tree> For
+%type <tree> ForCondition
+%type <tree> ForIncrement
+%type <tree> ForInit
 %type <tree> IfStmt
 %type <tree> IfThen
 %type <tree> IfThenChain
@@ -91,11 +94,14 @@
 %type <tree> Statements
 %type <tree> Switch
 %type <tree> SwitchBlock
-%type <tree> SwitchCase
-%type <tree> SwitchCaseBlock
-%type <tree> SwitchCases
+%type <tree> Case
+%type <tree> CaseEnd
+%type <tree> Cases
 %type <tree> Type
 %type <tree> Value
+%type <tree> VarDecl
+%type <tree> VarDecls
+%type <tree> VarDefs
 %type <tree> While
 %type <tree> ZeroStatments
 
@@ -151,16 +157,15 @@ ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
 ClassBodyDecls	: ClassBodyDecl
 				| ClassBodyDecl ClassBodyDecls { $$=group($1, $2); };
 
-ClassBodyDecl: Field | Method;
+ClassBodyDecl: VarDefs ';' | Method;
 
-// type something = value;
-Field: Type FieldDecls ';' { $$=tree("Field", R_FIELD1, NULL, 2, $1, $2); };
+VarDefs: Type VarDecls { $$=tree("Variables", R_FIELD1, NULL, 2, $1, $2); };
 
-FieldDecls	: FieldDecl ',' FieldDecls { $$=tree("Names", R_FIELD3, NULL, 2, $1, $3); }
-			| FieldDecl;
+VarDecls	: VarDecls ',' VarDecl { $$=tree("Names", R_FIELD3, NULL, 2, $1, $3); }
+			| VarDecl;
 
-FieldDecl	: ID
-			| ID '=' Exp	{ $$=tree("Let", R_FIELD2, $1, 1, $3); };
+VarDecl	: ID
+		| ID '=' Exp	{ $$=tree("Define", R_FIELD2, $1, 1, $3); };
 
 // public static type name(args) { ... }
 Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
@@ -180,29 +185,43 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| IfStmt
 			| Switch
 			| While
-			| Return
-			| MethodCall ';'
-			| Field
-			| Exp ';';
+			| For
+			| Return ';'
+			| Break ';'
+			| CONTINUE ';'
+			| ExpStatement ';';
+
+ExpStatement: MethodCall
+			| VarDefs
+			| Exp
 
 MethodCall: Name '(' Args ')' { $$=tree("Call", R_CALL1, NULL, 2, $1, $3); };
 
 Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", 1000, $1, 2, $3, $5); }
 
 SwitchBlock	: '{' '}' 				{ $$=EMPTY_TREE; }
-			| '{' SwitchCases '}' 	{ $$=$2; }
+			| '{' Cases '}' 	{ $$=$2; }
 
-SwitchCases	: SwitchCase SwitchCases { $$=tree("Cases", 1000, NULL, 2, $1, $2); }
-			| SwitchCase
+Cases	: Case Cases { $$=group($1, $2); }
+		| Case
 
-SwitchCase	: CASE Literal ':' SwitchCaseBlock { $$=tree("Case", 1000, $1, 2, $2, $4); }
-			| DEFAULT ':' SwitchCaseBlock { $$=tree("Default", 1000, $1, 1, $3); }
+Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $1, 2, $2, $4); }
+		| DEFAULT ':' Statements { $$=tree("Default", R_DEFAULT_CASE, $1, 1, $3); }
 
 // FIXME returns in cases
-SwitchCaseBlock	: ZeroStatments BREAK ';' 	{ $$=$1; }
-				| ZeroStatments Return		{ $$=tree("Return Case", 1000, NULL, 2, $1, $2); }
+CaseEnd	: Break ';' //	{ $$=tree("Break Case", 1000, NULL, 2, $1, $2); }
+		| Return ';'//	{ $$=tree("Return Case", 1000, NULL, 2, $1, $2); }
 
-While: WHILE '(' Exp ')' Block { $$=tree("While", 1000, $1, 2, $3, $5); }
+While: WHILE '(' Exp ')' Block { $$=tree("While", R_WHILE, $1, 2, $3, $5); }
+
+For: FOR '(' ForInit ';' ForCondition ';' ForIncrement ')' Block
+	{ $$=tree("For", 1000, $1, 4, $3, $5, $7, $9); }
+
+ForInit: VarDefs| { $$=EMPTY_TREE; }
+
+ForCondition: Exp | { $$=EMPTY_TREE; }
+
+ForIncrement:{ $$=EMPTY_TREE; }
 
 IfStmt: IfThen | IfThenElse | IfThenChain | IfThenChainElse;
 
@@ -220,8 +239,11 @@ IfThenElse: IfThen ELSE Block { $$=tree("If Else", R_IF2, $2, 2, $1, $3); };
 // if (condition) { ... }
 IfThen: IF '(' Exp ')' Block { $$=tree("If", R_IF1, $1, 2, $3, $5); };
 
-Return	: RETURN Exp ';' 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
-		| RETURN ';'		{ $$=tree("Return", R_RETURN1, $1, 0); };
+Break	: BREAK		{ $$=tree("Break", R_BREAK1, $1, 0); }
+		| BREAK ID	{ $$=tree("Break", R_BREAK2, $1, 1, $2); }
+
+Return	: RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
+		| RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); };
 
 Instantiate	: NEW Type '[' Exp ']' { $$=tree("New", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };

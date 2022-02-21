@@ -72,6 +72,7 @@
 %type <tree> Exp13
 %type <tree> Exp14
 %type <tree> Exp15
+%type <tree> ExpList
 %type <tree> ExpStatement
 %type <tree> FieldAccess
 %type <tree> For
@@ -192,6 +193,9 @@ ExpStatement: MethodCall
 			| VarDefs
 			| Exp
 
+ExpList	: ExpList ',' ExpStatement { $$=group($1, $3); }
+		| ExpStatement
+
 MethodCall	: Name '(' Args ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3); }
 			| FieldAccess '(' Args ')' 	{ $$=tree("Call", R_CALL2, NULL, 2, $1, $3); }
 
@@ -211,11 +215,11 @@ While: WHILE '(' Exp ')' Block { $$=tree("While", R_WHILE, $1, 2, $3, $5); }
 For: FOR '(' ForInit ';' ForCondition ';' ForIncrement ')' Block
 	{ $$=tree("For", R_FOR, $1, 4, $3, $5, $7, $9); }
 
-ForInit: VarDefs| { $$=EMPTY_TREE; }
+ForInit: ExpList | { $$=EMPTY_TREE; }
 
 ForCondition: Exp | { $$=EMPTY_TREE; }
 
-ForIncrement:{ $$=EMPTY_TREE; }
+ForIncrement: ExpList | { $$=EMPTY_TREE; }
 
 IfStmt: IfThen | IfThenElse | IfThenChain | IfThenChainElse;
 

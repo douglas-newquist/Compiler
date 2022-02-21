@@ -5,7 +5,6 @@
 	#include "tree.h"
 
 	#define EMPTY_TREE tree("<EMPTY>", R_EMPTY, NULL, 0)
-	#define group(a, b) tree("Group", R_GROUP, NULL, 2, a, b);
 
 	extern int yylex();
 %}
@@ -159,7 +158,7 @@ ClassBodyDecls	: ClassBodyDecl
 
 ClassBodyDecl: VarDefs ';' | Method;
 
-VarDefs: Type VarDecls { $$=tree("Variables", R_FIELD1, NULL, 2, $1, $2); };
+VarDefs: Type VarDecls { $$=tree("Variable", R_FIELD1, NULL, 2, $1, $2); };
 
 VarDecls	: VarDecls ',' VarDecl { $$=tree("Names", R_FIELD3, NULL, 2, $1, $3); }
 			| VarDecl;
@@ -172,7 +171,7 @@ Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
 		{ $$=tree("Method", R_METHOD1, $4, 4, $1, $3, $6, $8); };
 
 
-Block	: '{' ZeroStatments '}' { $$=tree("Block", 1000, NULL, 1, $2); };
+Block: '{' ZeroStatments '}' { $$=$2; }//{ $$=tree("Block", 1000, NULL, 1, $2); };
 
 // Zero or more statments
 ZeroStatments : Statements | { $$=EMPTY_TREE; }

@@ -47,6 +47,11 @@ void print_trees(Tree *tree);
 Tree *tree(char *message, int rule, Tree *leaf, int argc, ...);
 
 /**
+ * @brief Combines multple trees together, automatically merges group trees
+ */
+Tree *group(Tree *t1, Tree *t2);
+
+/**
  * @brief Frees all loaded trees
  */
 void free_trees();

@@ -146,3 +146,54 @@ Tree *tree(char *message, int rule, Tree *leaf, int argc, ...)
 
 	return tree;
 }
+
+/**
+ * @brief Combines multple trees together, automatically merges group trees
+ */
+Tree *group(Tree *t1, Tree *t2)
+{
+	// Check if either tree is a group
+	if (t1->rule != R_GROUP && t2->rule != R_GROUP)
+		// Neither is a group make a new one
+		return tree("Group", R_GROUP, NULL, 2, t1, t2);
+
+	// New group size
+	int size = 2;
+
+	// If t1 is a group add its size
+	if (t1->rule == R_GROUP)
+		size += t1->count - 1;
+
+	// If t2 is a group add its size
+	if (t2->rule == R_GROUP)
+		size += t2->count - 1;
+
+	Tree *t = create_tree("Group", R_GROUP, size, NULL);
+	int offset = 1;
+
+	// Add t1 to the group
+	if (t1->rule == R_GROUP)
+	{
+		// Copy children from t1 to the new group
+		for (int i = 0; i < t1->count; i++)
+			t->children[i] = t1->children[i];
+
+		offset = t1->count;
+	}
+	else
+		// t1 was not a group
+		t->children[0] = t1;
+
+	// Add t2 to the group
+	if (t2->rule == R_GROUP)
+	{
+		// Copy children from t2 to the new group
+		for (int i = 0; i < t2->count; i++)
+			t->children[i + offset] = t2->children[i];
+	}
+	else
+		// t2 was not a group
+		t->children[offset] = t2;
+
+	return t;
+}

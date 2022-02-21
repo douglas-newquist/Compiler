@@ -131,7 +131,7 @@ Literal	: LITERAL_INT
 		| LITERAL_DOUBLE
 		| LITERAL_NULL;
 
-FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $2); };
+FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $3); };
 
 Visability: PUBLIC;
 
@@ -192,7 +192,8 @@ ExpStatement: MethodCall
 			| VarDefs
 			| Exp
 
-MethodCall: Name '(' Args ')' { $$=tree("Call", R_CALL, NULL, 2, $1, $3); };
+MethodCall	: Name '(' Args ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3); }
+			| FieldAccess '(' Args ')' 	{ $$=tree("Call", R_CALL2, NULL, 2, $1, $3); }
 
 Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", R_SWITCH, $1, 2, $3, $5); }
 
@@ -238,7 +239,7 @@ Break	: BREAK		{ $$=tree("Break", R_BREAK1, $1, 0); }
 Return	: RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
 		| RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); };
 
-Instantiate	: NEW Type '[' Exp ']' { $$=tree("New", R_ARRAY2, $1, 2, $2, $4); }
+Instantiate	: NEW Type '[' Exp ']' { $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
 Primary	: Literal

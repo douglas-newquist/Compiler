@@ -97,6 +97,7 @@
 %type <tree> SingleType
 %type <tree> Statement
 %type <tree> Statements
+%type <tree> Step
 %type <tree> Switch
 %type <tree> SwitchBlock
 %type <tree> Type
@@ -194,8 +195,9 @@ Assignment: Name '=' Exp { $$=tree("Assign", R_ASSIGN, $2, 2, $1, $3); }
 
 ExpStatement: MethodCall
 			| VarDefs
-			| Exp
+			| Step
 			| Assignment
+			| Instantiate
 
 ExpList	: ExpList ',' ExpStatement { $$=group($1, $3); }
 		| ExpStatement
@@ -262,10 +264,12 @@ Value	: Primary
 		| ArrayAccess
 		| Name;
 
+Step: Name INCREMENT { $$=tree("++", R_STEP, $2, 1, $1); }
+	| Name DECREMENT { $$=tree("--", R_STEP, $2, 1, $1); }
+
 Exp: Exp01;
 
-Exp15	: Name INCREMENT { $$=tree("++", R_STEP, $2, 1, $1); }
-		| Name DECREMENT { $$=tree("--", R_STEP, $2, 1, $1); }
+Exp15	: Step
 		| Value;
 
 Exp14	: '-' Exp14 { $$=tree("Negate", '-', $1, 1, $2); }

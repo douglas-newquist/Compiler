@@ -1,3 +1,6 @@
+/*
+	Douglas Newquist
+*/
 
 #ifndef RULES
 enum RULES
@@ -5,6 +8,7 @@ enum RULES
 	R_EMPTY = 1000,
 	R_ACCESS1,
 	R_ACCESS2,
+	R_ACCESS3,
 	R_AND,
 	R_ARRAY1,
 	R_ARRAY2,

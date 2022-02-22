@@ -189,8 +189,8 @@ Block: '{' ZeroStatments '}' { $$=$2; }
 // Zero or more statments
 ZeroStatments : Statements | { $$=EMPTY_TREE; }
 
-Statements	: Statement
-			| Statement Statements { $$=group($1, $2); };
+Statements	: Statement Statements { $$=group($1, $2); }
+			| Statement;
 
 Statement	: ';' { $$=EMPTY_TREE; }
 			| Block
@@ -222,7 +222,7 @@ Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", R_SWITCH, $1, 2, $3, 
 SwitchBlock	: '{' '}' 			{ $$=EMPTY_TREE; }
 			| '{' Cases '}' 	{ $$=$2; }
 
-Cases	: Case Cases { $$=group($1, $2); }
+Cases	: Cases Case { $$=group($1, $2); }
 		| Case
 
 Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $1, 2, $2, $4); }
@@ -243,7 +243,7 @@ IfStmt: IfThen | IfThenElse | IfThenChain | IfThenChainElse;
 
 // if (condition) { ... } else if (condition) { ... } ... else { ... }
 IfThenChainElse	: IfThenChain ELSE Block
-				{ $$=tree("If+ Else", R_IF4, $2, 2, $1, $3); };
+				{ $$=tree("If+ Else", R_IF2, $2, 2, $1, $3); };
 
 // if (condition) { ... } else if (condition) { ... } ...
 IfThenChain	: IfThen ELSE IfThen 		{ $$=tree("If+", R_IF3, $2, 2, $1, $3); }
@@ -261,11 +261,11 @@ BreakExp: BREAK		{ $$=tree("Break", R_BREAK1, $1, 0); }
 ReturnExp	: RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); }
 			| RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); };
 
-Instantiate	: NEW Type '[' Exp ']' { $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
+Instantiate	: NEW Type '[' Exp ']' 		{ $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
 			| NEW Type '(' ZeroArgs ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
-ArrayAccess	: Name '[' Exp ']'		{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
-			| Primary '[' Exp ']'	{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
+ArrayAccess	: Name '[' Exp ']'		{ $$=tree("Index", R_ACCESS3, NULL, 2, $1, $3); }
+			| Primary '[' Exp ']'	{ $$=tree("Index", R_ACCESS3, NULL, 2, $1, $3); }
 
 Primary	: Literal
 		| MethodCall

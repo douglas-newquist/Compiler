@@ -23,7 +23,7 @@
 %token <tree> BOOLEAN CHAR DOUBLE INT
 
 // Reserved words
-%token <tree> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF INSTANCEOF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
+%token <tree> BREAK CASE CLASS CONTINUE DEFAULT ELSE FOR IF NEW PUBLIC RETURN STATIC SWITCH VOID WHILE
 
 // Literals
 %token <tree> LITERAL_BOOL LITERAL_CHAR LITERAL_DOUBLE LITERAL_INT LITERAL_STRING LITERAL_NULL
@@ -56,7 +56,7 @@
 %type <tree> ArrayAccess
 %type <tree> Assignment
 %type <tree> Block
-%type <tree> Break
+%type <tree> BreakExp
 %type <tree> Case
 %type <tree> Cases
 %type <tree> Class
@@ -91,11 +91,10 @@
 %type <tree> Method
 %type <tree> MethodCall
 %type <tree> Name
-%type <tree> Owner
 %type <tree> Primary
 %type <tree> Program
 %type <tree> QualifiedName
-%type <tree> Return
+%type <tree> ReturnExp
 %type <tree> SingleType
 %type <tree> Statement
 %type <tree> Statements
@@ -108,6 +107,7 @@
 %type <tree> VarDecls
 %type <tree> VarDefs
 %type <tree> While
+%type <tree> ZeroArgs
 %type <tree> ZeroStatments
 
 %start Program
@@ -143,17 +143,17 @@ FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $3); };
 
 Visability: PUBLIC;
 
-Owner: STATIC | { $$=EMPTY_TREE; }
-
 ArgDefs	: ArgDef
 		| ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
 		| 						{ $$=EMPTY_TREE; };
 
 ArgDef: Type ID { $$=tree("Define", R_DEFINE1, $2, 1, $1); };
 
+// Zero or more args
+ZeroArgs: Args | { $$=EMPTY_TREE; };
+
 Args: Args ',' Exp { $$=group($1, $3); };
-	| Exp
-	| { $$=EMPTY_TREE; }
+	| Exp;
 
 // public class name { ... }
 Class: Visability CLASS ID ClassBody { $$=tree("Class", R_CLASS1, $3, 1, $4); };
@@ -168,14 +168,14 @@ ClassBodyDecl: VarDefs ';' | Method | Constructor;
 
 VarDefs: Type VarDecls { $$=tree("Variable", R_DEFINE2, NULL, 2, $1, $2); };
 
-VarDecls	: VarDecls ',' VarDecl { $$=tree("Names", R_DEFINE3, NULL, 2, $1, $3); }
+VarDecls	: VarDecl ',' VarDecls { $$=group($1, $3); }
 			| VarDecl;
 
 VarDecl	: ID
-		| ID '=' Exp	{ $$=tree("Define", R_DEFINE4, $1, 1, $3); };
+		| ID '=' Exp	{ $$=tree("Let", R_DEFINE4, $1, 1, $3); };
 
 // public static type name(args) { ... }
-Method: Visability Owner AnyType ID '(' ArgDefs ')' Block
+Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
 		{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); };
 
 Constructor	: Visability ID '(' ArgDefs ')' Block
@@ -195,8 +195,8 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| Switch
 			| While
 			| For
-			| Return ';'
-			| Break ';'
+			| ReturnExp ';'
+			| BreakExp ';'
 			| CONTINUE ';'
 			| ExpStatement ';';
 
@@ -211,8 +211,8 @@ ExpStatement: MethodCall
 ExpList	: ExpList ',' ExpStatement { $$=group($1, $3); }
 		| ExpStatement
 
-MethodCall	: Name '(' Args ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3); }
-			| FieldAccess '(' Args ')' 	{ $$=tree("Call", R_CALL2, NULL, 2, $1, $3); }
+MethodCall	: Name '(' ZeroArgs ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3); }
+			| FieldAccess '(' ZeroArgs ')' 	{ $$=tree("Call", R_CALL2, NULL, 2, $1, $3); }
 
 Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", R_SWITCH, $1, 2, $3, $5); }
 
@@ -252,14 +252,14 @@ IfThenElse: IfThen ELSE Block { $$=tree("If Else", R_IF2, $2, 2, $1, $3); };
 // if (condition) { ... }
 IfThen: IF '(' Exp ')' Block { $$=tree("If", R_IF1, $1, 2, $3, $5); };
 
-Break	: BREAK		{ $$=tree("Break", R_BREAK1, $1, 0); }
+BreakExp: BREAK		{ $$=tree("Break", R_BREAK1, $1, 0); }
 		| BREAK ID	{ $$=tree("Break", R_BREAK2, $1, 1, $2); }
 
-Return	: RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); }
-		| RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); };
+ReturnExp	: RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); }
+			| RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); };
 
 Instantiate	: NEW Type '[' Exp ']' { $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
-			| NEW Type '(' Args ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
+			| NEW Type '(' ZeroArgs ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
 ArrayAccess	: Name '[' Exp ']'		{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
 			| Primary '[' Exp ']'	{ $$=tree("Index", 1000, NULL, 2, $1, $3); }
@@ -286,7 +286,7 @@ Exp14	: '-' Exp14 { $$=tree("Negate", '-', $1, 1, $2); }
 		| Exp15;
 
 Exp13	: Instantiate
-		| '(' Type ')' Name { $$=tree("Cast", R_CAST, NULL, 2, $2, $4); }
+		//| '(' Type ')' Name { $$=tree("Cast", R_CAST, NULL, 2, $2, $4); }
 		| Exp14;
 
 Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", '*', $2, 2, $1, $3); }
@@ -300,7 +300,6 @@ Exp11	: Exp11 '+' Exp12 { $$=tree("Add", '+', $2, 2, $1, $3); }
 
 Exp09	: Exp09 RelationOp Exp11
 		{ $$=tree("Compare", $2->token->category, $2, 2, $1, $3); }
-		| Name INSTANCEOF Type { $$=tree("Is", R_INSTANCE, $2, 2, $1, $3); }
 		| Exp11;
 
 Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_EQUALS, $2, 2, $1, $3); }

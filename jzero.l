@@ -80,7 +80,7 @@ default         return token(DEFAULT);
 else            return token(ELSE);
 for             return token(FOR);
 if              return token(IF);
-instanceof      return token(INSTANCEOF);
+instanceof      error(LEX_ERROR, "Illegal reserved word");
 new             return token(NEW);
 public          return token(PUBLIC);
 return          return token(RETURN);

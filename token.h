@@ -2,14 +2,19 @@
 	Douglas Newquist
 */
 
+#include "list.h"
+
+#ifndef Token
 #define Token struct token
-#define Tokens struct tokenlist
+#define Tokens List
+
+Tokens *tokens;
 
 Token
 {
 	int category;
 	char *text;
-	int line;
+	int line, column;
 	char *filename;
 
 	// Integer value
@@ -24,31 +29,28 @@ Token
 	char cval;
 };
 
-Tokens
-{
-	Token *token;
-	Tokens *next;
-};
-
-/*
-	Creates a new token with the given category
-*/
+/**
+ * @brief Creates a new token with the given category
+ *
+ * @param category What category this token falls in
+ */
 Token *create_token(int category);
 
-/*
-	Frees the given token from memory
-*/
+/**
+ *	@brief Frees the given token from memory
+ */
 void free_token(Token *token);
 
 /*
 	Frees the given token list from memory
 */
-void free_tokens(Tokens *tokens);
+void free_tokens();
 
+/**
+ * @brief Prints the parsed version of this token's text
+ */
+void print_token_value(Token *token);
 void print_token(Token *token);
 void print_tokens(Tokens *tokens);
 
-/*
-	Adds a token to the linked list
-*/
-Tokens *add(Tokens *tokens, Token *token);
+#endif

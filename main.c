@@ -5,45 +5,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main.h"
-#include "tokens.h"
-#include "token.h"
 #include "errors.h"
+#include "flags.h"
+#include "jzero.tab.h"
+#include "main.h"
+#include "token.h"
+#include "tree.h"
 
-char *current_file;
+void free_all()
+{
+	free_trees();
+	free_tokens();
+
+	if (yyin && yyin != stdin)
+	{
+		// Close file if not closed for some reason
+		fclose(yyin);
+		yyin = NULL;
+	}
+
+	yylex_destroy();
+}
 
 /*
 	Reads the current file stored in yyin
 */
-Tokens *scan_yyin()
+void read_yyin()
 {
-	line = 1;
+	line = 1, column = 1;
 
-	Tokens *tokens = NULL;
+#if DEBUG
+	printf("Reading from %s\n", current_file);
+#endif
 
-	for (int token = yylex(); token != EOF; token = yylex())
-		tokens = add(tokens, create_token(token));
-
-	return tokens;
-}
-
-/*
-	Opens and reads from the given filename
-*/
-Tokens *scan_file(char *filename)
-{
-	current_file = filename;
-	yyin = fopen(filename, "r");
-
-	if (yyin == 0)
-	{
-		printf("The file '%s' does not exist\n", filename);
-		exit(ERROR);
-	}
-
-	Tokens *result = scan_yyin();
-	fclose(yyin);
-	return result;
+	if (yyparse() != 0)
+		error(SYNTAX_ERROR, "Invalid syntax");
 }
 
 /*
@@ -73,71 +69,118 @@ char *fix_extension(char *filename)
 		return strcat(filename, ".java");
 
 	printf("%s is not a .java file\n", filename);
-	exit(ERROR);
+	exit(LEX_ERROR);
 }
 
-int main(int argc, char const *argv[])
+void read_file(char *filename)
 {
+	strcpy(current_file, filename);
+	fix_extension(current_file);
+
+	yyin = fopen(current_file, "r");
+
+	if (yyin == 0)
+	{
+		yytext = current_file;
+		error(LEX_ERROR, "File not found");
+	}
+
+	read_yyin();
+
+	fclose(yyin);
+	yyin = NULL;
+}
+
+void post_read()
+{
+	if (options & TOKENS_FLAG)
+		print_tokens(tokens);
+
+	if (options & TREE_FLAG)
+		print_trees(program);
+}
+
+int main(int argc, char *argv[])
+{
+	options = TREE_FLAG;
+
+	for (int i = 1; i < argc; i++)
+	{
+		switch (flag(argv[i]))
+		{
+#if DEBUG
+		case BISON_FLAG:
+			yydebug = 1;
+			break;
+#endif
+
+		case 0:
+			read_file((char *)argv[i]);
+			post_read();
+			break;
+		}
+	}
+
+	argc -= flag_count;
+
 	if (argc == 1)
 	{
 		yyin = stdin;
-		current_file = "stdin";
-		Tokens *tokens = scan_yyin();
-
-		print_tokens(tokens);
-		free_tokens(tokens);
+		strcpy(current_file, "stdin");
+		read_yyin();
+		post_read();
 	}
-	else
-	{
-		for (int i = 1; i < argc; i++)
-		{
-			char *filename = fix_extension((char *)argv[i]);
 
-			Tokens *tokens = scan_file(filename);
-
-			print_tokens(tokens);
-			free_tokens(tokens);
-		}
-	}
+	free_all();
 
 	return 0;
 }
 
 void newline()
 {
+	column = 1;
 	line++;
-}
-
-/*
-	Counts the number of times c appears in the string
-*/
-int count_chars(char *str, char c)
-{
-	int count = 0;
-
-	for (size_t i = 0; i < strlen(str); i++)
-		if (str[i] == c)
-			count++;
-
-	return count;
 }
 
 void comment()
 {
-	line += count_chars(yytext, '\n');
+	size_t size = strlen(yytext);
+	for (size_t i = 0; i < size; i++)
+	{
+		if (yytext[i] == '\n')
+			newline();
+		else
+			column++;
+	}
 }
 
-void whitespace() {}
+void whitespace()
+{
+	column += strlen(yytext);
+}
+
+int token(int category)
+{
+	yylval.tree = tree_token(create_token(category));
+	column += strlen(yytext);
+	return category;
+}
 
 void error(int code, char *message)
 {
-	printf("Error(%d) in %s on line %d\n%s: %s\n",
-		   code,
-		   current_file,
-		   line,
-		   message,
-		   yytext);
+	fprintf(stderr, "Error in %s at %d:%d\n%s: %s\n",
+			current_file,
+			line, column,
+			message,
+			yytext);
+
+	free_all();
+
+#if DEBUG
+	printf("Exit: %d\n", code);
+#endif
+
 	exit(code);
 }
 
-void yyerror(char *message) { error(TOKEN_ERROR, message); }
+void yyerror(char *message) { error(SYNTAX_ERROR, message); }

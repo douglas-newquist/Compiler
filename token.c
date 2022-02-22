@@ -4,11 +4,12 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
-#include "tokens.h"
+#include "errors.h"
+#include "jzero.tab.h"
+#include "list.h"
 #include "main.h"
 #include "parser.h"
-#include "errors.h"
+#include "token.h"
 
 /*
 	Creates a new token with the given category
@@ -19,6 +20,7 @@ Token *create_token(int category)
 	token->category = category;
 	token->filename = current_file;
 	token->line = line;
+	token->column = column;
 
 	// Copy yytext to the token
 	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
@@ -55,6 +57,9 @@ Token *create_token(int category)
 		break;
 	}
 
+	// Add token to list
+	tokens = add(tokens, token);
+
 	return token;
 }
 
@@ -63,7 +68,11 @@ Token *create_token(int category)
 */
 void free_token(Token *token)
 {
-	free(token->text);
+	if (token == NULL)
+		return;
+
+	if (token->text)
+		free(token->text);
 
 	if (token->sval)
 		free(token->sval);
@@ -71,50 +80,54 @@ void free_token(Token *token)
 	free(token);
 }
 
-void free_tokens(Tokens *tokens)
+void free_list_token(void *token)
 {
-	while (tokens != NULL)
+	free_token((Token *)token);
+}
+
+void free_tokens()
+{
+	tokens = free_list(tokens, free_list_token);
+}
+
+void print_token_value(Token *token)
+{
+	switch (token->category)
 	{
-		Tokens *next = tokens->next;
-		free_token(tokens->token);
-		free(tokens);
-		tokens = next;
+	case LITERAL_DOUBLE:
+		printf("%f", token->dval);
+		break;
+
+	case LITERAL_INT:
+		printf("%d", token->ival);
+		break;
+
+	case LITERAL_BOOL:
+		printf("%d", token->bval);
+		break;
+
+	case LITERAL_STRING:
+		printf("%s", token->sval);
+		break;
+
+	case LITERAL_CHAR:
+		printf("%c", token->cval);
+		break;
 	}
 }
 
 void print_token(Token *token)
 {
-	printf("%d\t%d\t%s\t\t%s\t",
+	printf("%d:%d\t%d\t%s\t\t%s\t",
 		   token->line,
+		   token->column,
 		   token->category,
 		   token->text,
 		   token->filename);
 
-	switch (token->category)
-	{
-	case LITERAL_DOUBLE:
-		printf("%f\n", token->dval);
-		break;
+	print_token_value(token);
 
-	case LITERAL_INT:
-		printf("%d\n", token->ival);
-		break;
-
-	case LITERAL_BOOL:
-		printf("%d\n", token->bval);
-		break;
-
-	case LITERAL_STRING:
-		printf("%s\n", token->sval);
-		break;
-
-	case LITERAL_CHAR:
-		printf("%c\n", token->cval);
-		break;
-
-	default:
-		printf("\n");
-	}
+	printf("\n");
 }
 
 void print_tokens(Tokens *tokens)
@@ -124,47 +137,9 @@ void print_tokens(Tokens *tokens)
 
 	while (tokens != NULL)
 	{
-		print_token(tokens->token);
+		print_token((Token *)tokens->value);
 		tokens = tokens->next;
 	}
 
 	printf("--------------------------------------------------------------\n");
-}
-
-Tokens *create_tokens(Token *token)
-{
-	Tokens *tokens = (Tokens *)malloc(sizeof(Tokens));
-	tokens->token = token;
-	tokens->next = NULL;
-	return tokens;
-}
-
-/*
-	Gets the tail element of the token list\
-*/
-Tokens *tail(Tokens *tokens)
-{
-	if (tokens == NULL)
-		return NULL;
-
-	while (tokens->next != NULL)
-		tokens = tokens->next;
-
-	return tokens;
-}
-
-/*
-	Adds a token to the linked list
-*/
-Tokens *add(Tokens *tokens, Token *token)
-{
-	Tokens *current = create_tokens(token);
-
-	if (tokens != NULL)
-	{
-		tail(tokens)->next = current;
-		return tokens;
-	}
-
-	return current;
 }

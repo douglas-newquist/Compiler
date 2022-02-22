@@ -5,15 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
-#include "tokens.h"
 #include "main.h"
 #include "errors.h"
+
+#define BUFFER 128
 
 int parse_int(char *text)
 {
 	int a = atoi(text);
 
-	char parsed[64];
+	char parsed[BUFFER];
 	int b;
 	sprintf(parsed, "%d", a);
 	sscanf(parsed, "%d", &b);
@@ -21,8 +22,8 @@ int parse_int(char *text)
 	if (a == b)
 		return a;
 
-	error(INVALID_LITERAL, "Integer out of bounds");
-	exit(ERROR);
+	yyerror("Integer out of bounds");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -32,7 +33,7 @@ double parse_double(char *text)
 {
 	double a = atof(text);
 
-	char parsed[64];
+	char parsed[BUFFER];
 	double b;
 	sprintf(parsed, "%lf", a);
 	sscanf(parsed, "%lf", &b);
@@ -41,8 +42,8 @@ double parse_double(char *text)
 	if (abs(a - b) <= abs(a / 100) && ((a < 0) == (b < 0)))
 		return a;
 
-	error(INVALID_LITERAL, "Float out of bounds");
-	exit(ERROR);
+	yyerror("Float out of bounds");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -56,8 +57,8 @@ int parse_bool(char *text)
 	if (strcmp(text, "false") == 0)
 		return FALSE;
 
-	error(INVALID_LITERAL, "Invalid boolean value");
-	exit(ERROR);
+	yyerror("Invalid boolean value");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -95,8 +96,8 @@ char get_escaped_char(char c)
 		return '\b';
 	}
 
-	error(INVALID_LITERAL, "Invalid escaped character");
-	exit(ERROR);
+	yyerror("Invalid escaped character");
+	exit(LEX_ERROR);
 }
 
 /*
@@ -144,7 +145,7 @@ char parse_char(char *text)
 		return get_escaped_char(text[2]);
 
 	default:
-		error(INVALID_LITERAL, "Invalid character");
-		exit(ERROR);
+		yyerror("Invalid character");
+		exit(LEX_ERROR);
 	}
 }

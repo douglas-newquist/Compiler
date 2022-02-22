@@ -2,24 +2,27 @@
 	Douglas Newquist
 */
 
+/**
+ * @brief Parses the given string as an integer
+ */
 int parse_int(char *text);
 
-/*
-	Parses a double value from the string
-*/
+/**
+ * @brief Parses the given string as an double
+ */
 double parse_double(char *text);
 
-/*
-	Parses true/false as an integer 1/0
-*/
+/**
+ * @brief Parses true/false as an integer 1/0
+ */
 int parse_bool(char *text);
 
-/*
-	Parses and de-escapes the given string
-*/
+/**
+ * @brief Parses and de-escapes the given string
+ */
 char *parse_string(char *text);
 
-/*
-	Parses a character string
-*/
+/**
+ * @brief Parses a character from the given string
+ */
 char parse_char(char *text);

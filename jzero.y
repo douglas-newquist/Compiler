@@ -109,6 +109,9 @@
 %type <tree> VarDefs
 %type <tree> While
 %type <tree> ZeroStatments
+
+%start Program
+
 %%
 
 Program: Class { program=$$; }

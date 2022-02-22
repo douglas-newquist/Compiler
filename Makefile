@@ -1,5 +1,5 @@
-TARGETS=j0
-ZIP_TARGETS=*.c *.h *.l *.y Makefile JavaSamples
+TARGETS=j0 jzero.tab.h
+ZIP_TARGETS=*.c *.h *.l *.y Makefile ${shell find -iname "*.java"}
 HEADERS=*.h jzero.tab.h
 
 SOURCES=$(shell find -name "*.c" -not -name "*.*.c") jzero.tab.c jzero.yy.c
@@ -13,7 +13,11 @@ force-all:
 	make clean
 	make all
 
-debug: DEBUG = -DDEBUG
+force-debug:
+	make clean
+	make debug
+
+debug: DEBUG=-DDEBUG
 debug: jzero.output ${TARGETS}
 
 %.tab.c %.tab.h: %.y

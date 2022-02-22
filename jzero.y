@@ -107,6 +107,7 @@
 %type <tree> VarDecls
 %type <tree> VarDefs
 %type <tree> While
+%type <tree> ZeroArgDefs
 %type <tree> ZeroArgs
 %type <tree> ZeroStatments
 
@@ -143,9 +144,11 @@ FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $3); };
 
 Visability: PUBLIC;
 
-ArgDefs	: ArgDef
-		| ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
-		| 						{ $$=EMPTY_TREE; };
+// Zero or more arg defs
+ZeroArgDefs: ArgDefs | { $$=EMPTY_TREE; }
+
+ArgDefs	: ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
+		| ArgDef;
 
 ArgDef: Type ID { $$=tree("Define", R_DEFINE1, $2, 1, $1); };
 
@@ -175,10 +178,10 @@ VarDecl	: ID
 		| ID '=' Exp	{ $$=tree("Let", R_DEFINE4, $1, 1, $3); };
 
 // public static type name(args) { ... }
-Method: Visability STATIC AnyType ID '(' ArgDefs ')' Block
+Method: Visability STATIC AnyType ID '(' ZeroArgDefs ')' Block
 		{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); };
 
-Constructor	: Visability ID '(' ArgDefs ')' Block
+Constructor	: Visability ID '(' ZeroArgDefs ')' Block
 			{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
 
 Block: '{' ZeroStatments '}' { $$=$2; }
@@ -216,7 +219,7 @@ MethodCall	: Name '(' ZeroArgs ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3)
 
 Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", R_SWITCH, $1, 2, $3, $5); }
 
-SwitchBlock	: '{' '}' 				{ $$=EMPTY_TREE; }
+SwitchBlock	: '{' '}' 			{ $$=EMPTY_TREE; }
 			| '{' Cases '}' 	{ $$=$2; }
 
 Cases	: Case Cases { $$=group($1, $2); }

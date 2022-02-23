@@ -10,6 +10,7 @@
 %}
 
 %union{
+	struct token* token;
 	struct tree* tree;
 }
 
@@ -120,7 +121,7 @@ Program: Class { program=$$; }
 Name	: ID
 		| QualifiedName;
 
-QualifiedName: Name '.' ID { $$=tree("Name", R_ACCESS1, $2, 2, $1, $3); };
+QualifiedName: Name '.' ID { $$=tree("Name", R_ACCESS1, $3, 1, $1); };
 
 AnyType	: VOID
 		| Type;
@@ -140,7 +141,7 @@ Literal	: LITERAL_INT
 		| LITERAL_DOUBLE
 		| LITERAL_NULL;
 
-FieldAccess: Primary '.' ID { $$=tree("Access", R_ACCESS2, $2, 2, $1, $3); };
+FieldAccess: Primary '.' ID { $$=tree("Field", R_ACCESS2, $3, 1, $1); };
 
 Visability: PUBLIC;
 

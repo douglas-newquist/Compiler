@@ -60,6 +60,8 @@ Token *create_token(int category)
 	// Add token to list
 	tokens = add(tokens, token);
 
+	yylval.token = token;
+
 	return token;
 }
 

@@ -149,12 +149,12 @@ Tree *tree(char *message, int rule, Tree *leaf, int argc, ...)
 /**
  * @brief Combines multple trees together, automatically merges group trees
  */
-Tree *group(int rule, Tree *t1, Tree *t2)
+Tree *group(char *message, int rule, Tree *t1, Tree *t2)
 {
 	// Check if either tree is a group
 	if (t1->rule != rule && t2->rule != rule)
 		// Neither is a group make a new one
-		return tree("Group", rule, NULL, 2, t1, t2);
+		return tree(message, rule, NULL, 2, t1, t2);
 
 	// New group size
 	int size = 2;
@@ -167,7 +167,7 @@ Tree *group(int rule, Tree *t1, Tree *t2)
 	if (t2->rule == rule)
 		size += t2->count - 1;
 
-	Tree *t = create_tree("Group", rule, size, NULL);
+	Tree *t = create_tree(message, rule, size, NULL);
 	int offset = 1;
 
 	// Add t1 to the group

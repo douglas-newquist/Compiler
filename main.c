@@ -27,6 +27,18 @@ void free_all()
 	yylex_destroy();
 }
 
+/**
+ * @brief Do stuff after the program has been parsed
+ */
+void post_read()
+{
+	if (options & TOKENS_FLAG)
+		print_tokens(tokens);
+
+	if (options & TREE_FLAG)
+		print_trees(program);
+}
+
 /*
 	Reads the current file stored in yyin
 */
@@ -40,6 +52,8 @@ void read_yyin()
 
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
+
+	post_read();
 }
 
 /*
@@ -68,7 +82,7 @@ char *fix_extension(char *filename)
 	if (strcmp(ext, "") == 0)
 		return strcat(filename, ".java");
 
-	printf("%s is not a .java file\n", filename);
+	printf("%s is not a java file\n", filename);
 	exit(LEX_ERROR);
 }
 
@@ -91,15 +105,6 @@ void read_file(char *filename)
 	yyin = NULL;
 }
 
-void post_read()
-{
-	if (options & TOKENS_FLAG)
-		print_tokens(tokens);
-
-	if (options & TREE_FLAG)
-		print_trees(program);
-}
-
 int main(int argc, char *argv[])
 {
 	options = TREE_FLAG;
@@ -115,8 +120,7 @@ int main(int argc, char *argv[])
 #endif
 
 		case 0:
-			read_file((char *)argv[i]);
-			post_read();
+			read_file(argv[i]);
 			break;
 		}
 	}
@@ -128,7 +132,6 @@ int main(int argc, char *argv[])
 		yyin = stdin;
 		strcpy(current_file, "stdin");
 		read_yyin();
-		post_read();
 	}
 
 	free_all();
@@ -136,12 +139,18 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+/**
+ * @brief Marks the current token as a newline
+ */
 void newline()
 {
 	column = 1;
 	line++;
 }
 
+/**
+ * @brief Marks the current token as a comment
+ */
 void comment()
 {
 	size_t size = strlen(yytext);
@@ -154,6 +163,9 @@ void comment()
 	}
 }
 
+/**
+ * @brief Marks the current toke as whitespace
+ */
 void whitespace()
 {
 	column += strlen(yytext);

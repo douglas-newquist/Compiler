@@ -4,7 +4,6 @@
 
 #ifndef comment
 #include <stdio.h>
-#include "token.h"
 #include "tree.h"
 
 #if DEBUG
@@ -40,6 +39,11 @@ void comment();
  */
 void whitespace();
 
+/**
+ * @brief
+ *
+ * @param category
+ */
 int token(int category);
 
 void error(int code, char *message);

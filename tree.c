@@ -82,7 +82,6 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 	for (int i = 0; i < indent_level; i++)
 		printf("%s", indent);
 
-	// St
 	if (tree == NULL)
 	{
 		printf("(nil)\n");

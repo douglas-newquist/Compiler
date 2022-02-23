@@ -148,7 +148,7 @@ Visability: PUBLIC;
 // Zero or more arg defs
 ZeroArgDefs: ArgDefs | { $$=EMPTY_TREE; }
 
-ArgDefs	: ArgDef ',' ArgDefs 	{ $$=group($1, $3); }
+ArgDefs	: ArgDef ',' ArgDefs 	{ $$=group(R_ARG_DEF_GROUP, $1, $3); }
 		| ArgDef;
 
 ArgDef: Type ID { $$=tree("Define", R_DEFINE1, $2, 1, $1); };
@@ -156,7 +156,7 @@ ArgDef: Type ID { $$=tree("Define", R_DEFINE1, $2, 1, $1); };
 // Zero or more args
 ZeroArgs: Args | { $$=EMPTY_TREE; };
 
-Args: Args ',' Exp { $$=group($1, $3); };
+Args: Args ',' Exp { $$=group(R_ARG_GROUP, $1, $3); };
 	| Exp;
 
 // public class name { ... }
@@ -166,13 +166,13 @@ ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
 			| '{' '}' 				{ $$=EMPTY_TREE; };
 
 ClassBodyDecls	: ClassBodyDecl
-				| ClassBodyDecl ClassBodyDecls { $$=group($1, $2); };
+				| ClassBodyDecl ClassBodyDecls { $$=group(R_CLASS_GROUP, $1, $2); };
 
 ClassBodyDecl: VarDefs ';' | Method | Constructor;
 
 VarDefs: Type VarDecls { $$=tree("Variable", R_DEFINE2, NULL, 2, $1, $2); };
 
-VarDecls	: VarDecl ',' VarDecls { $$=group($1, $3); }
+VarDecls	: VarDecl ',' VarDecls { $$=group(R_VAR_GROUP, $1, $3); }
 			| VarDecl;
 
 VarDecl	: ID
@@ -190,7 +190,7 @@ Block: '{' ZeroStatments '}' { $$=$2; }
 // Zero or more statments
 ZeroStatments : Statements | { $$=EMPTY_TREE; }
 
-Statements	: Statement Statements { $$=group($1, $2); }
+Statements	: Statement Statements { $$=group(R_STATEMENT_GROUP, $1, $2); }
 			| Statement;
 
 Statement	: ';' { $$=EMPTY_TREE; }
@@ -212,7 +212,7 @@ ExpStatement: MethodCall
 			| Assignment
 			| Instantiate
 
-ExpList	: ExpList ',' ExpStatement { $$=group($1, $3); }
+ExpList	: ExpList ',' ExpStatement { $$=group(R_EXP_GROUP, $1, $3); }
 		| ExpStatement
 
 MethodCall	: Name '(' ZeroArgs ')' 		{ $$=tree("Call", R_CALL1, NULL, 2, $1, $3); }
@@ -223,7 +223,7 @@ Switch: SWITCH '(' Exp ')' SwitchBlock { $$=tree("Switch", R_SWITCH, $1, 2, $3, 
 SwitchBlock	: '{' '}' 			{ $$=EMPTY_TREE; }
 			| '{' Cases '}' 	{ $$=$2; }
 
-Cases	: Cases Case { $$=group($1, $2); }
+Cases	: Cases Case { $$=group(R_CASE_GROUP, $1, $2); }
 		| Case
 
 Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $1, 2, $2, $4); }

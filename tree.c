@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "jzero.tab.h"
 #include "tree.h"
 #include "token.h"
 #include "rules.h"
+
+int tree_count = 0;
 
 /**
  * @brief Create a new tree object
@@ -21,7 +24,10 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 {
 	Tree *tree = (Tree *)malloc(sizeof(Tree));
 
+	tree_count++;
+
 	// Store tree values
+	tree->id = tree_count;
 	tree->rule = rule;
 	tree->name = message;
 	tree->count = child_count;
@@ -78,6 +84,9 @@ void free_trees()
  */
 void print_tree(Tree *tree, int indent_level, char *indent)
 {
+	if (indent_level == 0)
+		printf("-----------------------------------------------------------\n");
+
 	// Print indent characters
 	for (int i = 0; i < indent_level; i++)
 		printf("%s", indent);
@@ -106,13 +115,61 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 	// Print children
 	for (int i = 0; i < tree->count; i++)
 		print_tree(tree->children[i], indent_level + 1, indent);
+
+	if (indent_level == 0)
+		printf("-----------------------------------------------------------\n");
 }
 
-void print_trees(Tree *tree)
+/**
+ * @brief Prints the given tree in .dot file format
+ *
+ * @param tree Tree to print
+ * @param indent_level Used to detect if a tree is a subtree
+ */
+char *tree_dot_name(Tree *tree)
 {
-	printf("--------------------------------------------------------------\n");
-	print_tree(tree, 0, "| ");
-	printf("--------------------------------------------------------------\n");
+	if (tree)
+	{
+		if (tree->token)
+			switch (tree->token->category)
+			{
+			case LITERAL_STRING:
+				return "<string>";
+
+			default:
+				return tree->token->text;
+			}
+		else
+			return tree->name;
+	}
+
+	return "(nil)";
+}
+
+/**
+ * @brief Prints the given tree in .dot file format
+ *
+ * @param tree Tree to print
+ * @param indent_level Used to detect if a tree is a subtree
+ */
+void print_dot_tree(Tree *tree, int indent_level)
+{
+	if (indent_level == 0)
+		printf("graph {\n");
+
+	for (int i = 0; i < tree->count; i++)
+	{
+		printf("\"%d %s\" -- \"%d %s\"\n",
+			   tree->id,
+			   tree_dot_name(tree),
+			   tree->children[i]->id,
+			   tree_dot_name(tree->children[i]));
+
+		print_dot_tree(tree->children[i], indent_level + 1);
+	}
+
+	if (indent_level == 0)
+		printf("}");
 }
 
 /**

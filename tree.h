@@ -13,6 +13,7 @@ Trees *trees;
 
 Tree
 {
+	int id;
 	int rule;
 	char *name;
 	int count;
@@ -34,7 +35,13 @@ Tree *tree_token(Token *token);
  */
 void print_tree(Tree *tree, int indent_level, char *indent);
 
-void print_trees(Tree *tree);
+/**
+ * @brief Prints the given tree in .dot file format
+ *
+ * @param tree Tree to print
+ * @param indent_level Used to detect if a tree is a subtree
+ */
+void print_dot_tree(Tree *tree, int indent_level);
 
 /**
  * @brief Creates a tree with n children

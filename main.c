@@ -36,7 +36,10 @@ void post_read()
 		print_tokens(tokens);
 
 	if (options & TREE_FLAG)
-		print_trees(program);
+		print_tree(program, 0, "| ");
+
+	if (options & DOT_FLAG)
+		print_dot_tree(program, 0);
 }
 
 /*

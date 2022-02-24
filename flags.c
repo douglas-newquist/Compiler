@@ -31,6 +31,9 @@ int get_flag_code(char *arg)
 	return 0;
 }
 
+/**
+ * @brief Gets the code for the given flag, 0 if not a flag
+ */
 int flag(char *arg)
 {
 	int cflag = get_flag_code(arg);

@@ -11,5 +11,8 @@
 
 int options, flag_count;
 
+/**
+ * @brief Gets the code for the given flag, 0 if not a flag
+ */
 int flag(char *arg);
 #endif

@@ -1,5 +1,5 @@
 TARGETS=j0 jzero.tab.h
-ZIP_TARGETS=*.c *.h *.l *.y Makefile ${shell find -iname "*.java"}
+ZIP_TARGETS=*.c *.h *.l *.y Makefile JavaSamples/Makefile ${shell find -iname "*.java" -or -iname "*.tree" -or -iname "*.tokens"}
 HEADERS=*.h jzero.tab.h
 
 SOURCES=$(shell find -name "*.c" -not -name "*.*.c") jzero.tab.c jzero.yy.c

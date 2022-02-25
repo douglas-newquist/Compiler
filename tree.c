@@ -169,7 +169,7 @@ void print_dot_tree(Tree *tree, int indent_level)
 	}
 
 	if (indent_level == 0)
-		printf("}");
+		printf("}\n");
 }
 
 /**

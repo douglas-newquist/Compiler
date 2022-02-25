@@ -1,0 +1,16 @@
+CSE 423 JZero Compiler Project
+
+Douglas Newquist
+
+Compiling the program:
+	- make
+		To build the program normally
+	- make debug
+		Adds extra debug output to the final executable
+
+Flags supported:
+	--none, switches all flags off
+	--token, prints out all read tokens
+	--tree, prints the parsed syntax tree
+	--dot, changes output to .dot file format
+	--bison, (debug only) prints bison's debug output

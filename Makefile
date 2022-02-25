@@ -1,27 +1,44 @@
-TARGETS=j0 j0lex.l
-ZIP_TARGETS=*.c *.h *.l Makefile
+TARGETS=j0 jzero.tab.h
+ZIP_TARGETS=*.c *.h *.l *.y Makefile JavaSamples/Makefile ${shell find -iname "*.java" -or -iname "*.tree" -or -iname "*.tokens"}
+HEADERS=*.h jzero.tab.h
+
+SOURCES=$(shell find -name "*.c" -not -name "*.*.c") jzero.tab.c jzero.yy.c
+OBJECTS=$(SOURCES:%.c=%.o)
+
+CC=gcc -Wall
 
 all: ${TARGETS}
 
-%.yy.c: %.l *.h jzero.y.tab.h
+force-all:
+	make clean
+	make all
+
+force-debug:
+	make clean
+	make debug
+
+debug: DEBUG=-DDEBUG
+debug: jzero.output ${TARGETS}
+
+%.tab.c %.tab.h: %.y
+	bison -d $<
+
+%.output: %.y
+	bison -v -d $<
+
+%.yy.c: %.l
 	flex -o $@ $<
 
-%.o: %.c *.h
-	gcc -Wall -c $<
+%.o: %.c ${HEADERS}
+	${CC} ${DEBUG} -c $<
 
-%.tab.c %.tab.h: %
-	yacc -b $< -dd $<
+j0: ${OBJECTS} ${HEADERS}
+	${CC} ${DEBUG} -o $@ ${OBJECTS}
 
-j0lex.l:
-	ln -s jzero.l j0lex.l
-
-j0: main.o jzero.yy.o token.o parser.o
-	gcc -Wall -o $@ $^
-
-hw2_douglas_newquist.zip: ${ZIP_TARGETS}
+hw3_douglas_newquist.zip: ${ZIP_TARGETS}
 	make clean
 	rm -f $@
 	zip $@ -r ${ZIP_TARGETS}
 
 clean:
-	rm -rf ${TARGETS} *.o *.yy.c *.tab.*
+	rm -rf ${TARGETS} *.o *.yy.* *.tab.* *.output

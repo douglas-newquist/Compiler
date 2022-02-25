@@ -4,6 +4,10 @@
 	#include "rules.h"
 	#include "tree.h"
 
+#if DEBUG
+#define YYDEBUG 1
+#endif
+
 	#define EMPTY_TREE tree("<EMPTY>", R_EMPTY, NULL, 0)
 
 	extern int yylex();
@@ -116,7 +120,7 @@
 
 %%
 
-Program: Class { program=$$; }
+Program: Class { program=$1; }
 
 Name	: ID
 		| QualifiedName;
@@ -293,7 +297,6 @@ Exp14	: '-' Exp14 { $$=tree("Negate", '-', $1, 1, $2); }
 		| Exp15;
 
 Exp13	: Instantiate
-		//| '(' Type ')' Name { $$=tree("Cast", R_CAST, NULL, 2, $2, $4); }
 		| Exp14;
 
 Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", '*', $2, 2, $1, $3); }

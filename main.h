@@ -7,7 +7,6 @@
 #include "tree.h"
 
 #if DEBUG
-#define YYDEBUG 1
 int yydebug;
 #endif
 

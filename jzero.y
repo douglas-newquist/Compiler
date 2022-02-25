@@ -182,7 +182,7 @@ VarDecls	: VarDecl ',' VarDecls
 			| VarDecl;
 
 VarDecl	: ID
-		| ID '=' Exp	{ $$=tree("Let", R_DEFINE4, $1, 1, $3); };
+		| ID '=' Exp	{ $$=tree("Let", R_DEFINE3, $1, 1, $3); };
 
 // public static type name(args) { ... }
 Method: Visability STATIC AnyType ID '(' ZeroArgDefs ')' Block

@@ -53,6 +53,7 @@
 %type <tree> Literal
 %type <tree> RelationOp
 %type <tree> Visability
+%type <tree> Owner
 
 %type <tree> AnyType
 %type <tree> ArgDef
@@ -94,6 +95,7 @@
 %type <tree> IfThenElse
 %type <tree> Instantiate
 %type <tree> Method
+%type <tree> MethodHead
 %type <tree> MethodCall
 %type <tree> Name
 %type <tree> Primary
@@ -122,19 +124,16 @@
 
 Program: Class { program=$1; }
 
-Name	: ID
-		| QualifiedName;
+Name: ID | QualifiedName;
 
 QualifiedName: Name '.' ID { $$=tree("Name", R_ACCESS1, $3, 1, $1); };
 
-AnyType	: VOID
-		| Type;
+AnyType: VOID | Type;
 
 Type: SingleType
 	| Type '[' ']' { $$=tree("Array", R_ARRAY1, NULL, 1, $1); };
 
-SingleType	: FixedType
-			| Name;
+SingleType: FixedType | Name;
 
 FixedType: INT | DOUBLE | BOOLEAN | CHAR;
 
@@ -148,6 +147,8 @@ Literal	: LITERAL_INT
 FieldAccess: Primary '.' ID { $$=tree("Field", R_ACCESS2, $3, 1, $1); };
 
 Visability: PUBLIC;
+
+Owner: STATIC;
 
 // Zero or more arg defs
 ZeroArgDefs: ArgDefs | { $$=EMPTY_TREE; }
@@ -185,8 +186,17 @@ VarDecl	: ID
 		| ID '=' Exp	{ $$=tree("Let", R_DEFINE3, $1, 1, $3); };
 
 // public static type name(args) { ... }
-Method: Visability STATIC AnyType ID '(' ZeroArgDefs ')' Block
-		{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); };
+Method	: Visability Owner MethodHead
+		{ $$=tree("Method", R_METHOD2, NULL, 3, $1, $2, $3); }
+		| Visability MethodHead
+		{ $$=tree("Method", R_METHOD2, NULL, 3, $1, EMPTY_TREE, $2); }
+		| Owner MethodHead
+		{ $$=tree("Method", R_METHOD2, NULL, 3, EMPTY_TREE, $1, $2); }
+		| MethodHead
+		{ $$=tree("Method", R_METHOD2, NULL, 3, EMPTY_TREE, EMPTY_TREE, $1); }
+
+MethodHead	: AnyType ID '(' ZeroArgDefs ')' Block
+			{ $$=tree("Head", R_METHOD1, $2, 3, $1, $4, $6); }
 
 Constructor	: Visability ID '(' ZeroArgDefs ')' Block
 			{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
@@ -233,7 +243,7 @@ SwitchBlock	: '{' '}' 			{ $$=EMPTY_TREE; }
 Cases	: Cases Case { $$=group("Cases", R_CASE_GROUP, $1, $2); }
 		| Case
 
-Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $1, 2, $2, $4); }
+Case	: CASE Literal ':' Statements { $$=tree("Case", R_CASE, $2, 1, $4); }
 		| DEFAULT ':' Statements { $$=tree("Default", R_DEFAULT_CASE, $1, 1, $3); }
 
 While: WHILE '(' Exp ')' Block { $$=tree("While", R_WHILE, $1, 2, $3, $5); }

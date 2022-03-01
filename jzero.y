@@ -199,7 +199,7 @@ MethodHead	: AnyType ID '(' ZeroArgDefs ')' Block
 			{ $$=tree("Head", R_METHOD1, $2, 3, $1, $4, $6); }
 
 Constructor	: Visability ID '(' ZeroArgDefs ')' Block
-			{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
+			{ $$=tree("Constructor", R_METHOD3, $2, 3, $1, $4, $6); }
 
 Block: '{' ZeroStatments '}' { $$=$2; }
 

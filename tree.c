@@ -40,7 +40,7 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 		tree->children = NULL;
 
 	// Add tree to list
-	trees = add(trees, tree);
+	trees = list_add(trees, tree);
 
 	return tree;
 }

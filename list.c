@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "list.h"
 
-List *tail(List *list)
+List *list_tail(List *list)
 {
 	if (list == NULL)
 		return NULL;
@@ -17,7 +17,7 @@ List *tail(List *list)
 	return list;
 }
 
-List *add(List *list, void *value)
+List *list_add(List *list, void *value)
 {
 	List *current = (List *)malloc(sizeof(List));
 	current->value = value;
@@ -25,7 +25,7 @@ List *add(List *list, void *value)
 
 	if (list != NULL)
 	{
-		tail(list)->next = current;
+		list_tail(list)->next = current;
 		return list;
 	}
 

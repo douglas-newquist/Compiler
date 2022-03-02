@@ -17,12 +17,12 @@ List
  * @param list Linked list to append to
  * @param value Element being added
  */
-List *add(List *list, void *value);
+List *list_add(List *list, void *value);
 
 /**
  * @brief Gets the tail node
  */
-List *tail(List *list);
+List *list_tail(List *list);
 
 /**
  * @brief Frees the given linked list

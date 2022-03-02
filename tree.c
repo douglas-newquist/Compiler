@@ -53,26 +53,19 @@ Tree *tree_token(Token *token)
 /**
  * @brief Frees the given tree
  */
-void free_tree(Tree *tree)
+void free_tree(void *tree)
 {
-	if (tree == NULL)
+	Tree *t = (Tree *)tree;
+	if (t == NULL)
 		return;
 
-	free(tree->children);
-	free(tree);
-}
-
-/**
- * @brief Wrapper for free_tree for linked list
- */
-void free_list_tree(void *tree)
-{
-	free_tree((Tree *)tree);
+	free(t->children);
+	free(t);
 }
 
 void free_trees()
 {
-	trees = free_list(trees, free_list_tree);
+	trees = free_list(trees, free_tree);
 }
 
 /**

@@ -68,28 +68,24 @@ Token *create_token(int category)
 /*
 	Frees the given token from memory
 */
-void free_token(Token *token)
+void free_token(void *token)
 {
-	if (token == NULL)
+	Token *t = (Token *)token;
+	if (t == NULL)
 		return;
 
-	if (token->text)
-		free(token->text);
+	if (t->text)
+		free(t->text);
 
-	if (token->sval)
-		free(token->sval);
+	if (t->sval)
+		free(t->sval);
 
 	free(token);
 }
 
-void free_list_token(void *token)
-{
-	free_token((Token *)token);
-}
-
 void free_tokens()
 {
-	tokens = free_list(tokens, free_list_token);
+	tokens = free_list(tokens, free_token);
 }
 
 void print_token_value(Token *token)

@@ -9,6 +9,8 @@
 #include "flags.h"
 #include "jzero.tab.h"
 #include "main.h"
+#include "symbol.h"
+#include "symboltable.h"
 #include "token.h"
 #include "tree.h"
 
@@ -16,6 +18,8 @@ void free_all()
 {
 	free_trees();
 	free_tokens();
+	free_symboltables();
+	free_symbols();
 
 	if (yyin && yyin != stdin)
 	{
@@ -40,6 +44,8 @@ void post_read()
 
 	if (options & DOT_FLAG)
 		print_dot_tree(program, 0);
+
+	generate_symboltable(program);
 }
 
 /*

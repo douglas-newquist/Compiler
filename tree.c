@@ -78,7 +78,7 @@ void free_trees()
 void print_tree(Tree *tree, int indent_level, char *indent)
 {
 	if (indent_level == 0)
-		printf("-----------------------------------------------------------\n");
+		printf("---- Parse Tree ----------------------------------------------\n");
 
 	// Print indent characters
 	for (int i = 0; i < indent_level; i++)

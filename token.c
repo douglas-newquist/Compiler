@@ -133,7 +133,7 @@ void print_token(void *token)
 void print_tokens(Tokens *tokens)
 {
 	printf("Line\tToken\tText\t\tFile\t\t\tValue\n");
-	printf("--------------------------------------------------------------\n");
+	printf("---- Tokens --------------------------------------------------\n");
 
 	print_list(tokens, print_token);
 

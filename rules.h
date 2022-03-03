@@ -9,14 +9,12 @@ enum RULES
 	R_ACCESS1,		   // Name.ID
 	R_ACCESS2,		   // Primary.ID
 	R_ACCESS3,		   // Array get element at i
-	R_BINARY_OP,	   // Exp op Exp
-	R_UNARY_OP1,	   // op Exp
-	R_UNARY_OP2,	   // Exp op
 	R_ARG_DEF_GROUP,   // Type ID, ..., Type ID
 	R_ARG_GROUP,	   // Exp, ..., Exp
 	R_ARRAY1,		   // Type[]
 	R_ARRAY2,		   // new Type[Exp]
 	R_ASSIGN,		   // Name = Exp
+	R_BINARY_OP,	   // Exp op Exp
 	R_BREAK1,		   // Break
 	R_BREAK2,		   // Break ID
 	R_CALL1,		   // Name(R_ARG_GROUP)
@@ -43,6 +41,8 @@ enum RULES
 	R_RETURN2,		   // Return Exp
 	R_STATEMENT_GROUP, // Statement Statement+
 	R_SWITCH,		   // switch(Exp) R_CASE_GROUP
+	R_UNARY_OP1,	   // op Exp
+	R_UNARY_OP2,	   // Exp op
 	R_VAR_GROUP,	   // (R_DEFINE3 | ID), ..., (R_DEFINE3 | ID)
 	R_WHILE			   // while(Exp) R_STATEMENT_GROUP
 };

@@ -6,6 +6,7 @@
 #define _SYMBOLTABLE
 SymbolTable
 {
+	int id;
 	SymbolTable *parent;
 	int symbol_count;
 	List *symbols;

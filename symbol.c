@@ -1,12 +1,16 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
 #include "symbol.h"
+#include "symboltable.h"
 
+int symbol_count = 0;
 List *symbols = NULL;
 
 Symbol *create_symbol(Token *token, char *string, int type)
 {
 	Symbol *symbol = malloc(sizeof(Symbol));
+	symbol->id = symbol_count++;
 	symbol->string = string;
 	symbol->type = type;
 	symbol->token = token;
@@ -19,7 +23,6 @@ Symbol *create_symbol(Token *token, char *string, int type)
 
 void free_symbol(void *symbol)
 {
-	Symbol *s = (Symbol *)symbol;
 	free(symbol);
 }
 
@@ -27,4 +30,23 @@ void free_symbols()
 {
 	free_list(symbols, free_symbol);
 	symbols = NULL;
+}
+
+void print_symbol(void *symbol)
+{
+	Symbol *s = (Symbol *)symbol;
+
+	printf("%d %s of type %d ", s->id, s->string, s->type);
+
+	if (s->table == NULL)
+		printf("<Orphan>\n");
+	else
+		printf("in table %d\n", s->table->id);
+}
+
+void print_symbols()
+{
+	printf("---- Symbols -------------------------------------------------\n");
+	print_list(symbols, print_symbol);
+	printf("--------------------------------------------------------------\n");
 }

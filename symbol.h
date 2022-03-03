@@ -6,6 +6,7 @@
 
 Symbol
 {
+	int id;
 	char *string;
 	int type;
 	Token *token;
@@ -14,4 +15,5 @@ Symbol
 
 Symbol *create_symbol(Token *token, char *string, int type);
 void free_symbols();
+void print_symbols();
 #endif

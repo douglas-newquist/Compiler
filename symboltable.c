@@ -7,12 +7,14 @@
 #include "symbols.h"
 #include "symboltable.h"
 
+int table_count = 0;
 List *tables = NULL;
 SymbolTable *scope;
 
 SymbolTable *create_symboltable(SymbolTable *parent)
 {
 	SymbolTable *table = malloc(sizeof(SymbolTable));
+	table->id = table_count++;
 	table->parent = parent;
 	table->symbol_count = 0;
 	table->symbols = NULL;
@@ -145,7 +147,9 @@ SymbolTable *generate_symboltable(Tree *tree)
 		break;
 
 	case R_CLASS_GROUP:
-		break;
+		enter_scope();
+		scan_children(tree);
+		return exit_scope();
 
 	case R_CLASS1:
 		enter_scope();
@@ -192,7 +196,6 @@ SymbolTable *generate_symboltable(Tree *tree)
 
 		enter_scope();
 
-		add_symbol(tree->token, S_Method);
 		generate_symboltable(tree->children[0]);
 		generate_symboltable(tree->children[1]);
 		generate_symboltable(tree->children[2]);

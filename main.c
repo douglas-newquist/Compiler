@@ -46,6 +46,9 @@ void post_read()
 		print_dot_tree(program, 0);
 
 	generate_symboltable(program);
+
+	if (options & SYMBOLS)
+		print_symbols();
 }
 
 /*

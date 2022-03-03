@@ -27,6 +27,7 @@ int get_flag_code(char *arg)
 	check_flag(arg, "--tree", TREE_FLAG);
 	check_flag(arg, "--bison", BISON_FLAG);
 	check_flag(arg, "--dot", DOT_FLAG);
+	check_flag(arg, "--symbols", SYMBOLS);
 
 	return 0;
 }

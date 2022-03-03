@@ -104,13 +104,11 @@ void scan_children(Tree *tree)
 
 SymbolTable *generate_symboltable(Tree *tree)
 {
-	if (tree == NULL || tree->rule < R_EMPTY)
+	if (tree == NULL)
 		return NULL;
 
 	if (scope == NULL)
 		enter_scope();
-
-	Symbol *symbol;
 
 	switch (tree->rule)
 	{
@@ -145,20 +143,14 @@ SymbolTable *generate_symboltable(Tree *tree)
 		return exit_scope();
 
 	case R_METHOD1:
-		generate_symboltable(tree->children[0]);
 		add_symbol(tree->token, S_Method);
 
 		enter_scope();
-
 		scan_children(tree);
-
 		return exit_scope();
 
-	case R_METHOD2:
-		return NULL;
-
 	case R_METHOD3:
-		symbol = add_symbol(tree->token, S_Method);
+		add_symbol(tree->token, S_Method);
 		return NULL;
 
 	case R_STATEMENT_GROUP:
@@ -170,10 +162,10 @@ SymbolTable *generate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_VAR_GROUP:
-		for (int i = 0; i < tree->count; i += 1)
+		for (int i = 0; i < tree->count; i++)
 		{
 			if (tree->children[i]->rule == ID)
-				add_symbol(tree->children[i], S_Variable);
+				add_symbol(tree->children[i]->token, S_Variable);
 			else
 				generate_symboltable(tree->children[i]);
 		}
@@ -183,7 +175,7 @@ SymbolTable *generate_symboltable(Tree *tree)
 		generate_symboltable(tree->children[0]);
 
 		enter_scope();
-		scan_children(tree);
+		generate_symboltable(tree->children[1]);
 		return exit_scope();
 
 	default:

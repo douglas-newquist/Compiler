@@ -9,7 +9,9 @@ enum RULES
 	R_ACCESS1,		   // Name.ID
 	R_ACCESS2,		   // Primary.ID
 	R_ACCESS3,		   // Array get element at i
-	R_AND,			   // Exp && Exp
+	R_BINARY_OP,	   // Exp op Exp
+	R_UNARY_OP1,	   // op Exp
+	R_UNARY_OP2,	   // Exp op
 	R_ARG_DEF_GROUP,   // Type ID, ..., Type ID
 	R_ARG_GROUP,	   // Exp, ..., Exp
 	R_ARRAY1,		   // Type[]
@@ -27,7 +29,6 @@ enum RULES
 	R_DEFINE1,		   // Type ID
 	R_DEFINE2,		   // Type R_VAR_GROUP
 	R_DEFINE3,		   // ID = Exp
-	R_EQUALS,		   // Exp == Exp
 	R_EXP_GROUP,	   //
 	R_FOR,			   // for(R_EXP_GROUP?; Exp?, R_EXP_GROUP?) R_STATEMENT_GROUP
 	R_IF1,			   // if (Exp) R_STATEMENT_GROUP
@@ -38,12 +39,9 @@ enum RULES
 	R_METHOD2,		   // public? static? R_METHOD1
 	R_METHOD3,		   // public ID(R_ARG_GROUP) R_STATEMENT_GROUP
 	R_NEW1,			   // new Type(R_ARG_GROUP)
-	R_NOT_EQUAL,	   // Exp != Exp
-	R_OR,			   // Exp || Exp
 	R_RETURN1,		   // Return
 	R_RETURN2,		   // Return Exp
 	R_STATEMENT_GROUP, // Statement Statement+
-	R_STEP,			   // Name++ or Name--
 	R_SWITCH,		   // switch(Exp) R_CASE_GROUP
 	R_VAR_GROUP,	   // (R_DEFINE3 | ID), ..., (R_DEFINE3 | ID)
 	R_WHILE			   // while(Exp) R_STATEMENT_GROUP

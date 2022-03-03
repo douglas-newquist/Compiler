@@ -294,42 +294,42 @@ Value	: Primary
 		| ArrayAccess
 		| Name;
 
-Step: Name INCREMENT { $$=tree("++", R_STEP, $2, 1, $1); }
-	| Name DECREMENT { $$=tree("--", R_STEP, $2, 1, $1); }
+Step: Name INCREMENT { $$=tree("++", R_UNARY_OP2, $2, 1, $1); }
+	| Name DECREMENT { $$=tree("--", R_UNARY_OP2, $2, 1, $1); }
 
 Exp: Exp01;
 
 Exp15	: Step
 		| Value;
 
-Exp14	: '-' Exp14 { $$=tree("Negate", '-', $1, 1, $2); }
-		| '!' Exp14 { $$=tree("Not", '!', $1, 1, $2); }
+Exp14	: '-' Exp14 { $$=tree("Negate", R_UNARY_OP1, $1, 1, $2); }
+		| '!' Exp14 { $$=tree("Not", R_UNARY_OP1, $1, 1, $2); }
 		| Exp15;
 
 Exp13	: Instantiate
 		| Exp14;
 
-Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", '*', $2, 2, $1, $3); }
-		| Exp12 '/' Exp14 { $$=tree("Div", '/', $2, 2, $1, $3); }
-		| Exp12 '%' Exp14 { $$=tree("Mod", '%', $2, 2, $1, $3); }
+Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", R_BINARY_OP, $2, 2, $1, $3); }
+		| Exp12 '/' Exp14 { $$=tree("Div", R_BINARY_OP, $2, 2, $1, $3); }
+		| Exp12 '%' Exp14 { $$=tree("Mod", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp13;
 
-Exp11	: Exp11 '+' Exp12 { $$=tree("Add", '+', $2, 2, $1, $3); }
-		| Exp11 '-' Exp12 { $$=tree("Sub", '-', $2, 2, $1, $3); }
+Exp11	: Exp11 '+' Exp12 { $$=tree("Add", R_BINARY_OP, $2, 2, $1, $3); }
+		| Exp11 '-' Exp12 { $$=tree("Sub", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp12;
 
 Exp09	: Exp09 RelationOp Exp11
-		{ $$=tree("Compare", $2->token->category, $2, 2, $1, $3); }
+		{ $$=tree("Compare", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp11;
 
-Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_EQUALS, $2, 2, $1, $3); }
-		| Exp08 NOT_EQUAL Exp09 { $$=tree("Not Equal", R_NOT_EQUAL, $2, 2, $1, $3); }
+Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_BINARY_OP, $2, 2, $1, $3); }
+		| Exp08 NOT_EQUAL Exp09 { $$=tree("Not Equal", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp09;
 
-Exp04	: Exp04 AND Exp08 { $$=tree("And", R_AND, $2, 2, $1, $3); };
+Exp04	: Exp04 AND Exp08 { $$=tree("And", R_BINARY_OP, $2, 2, $1, $3); };
 		| Exp08;
 
-Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_AND, $2, 2, $1, $3); }
+Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp04;
 
 Exp01	: Exp03;

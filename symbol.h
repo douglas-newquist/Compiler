@@ -9,6 +9,7 @@ Symbol
 	int id;
 	char *string;
 	int type;
+	int attributes;
 	Token *token;
 	SymbolTable *table;
 };

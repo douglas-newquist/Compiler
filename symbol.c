@@ -13,6 +13,7 @@ Symbol *create_symbol(Token *token, char *string, int type)
 	symbol->id = symbol_count++;
 	symbol->string = string;
 	symbol->type = type;
+	symbol->attributes = 0;
 	symbol->token = token;
 	symbol->table = NULL;
 

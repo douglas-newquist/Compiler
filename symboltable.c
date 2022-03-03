@@ -1,6 +1,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "attributes.h"
+#include "errors.h"
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
@@ -49,11 +51,16 @@ int table_contains(SymbolTable *table, Symbol *symbol, int mode)
 	if (table == NULL || symbol == NULL)
 		return FALSE;
 
+	if (mode & LOCAL_SYMBOLS)
+	{
+		// TODO
+	}
+
 	if (mode & GLOBAL_SYMBOLS)
+	{
 		if (table_contains(table->parent, symbol, LOCAL_SYMBOLS | GLOBAL_SYMBOLS))
 			return TRUE;
-
-	// TODO Search local and children
+	}
 
 	return FALSE;
 }
@@ -62,6 +69,14 @@ Symbol *add_symbol(Token *token, int type)
 {
 	Symbol *symbol = create_symbol(token, token->text, type);
 	symbol->table = scope;
+
+	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
+	{
+		yytext = token->text;
+		line = token->line;
+		column = token->column;
+		error(SEMATIC_ERROR, "Multiple definitions");
+	}
 
 	scope->symbol_count++;
 	scope->symbols = list_add(scope->symbols, symbol);
@@ -89,7 +104,7 @@ void scan_children(Tree *tree)
 
 SymbolTable *generate_symboltable(Tree *tree)
 {
-	if (tree == NULL || tree->rule < 1000)
+	if (tree == NULL || tree->rule < R_EMPTY)
 		return NULL;
 
 	if (scope == NULL)
@@ -100,44 +115,6 @@ SymbolTable *generate_symboltable(Tree *tree)
 	switch (tree->rule)
 	{
 	case R_EMPTY:
-		return NULL;
-
-	case LITERAL_BOOL:
-	case LITERAL_CHAR:
-	case LITERAL_DOUBLE:
-	case LITERAL_INT:
-	case LITERAL_NULL:
-	case LITERAL_STRING:
-		return NULL;
-
-	case R_ACCESS1:
-	case R_ACCESS2:
-	case R_ACCESS3:
-	case R_ARG_DEF_GROUP:
-	case R_ARG_GROUP:
-	case R_ARRAY1:
-	case R_ARRAY2:
-	case R_ASSIGN:
-	case R_BINARY_OP:
-	case R_BREAK1:
-	case R_BREAK2:
-	case R_CALL1:
-	case R_CALL2:
-	case R_CASE_GROUP:
-	case R_DEFAULT_CASE:
-	case R_DEFINE2:
-	case R_EXP_GROUP:
-	case R_IF1:
-	case R_IF2:
-	case R_IF3:
-	case R_IF4:
-	case R_METHOD2:
-	case R_NEW1:
-	case R_RETURN1:
-	case R_RETURN2:
-	case R_UNARY_OP1:
-	case R_UNARY_OP2:
-		scan_children(tree);
 		return NULL;
 
 	case R_CLASS_GROUP:
@@ -154,8 +131,12 @@ SymbolTable *generate_symboltable(Tree *tree)
 		return exit_scope();
 
 	case R_DEFINE1:
+		add_symbol(tree->token, S_Variable);
+		return NULL;
+
 	case R_DEFINE3:
 		add_symbol(tree->token, S_Variable);
+		scan_children(tree);
 		return NULL;
 
 	case R_FOR:
@@ -173,8 +154,11 @@ SymbolTable *generate_symboltable(Tree *tree)
 
 		return exit_scope();
 
+	case R_METHOD2:
+		return NULL;
+
 	case R_METHOD3:
-		add_symbol(tree->token, S_Method);
+		symbol = add_symbol(tree->token, S_Method);
 		return NULL;
 
 	case R_STATEMENT_GROUP:
@@ -203,7 +187,7 @@ SymbolTable *generate_symboltable(Tree *tree)
 		return exit_scope();
 
 	default:
-		printf("Rule %d not implemented\n", tree->rule);
+		scan_children(tree);
 		return NULL;
 	}
 

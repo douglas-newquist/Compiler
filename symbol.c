@@ -41,7 +41,12 @@ void print_symbol(void *symbol)
 	if (s->table == NULL)
 		printf("<Orphan>\n");
 	else
-		printf("in table %d\n", s->table->id);
+		printf("in table %d", s->table->id);
+
+	if (s->table->parent == NULL)
+		printf("\n");
+	else
+		printf(" in %d\n", s->table->parent->id);
 }
 
 void print_symbols()

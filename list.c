@@ -6,44 +6,75 @@
 #include <stdio.h>
 #include "list.h"
 
-List *list_tail(List *list)
+List *create_list(ListElement *element)
 {
-	if (list == NULL)
-		return NULL;
-
-	while (list->next != NULL)
-		list = list->next;
-
+	List *list = malloc(sizeof(List));
+	list->size = element == NULL ? 0 : 1;
+	list->head = element;
+	list->tail = element;
 	return list;
+}
+
+ListElement *create_list_element(void *value)
+{
+	ListElement *element = malloc(sizeof(ListElement));
+	element->value = value;
+	element->next = NULL;
+	return element;
 }
 
 List *list_add(List *list, void *value)
 {
-	List *current = (List *)malloc(sizeof(List));
-	current->value = value;
-	current->next = NULL;
+	ListElement *current = create_list_element(value);
 
-	if (list != NULL)
+	if (list == NULL)
+		return create_list(current);
+
+	list->size++;
+
+	if (list->size == 0)
 	{
-		list_tail(list)->next = current;
-		return list;
+		list->tail = current;
+		list->head = current;
 	}
-
-	return current;
+	else
+	{
+		list->tail->next = current;
+		list->tail = current;
+	}
+	return list;
 }
 
 List *free_list(List *list, void (*freer)(void *))
 {
-	while (list != NULL)
+	if (list == NULL)
+		return NULL;
+
+	ListElement *current = list->head, *next;
+
+	while (current != NULL)
 	{
-		List *next = list->next;
+		next = current->next;
 
 		if (freer != NULL)
-			(*freer)(list->value);
+			(*freer)(current->value);
 
-		free(list);
-		list = next;
+		free(current);
+		current = next;
 	}
 
+	free(list);
+
 	return NULL;
+}
+
+void print_list(List *list, void (*printer)(void *))
+{
+	ListElement *current = list->head;
+
+	while (current != NULL)
+	{
+		(*printer)(current->value);
+		current = current->next;
+	}
 }

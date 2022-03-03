@@ -114,14 +114,16 @@ void print_token_value(Token *token)
 	}
 }
 
-void print_token(Token *token)
+void print_token(void *token)
 {
+	Token *t = (Token *)token;
+
 	printf("%d:%d\t%d\t%s\t\t%s\t",
-		   token->line,
-		   token->column,
-		   token->category,
-		   token->text,
-		   token->filename);
+		   t->line,
+		   t->column,
+		   t->category,
+		   t->text,
+		   t->filename);
 
 	print_token_value(token);
 
@@ -133,11 +135,7 @@ void print_tokens(Tokens *tokens)
 	printf("Line\tToken\tText\t\tFile\t\t\tValue\n");
 	printf("--------------------------------------------------------------\n");
 
-	while (tokens != NULL)
-	{
-		print_token((Token *)tokens->value);
-		tokens = tokens->next;
-	}
+	print_list(tokens, print_token);
 
 	printf("--------------------------------------------------------------\n");
 }

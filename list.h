@@ -4,11 +4,18 @@
 
 #ifndef List
 #define List struct linkedlist
+#define ListElement struct listelement
+
+ListElement
+{
+	void *value;
+	ListElement *next;
+};
 
 List
 {
-	void *value;
-	List *next;
+	int size;
+	ListElement *head, *tail;
 };
 
 /**
@@ -17,12 +24,8 @@ List
  * @param list Linked list to append to
  * @param value Element being added
  */
-List *list_add(List *list, void *value);
-
-/**
- * @brief Gets the tail node
- */
-List *list_tail(List *list);
+List *
+list_add(List *list, void *value);
 
 /**
  * @brief Frees the given linked list
@@ -31,5 +34,7 @@ List *list_tail(List *list);
  * @param freer Function to free an individual element
  */
 List *free_list(List *list, void (*freer)(void *));
+
+void print_list(List *list, void (*printer)(void *));
 
 #endif

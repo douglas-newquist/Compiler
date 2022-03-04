@@ -192,9 +192,9 @@ int token(int category)
 
 void error(int code, char *message)
 {
-	fprintf(stderr, "Error in %s at %d:%d\n%s: %s\n",
-			current_file,
+	fprintf(stderr, "Error at %d:%d in %s\n%s: %s\n",
 			line, column,
+			current_file,
 			message,
 			yytext);
 

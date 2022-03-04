@@ -5,6 +5,7 @@
 #ifndef comment
 #include <stdio.h>
 #include "tree.h"
+#include "symboltable.h"
 
 #if DEBUG
 int yydebug;
@@ -20,6 +21,7 @@ char current_file[FILE_LENGTH];
 FILE *yyin;
 char *yytext;
 Tree *program;
+SymbolTable *table;
 
 int yylex_destroy();
 

@@ -45,7 +45,7 @@ void post_read()
 	if (options & DOT_FLAG)
 		print_dot_tree(program, 0);
 
-	generate_symboltable(program);
+	table = generate_symboltable(program);
 
 	if (options & SYMBOLS)
 		print_symbols();

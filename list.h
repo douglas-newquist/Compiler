@@ -6,6 +6,8 @@
 #define List struct linkedlist
 #define ListElement struct listelement
 
+#define foreach_list(list) for (ListElement *element = list->head; element != NULL; element = element->next)
+
 ListElement
 {
 	void *value;

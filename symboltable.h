@@ -1,3 +1,7 @@
+/*
+	Douglas Newquist
+*/
+
 #include "list.h"
 #include "symbol.h"
 #include "tree.h"
@@ -23,5 +27,12 @@ SymbolTable
 SymbolTable *generate_symboltable(Tree *program);
 void free_symboltables();
 
+/**
+ * @brief Checks if the given table contains a symbol
+ *
+ * @param table Table to search
+ * @param symbol Symbol to search for
+ * @param mode What scope(s) to search in
+ */
 int table_contains(SymbolTable *table, Symbol *symbol, int mode);
 #endif

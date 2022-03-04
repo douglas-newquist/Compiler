@@ -1,3 +1,7 @@
+/*
+	Douglas Newquist
+*/
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +16,7 @@
 
 int table_count = 0;
 List *tables = NULL;
+// The current scope
 SymbolTable *scope;
 
 SymbolTable *create_symboltable(SymbolTable *parent)
@@ -51,9 +56,15 @@ int table_contains(SymbolTable *table, Symbol *symbol, int mode)
 	if (table == NULL || symbol == NULL)
 		return FALSE;
 
-	if (mode & LOCAL_SYMBOLS)
+	if (mode & LOCAL_SYMBOLS && table->symbols != NULL)
 	{
-		// TODO
+		foreach_list(table->symbols)
+		{
+			Symbol *s2 = (Symbol *)element->value;
+
+			if (strcmp(symbol->string, s2->string) == 0)
+				return TRUE;
+		}
 	}
 
 	if (mode & GLOBAL_SYMBOLS)
@@ -65,18 +76,19 @@ int table_contains(SymbolTable *table, Symbol *symbol, int mode)
 	return FALSE;
 }
 
+/**
+ * @brief Adds a symbol to the current scope
+ *
+ * @param token Token symbol to add
+ * @param type Type of the symbol
+ */
 Symbol *add_symbol(Token *token, int type)
 {
 	Symbol *symbol = create_symbol(token, token->text, type);
 	symbol->table = scope;
 
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
-	{
-		yytext = token->text;
-		line = token->line;
-		column = token->column;
-		error(SEMATIC_ERROR, "Multiple definitions");
-	}
+		error_at(token, SEMATIC_ERROR, "Redefined symbol");
 
 	scope->symbol_count++;
 	scope->symbols = list_add(scope->symbols, symbol);
@@ -96,6 +108,9 @@ SymbolTable *exit_scope()
 	return old_scope;
 }
 
+/**
+ * @brief Calls generate_symboltable on each child node in the given tree
+ */
 void scan_children(Tree *tree)
 {
 	for (int i = 0; i < tree->count; i++)
@@ -107,6 +122,7 @@ SymbolTable *generate_symboltable(Tree *tree)
 	if (tree == NULL)
 		return NULL;
 
+	// Begin program scope
 	if (scope == NULL)
 		enter_scope();
 
@@ -130,6 +146,13 @@ SymbolTable *generate_symboltable(Tree *tree)
 
 	case R_DEFINE1:
 		add_symbol(tree->token, S_Variable);
+		return NULL;
+
+	case R_DEFINE2:
+		if (tree->children[1]->rule == ID)
+			add_symbol(tree->children[1]->token, S_Variable);
+
+		scan_children(tree);
 		return NULL;
 
 	case R_DEFINE3:
@@ -179,9 +202,13 @@ SymbolTable *generate_symboltable(Tree *tree)
 		return exit_scope();
 
 	default:
+#if DEBUG
+		printf("Undefined rule action: %d\n", tree->rule);
+#endif
 		scan_children(tree);
 		return NULL;
 	}
 
+	// Exit program scope
 	return exit_scope();
 }

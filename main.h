@@ -47,4 +47,9 @@ int token(int category);
 
 void error(int code, char *message);
 void yyerror(char *message);
+
+/**
+ * @brief Calls error at the given token's position
+ */
+void error_at(Token *token, int code, char *message);
 #endif

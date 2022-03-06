@@ -35,7 +35,7 @@ debug: jzero.output ${TARGETS}
 j0: ${OBJECTS} ${HEADERS}
 	${CC} ${DEBUG} -o $@ ${OBJECTS}
 
-hw3_douglas_newquist.zip: ${ZIP_TARGETS}
+%.zip: ${ZIP_TARGETS}
 	make clean
 	rm -f $@
 	zip $@ -r ${ZIP_TARGETS}

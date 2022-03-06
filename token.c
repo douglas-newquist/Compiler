@@ -18,9 +18,11 @@ Token *create_token(int category)
 {
 	Token *token = (Token *)malloc(sizeof(Token));
 	token->category = category;
-	token->filename = current_file;
 	token->line = line;
 	token->column = column;
+
+	token->filename = malloc(sizeof(char) * (strlen(current_file) + 1));
+	strcpy(token->filename, current_file);
 
 	// Copy yytext to the token
 	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
@@ -70,16 +72,16 @@ Token *create_token(int category)
 */
 void free_token(void *token)
 {
-	Token *t = (Token *)token;
-	if (t == NULL)
+	if (token == NULL)
 		return;
 
-	if (t->text)
-		free(t->text);
+	Token *t = (Token *)token;
 
 	if (t->sval)
 		free(t->sval);
 
+	free(t->text);
+	free(t->filename);
 	free(token);
 }
 

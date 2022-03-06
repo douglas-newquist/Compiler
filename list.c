@@ -42,6 +42,7 @@ List *list_add(List *list, void *value)
 		list->tail->next = current;
 		list->tail = current;
 	}
+
 	return list;
 }
 
@@ -66,18 +67,4 @@ List *free_list(List *list, void (*freer)(void *))
 	free(list);
 
 	return NULL;
-}
-
-void print_list(List *list, void (*printer)(void *))
-{
-	if (list == NULL)
-		return;
-
-	ListElement *current = list->head;
-
-	while (current != NULL)
-	{
-		(*printer)(current->value);
-		current = current->next;
-	}
 }

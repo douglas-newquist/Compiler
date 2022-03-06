@@ -28,8 +28,7 @@ List
  * @param list Linked list to append to
  * @param value Element being added
  */
-List *
-list_add(List *list, void *value);
+List *list_add(List *list, void *value);
 
 /**
  * @brief Frees the given linked list
@@ -38,7 +37,5 @@ list_add(List *list, void *value);
  * @param freer Function to free an individual element
  */
 List *free_list(List *list, void (*freer)(void *));
-
-void print_list(List *list, void (*printer)(void *));
 
 #endif

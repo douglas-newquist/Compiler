@@ -16,5 +16,5 @@ Symbol
 
 Symbol *create_symbol(Token *token, char *string, int type);
 void free_symbols();
-void print_symbols();
+void print_symbols(SymbolTable *table);
 #endif

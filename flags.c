@@ -27,7 +27,7 @@ int get_flag_code(char *arg)
 	check_flag(arg, "--tree", TREE_FLAG);
 	check_flag(arg, "--bison", BISON_FLAG);
 	check_flag(arg, "--dot", DOT_FLAG);
-	check_flag(arg, "--symbols", SYMBOLS);
+	check_flag(arg, "--symbols", SYMBOLS_FLAG);
 
 	return 0;
 }
@@ -44,11 +44,12 @@ int flag(char *arg)
 	case NONE_FLAG:
 		options = 0;
 		break;
-
-	case DOT_FLAG:
-		options = DOT_FLAG;
-		break;
 	}
 
 	return cflag;
+}
+
+int has_flags(int v, int flags)
+{
+	return (v & flags) == flags;
 }

@@ -36,19 +36,18 @@ void free_all()
  */
 void post_read()
 {
-	if (options & TOKENS_FLAG)
+	if (has_flags(options, TOKENS_FLAG))
 		print_tokens(tokens);
 
-	if (options & TREE_FLAG)
-		print_tree(program, 0, "| ");
-
-	if (options & DOT_FLAG)
+	if (has_flags(options, DOT_FLAG | TREE_FLAG))
 		print_dot_tree(program, 0);
+	else if (has_flags(options, TREE_FLAG))
+		print_tree(program, 0, "| ");
 
 	table = generate_symboltable(program);
 
-	if (options & SYMBOLS)
-		print_symbols();
+	if (has_flags(options, SYMBOLS_FLAG))
+		print_symbols(table);
 }
 
 /*

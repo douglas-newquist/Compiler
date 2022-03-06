@@ -8,7 +8,7 @@
 #define TREE_FLAG (1 << 2)
 #define BISON_FLAG (1 << 3)
 #define DOT_FLAG (1 << 4)
-#define SYMBOLS (1 << 5)
+#define SYMBOLS_FLAG (1 << 5)
 
 int options, flag_count;
 
@@ -16,4 +16,5 @@ int options, flag_count;
  * @brief Gets the code for the given flag, 0 if not a flag
  */
 int flag(char *arg);
+int has_flags(int v, int flags);
 #endif

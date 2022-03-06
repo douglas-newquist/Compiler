@@ -37,22 +37,33 @@ void print_symbol(void *symbol)
 {
 	Symbol *s = (Symbol *)symbol;
 
-	printf("%d %s of type %d ", s->id, s->string, s->type);
-
-	if (s->table == NULL)
-		printf("<Orphan>\n");
-	else
-		printf("in table %d", s->table->id);
-
-	if (s->table->parent == NULL)
-		printf("\n");
-	else
-		printf(" in %d\n", s->table->parent->id);
+	printf("%d\t%d\t%d\t%s\t%s\n",
+		   s->type,
+		   s->table ? s->table->id : -1,
+		   s->table && s->table->parent ? s->table->parent->id : -1,
+		   s->string,
+		   s->token ? s->token->filename : "Unknown");
 }
 
-void print_symbols()
+int indent = 0;
+void print_symbols(SymbolTable *table)
 {
-	printf("---- Symbols -------------------------------------------------\n");
-	print_list(symbols, print_symbol);
-	printf("--------------------------------------------------------------\n");
+	if (indent == 0)
+	{
+		printf("---- Symbols -------------------------------------------------\n");
+		printf("Type\tTable\tParent\tName\tFile\n");
+	}
+
+	indent++;
+
+	if (table != NULL)
+		print_list(table->symbols, print_symbol);
+
+	foreach_list(table->children)
+		print_symbols((SymbolTable *)element->value);
+
+	indent--;
+
+	if (indent == 0)
+		printf("--------------------------------------------------------------\n");
 }

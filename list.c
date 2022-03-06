@@ -70,6 +70,9 @@ List *free_list(List *list, void (*freer)(void *))
 
 void print_list(List *list, void (*printer)(void *))
 {
+	if (list == NULL)
+		return;
+
 	ListElement *current = list->head;
 
 	while (current != NULL)

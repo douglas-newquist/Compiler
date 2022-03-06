@@ -131,32 +131,24 @@ SymbolTable *generate_symboltable(Tree *tree)
 	case R_EMPTY:
 		return NULL;
 
-	case R_CLASS_GROUP:
-		enter_scope();
-		scan_children(tree);
-		return exit_scope();
-
 	case R_CLASS1:
 		add_symbol(tree->token, S_Class);
 
 		enter_scope();
-
 		scan_children(tree);
-		return exit_scope();
+		exit_scope();
+		break;
 
 	case R_DEFINE1:
+	case R_DEFINE3:
 		add_symbol(tree->token, S_Variable);
+		scan_children(tree);
 		return NULL;
 
 	case R_DEFINE2:
 		if (tree->children[1]->rule == ID)
 			add_symbol(tree->children[1]->token, S_Variable);
 
-		scan_children(tree);
-		return NULL;
-
-	case R_DEFINE3:
-		add_symbol(tree->token, S_Variable);
 		scan_children(tree);
 		return NULL;
 
@@ -174,6 +166,7 @@ SymbolTable *generate_symboltable(Tree *tree)
 
 	case R_METHOD3:
 		add_symbol(tree->token, S_Method);
+		scan_children(tree);
 		return NULL;
 
 	case R_STATEMENT_GROUP:
@@ -189,8 +182,8 @@ SymbolTable *generate_symboltable(Tree *tree)
 		{
 			if (tree->children[i]->rule == ID)
 				add_symbol(tree->children[i]->token, S_Variable);
-			else
-				generate_symboltable(tree->children[i]);
+
+			generate_symboltable(tree->children[i]);
 		}
 		return NULL;
 
@@ -198,12 +191,12 @@ SymbolTable *generate_symboltable(Tree *tree)
 		generate_symboltable(tree->children[0]);
 
 		enter_scope();
-		generate_symboltable(tree->children[1]);
+		scan_children(tree);
 		return exit_scope();
 
 	default:
 #if DEBUG
-		printf("Undefined rule action: %d\n", tree->rule);
+		printf("Undefined rule action: %d\t%s\n", tree->rule, tree->name);
 #endif
 		scan_children(tree);
 		return NULL;

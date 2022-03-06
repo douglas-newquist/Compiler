@@ -2,6 +2,7 @@
 	Douglas Newquist
 */
 
+#include "hash.h"
 #include "list.h"
 #include "symbol.h"
 #include "tree.h"
@@ -13,16 +14,14 @@ SymbolTable
 	int id;
 	SymbolTable *parent;
 	int symbol_count;
-	List *symbols;
+	HashTable *symbols;
 	int child_count;
 	List *children;
 };
 
 #define LOCAL_SYMBOLS (1)
 #define GLOBAL_SYMBOLS (1 << 2)
-#define CHILD_SYMBOLS (1 << 3)
 #define SCOPE_SYMBOLS (LOCAL_SYMBOLS | GLOBAL_SYMBOLS)
-#define ALL_SYMBOLS (SCOPE_SYMBOLS | CHILD_SYMBOLS)
 
 SymbolTable *generate_symboltable(Tree *program);
 void free_symboltables();

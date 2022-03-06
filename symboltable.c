@@ -19,13 +19,49 @@ List *tables = NULL;
 // The current scope
 SymbolTable *scope;
 
+/**
+ * @brief Hashes a given symbol
+ */
+int hash(void *symbol)
+{
+	Symbol *s = (Symbol *)symbol;
+	char *str = s->string;
+	register int h = 0;
+	register char c;
+
+	while ((c = *str++) != 0)
+	{
+		h += c & 0377;
+		h *= 37;
+	}
+
+	return h < 0 ? -h : h;
+}
+
+/**
+ * @brief Compares two symbols and returns 1 if equal
+ */
+int equals(void *symbol1, void *symbol2)
+{
+	if (symbol1 == symbol2)
+		return TRUE;
+
+	if (symbol1 == NULL || symbol2 == NULL)
+		return FALSE;
+
+	Symbol *s1 = (Symbol *)symbol1;
+	Symbol *s2 = (Symbol *)symbol2;
+
+	return strcmp(s1->string, s2->string) == 0;
+}
+
 SymbolTable *create_symboltable(SymbolTable *parent)
 {
 	SymbolTable *table = malloc(sizeof(SymbolTable));
 	table->id = table_count++;
 	table->parent = parent;
 	table->symbol_count = 0;
-	table->symbols = NULL;
+	table->symbols = create_hashtable(8, hash, equals);
 	table->child_count = 0;
 	table->children = NULL;
 
@@ -41,7 +77,7 @@ void free_symboltable(void *symboltable)
 {
 	SymbolTable *table = (SymbolTable *)symboltable;
 	free_list(table->children, NULL);
-	free_list(table->symbols, NULL);
+	free_hashtable(table->symbols, NULL);
 	free(table);
 }
 
@@ -56,22 +92,12 @@ int table_contains(SymbolTable *table, Symbol *symbol, int mode)
 	if (table == NULL || symbol == NULL)
 		return FALSE;
 
-	if (mode & LOCAL_SYMBOLS && table->symbols != NULL)
-	{
-		foreach_list(table->symbols)
-		{
-			Symbol *s2 = (Symbol *)element->value;
+	if (mode & LOCAL_SYMBOLS && hashtable_contains(table->symbols, symbol))
+		return TRUE;
 
-			if (strcmp(symbol->string, s2->string) == 0)
-				return TRUE;
-		}
-	}
-
-	if (mode & GLOBAL_SYMBOLS)
-	{
+	if (mode & GLOBAL_SYMBOLS && table->parent)
 		if (table_contains(table->parent, symbol, LOCAL_SYMBOLS | GLOBAL_SYMBOLS))
 			return TRUE;
-	}
 
 	return FALSE;
 }
@@ -91,7 +117,7 @@ Symbol *add_symbol(Token *token, int type)
 		error_at(token, SEMATIC_ERROR, "Redefined symbol");
 
 	scope->symbol_count++;
-	scope->symbols = list_add(scope->symbols, symbol);
+	hashtable_add(scope->symbols, symbol);
 
 	return symbol;
 }

@@ -118,7 +118,7 @@ void read_file(char *filename)
 
 int main(int argc, char *argv[])
 {
-	options = TREE_FLAG;
+	options = TREE_FLAG | SYMBOLS_FLAG;
 
 	for (int i = 1; i < argc; i++)
 	{

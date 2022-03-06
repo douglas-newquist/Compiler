@@ -57,9 +57,10 @@ void print_symbols(SymbolTable *table)
 	indent++;
 
 	if (table != NULL)
-		print_list(table->symbols, print_symbol);
+		foreach_hashtable(element, table->symbols)
+			print_symbol(element->value);
 
-	foreach_list(table->children)
+	foreach_list(element, table->children)
 		print_symbols((SymbolTable *)element->value);
 
 	indent--;

@@ -9,6 +9,8 @@
 
 HashTable
 {
+	// Number of elements in the hash table
+	int count;
 	int bucket_count;
 	List **buckets;
 	// Hashing function

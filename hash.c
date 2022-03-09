@@ -16,6 +16,7 @@
 HashTable *create_hashtable(int buckets, int (*hasher)(void *), int (*equals)(void *, void *))
 {
 	HashTable *hash = (HashTable *)malloc(sizeof(HashTable));
+	hash->count = 0;
 	hash->bucket_count = buckets;
 	hash->hasher = hasher;
 	hash->equals = equals;
@@ -56,6 +57,7 @@ void hashtable_add(HashTable *hashtable, void *element)
 	int i = hashtable->hasher(element) % hashtable->bucket_count;
 
 	hashtable->buckets[i] = list_add(hashtable->buckets[i], element);
+	hashtable->count++;
 }
 
 /**

@@ -11,6 +11,7 @@ Symbol
 	int type;
 	int attributes;
 	Token *token;
+	// Scope this symbol belongs
 	SymbolTable *table;
 };
 

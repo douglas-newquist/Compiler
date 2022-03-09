@@ -37,28 +37,30 @@ void print_symbol(void *symbol)
 {
 	Symbol *s = (Symbol *)symbol;
 
-	printf("%d\t%d\t%d\t%s\t%s\n",
-		   s->type,
-		   s->table ? s->table->id : -1,
-		   s->table && s->table->parent ? s->table->parent->id : -1,
-		   s->string,
-		   s->token ? s->token->filename : "Unknown");
+	if (s == NULL)
+		return;
+
+	printf("    %s\n", s->string);
 }
 
 int indent = 0;
 void print_symbols(SymbolTable *table)
 {
 	if (indent == 0)
-	{
 		printf("---- Symbols -------------------------------------------------\n");
-		printf("Type\tTable\tParent\tName\tFile\n");
-	}
 
 	indent++;
 
-	if (table != NULL)
+	if (table)
+	{
+		printf("-- Table %d, %s -- Parent %d, %s --\n",
+			   table->id, table->name,
+			   table->parent ? table->parent->id : -1,
+			   table->parent ? table->parent->name : "NA");
+
 		foreach_hashtable(element, table->symbols)
 			print_symbol(element->value);
+	}
 
 	foreach_list(element, table->children)
 		print_symbols((SymbolTable *)element->value);

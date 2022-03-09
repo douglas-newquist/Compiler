@@ -9,8 +9,9 @@ Compiling the program:
 		Adds extra debug output to the final executable
 
 Flags supported:
-	--none, switches all flags off
-	--token, prints out all read tokens
-	--tree, prints the parsed syntax tree
-	--dot, changes output to .dot file format
-	--bison, (debug only) prints bison's debug output
+	-none, switches all flags off
+	-token, prints out all read tokens
+	-tree, prints the parsed syntax tree
+	-dot, changes output to .dot file format
+	-bison, (debug only) prints bison's debug output
+	-symtab, print symbol tables

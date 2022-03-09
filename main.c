@@ -118,7 +118,7 @@ void read_file(char *filename)
 
 int main(int argc, char *argv[])
 {
-	options = TREE_FLAG | SYMBOLS_FLAG;
+	options = 0;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -129,16 +129,21 @@ int main(int argc, char *argv[])
 			yydebug = 1;
 			break;
 #endif
-
-		case 0:
-			read_file(argv[i]);
-			break;
 		}
 	}
 
-	argc -= flag_count;
+	int files_read = 0;
 
-	if (argc == 1)
+	for (int i = 1; i < argc; i++)
+	{
+		if (flag(argv[i]) == 0)
+		{
+			read_file(argv[i]);
+			files_read++;
+		}
+	}
+
+	if (files_read == 0)
 	{
 		yyin = stdin;
 		strcpy(current_file, "stdin");

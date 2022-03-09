@@ -6,12 +6,12 @@
 #include <stdio.h>
 #include "list.h"
 
-List *create_list(ListElement *element)
+List *create_list()
 {
 	List *list = malloc(sizeof(List));
-	list->size = element == NULL ? 0 : 1;
-	list->head = element;
-	list->tail = element;
+	list->size = 0;
+	list->head = NULL;
+	list->tail = NULL;
 	return list;
 }
 
@@ -28,9 +28,7 @@ List *list_add(List *list, void *value)
 	ListElement *current = create_list_element(value);
 
 	if (list == NULL)
-		return create_list(current);
-
-	list->size++;
+		list = create_list();
 
 	if (list->size == 0)
 	{
@@ -42,6 +40,8 @@ List *list_add(List *list, void *value)
 		list->tail->next = current;
 		list->tail = current;
 	}
+
+	list->size++;
 
 	return list;
 }

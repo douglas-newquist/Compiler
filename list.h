@@ -22,6 +22,8 @@ List
 	ListElement *head, *tail;
 };
 
+List *create_list();
+
 /**
  * @brief Adds an element to the end of the list
  *

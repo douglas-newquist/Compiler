@@ -46,7 +46,9 @@ void post_read()
 
 	table = generate_symboltable(program);
 
-	if (has_flags(options, SYMBOLS_FLAG))
+	if (has_flags(options, DOT_FLAG | SYMBOLS_FLAG))
+		print_dot_symbols(table);
+	else if (has_flags(options, SYMBOLS_FLAG))
 		print_symbols(table);
 }
 

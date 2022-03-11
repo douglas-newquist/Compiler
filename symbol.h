@@ -20,4 +20,5 @@ Symbol *create_symbol(Token *token, char *string, Type *type);
 Symbol *simple_symbol(Token *token, char *string, int type);
 void free_symbols();
 void print_symbols(SymbolTable *table);
+void print_dot_symbols(SymbolTable *table);
 #endif

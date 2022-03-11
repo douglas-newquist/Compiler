@@ -80,3 +80,36 @@ void print_symbols(SymbolTable *table)
 	if (indent == 0)
 		printf("--------------------------------------------------------------\n");
 }
+
+void print_dot_symbols(SymbolTable *table)
+{
+	if (table == NULL)
+		return;
+
+	if (indent == 0)
+		printf("graph {\n");
+
+	indent++;
+
+	printf("\"Table %d\"[shape=box]\n", table->id);
+
+	foreach_hashtable(element, table->symbols)
+	{
+		Symbol *symbol = (Symbol *)element->value;
+		printf("\"Table %d\" -- \"%d %s\"\n",
+			   table->id, symbol->id,
+			   symbol->string);
+	}
+
+	foreach_list(element, table->children)
+	{
+		SymbolTable *t2 = (SymbolTable *)element->value;
+		printf("\"Table %d\" -- \"Table %d\"\n", table->id, t2->id);
+		print_dot_symbols(t2);
+	}
+
+	indent--;
+
+	if (indent == 0)
+		printf("}");
+}

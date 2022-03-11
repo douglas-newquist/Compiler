@@ -141,9 +141,13 @@ char *tree_dot_name(Tree *tree)
 
 void print_dot_id(Tree *tree)
 {
-	printf("\"%d %s", tree->id, tree->name);
+	printf("\"%d %s\nRule %d", tree->id, tree->name, tree->rule);
 	if (tree->token)
-		printf("\n%s", tree->token->text);
+		printf("\n%s\nat %d:%d",
+			   tree->token->sval ? "<String>" : tree->token->text,
+			   tree->token->line,
+			   tree->token->column);
+
 	printf("\"");
 }
 
@@ -159,6 +163,9 @@ void print_dot_tree(Tree *tree, int indent_level)
 		printf("graph {\n");
 
 	print_dot_id(tree);
+	if (tree->rule >= 1000)
+		printf(" [shape=box]");
+
 	printf("\n");
 
 	for (int i = 0; i < tree->count; i++)

@@ -236,8 +236,11 @@ SymbolTable *populate_symboltable(Tree *tree)
 	case R_VAR_GROUP:
 		for (int i = 0; i < tree->count; i++)
 		{
-			//if (tree->children[i]->rule == ID)
-			//	add_symbol(NULL, tree->children[i]->token, S_Variable);
+			if (tree->children[i]->rule == ID)
+			{
+				symbol = simple_symbol(tree->children[i]->token, NULL, S_Variable);
+				add_symbol(symbol);
+			}
 
 			populate_symboltable(tree->children[i]);
 		}

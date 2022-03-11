@@ -139,6 +139,14 @@ char *tree_dot_name(Tree *tree)
 	return "(nil)";
 }
 
+void print_dot_id(Tree *tree)
+{
+	printf("\"%d %s", tree->id, tree->name);
+	if (tree->token)
+		printf("\n%s", tree->token->text);
+	printf("\"");
+}
+
 /**
  * @brief Prints the given tree in .dot file format
  *
@@ -150,13 +158,15 @@ void print_dot_tree(Tree *tree, int indent_level)
 	if (indent_level == 0)
 		printf("graph {\n");
 
+	print_dot_id(tree);
+	printf("\n");
+
 	for (int i = 0; i < tree->count; i++)
 	{
-		printf("\"%d %s\" -- \"%d %s\"\n",
-			   tree->id,
-			   tree_dot_name(tree),
-			   tree->children[i]->id,
-			   tree_dot_name(tree->children[i]));
+		print_dot_id(tree);
+		printf(" -- ");
+		print_dot_id(tree->children[i]);
+		printf("\n");
 
 		print_dot_tree(tree->children[i], indent_level + 1);
 	}

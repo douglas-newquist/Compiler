@@ -134,13 +134,12 @@ int lookup(SymbolTable *scope, char *symbol, int mode)
  * @param token Token symbol to add
  * @param type Type of the symbol
  */
-Symbol *add_symbol(char *name, Token *token, int type)
+Symbol *add_symbol(Symbol *symbol)
 {
-	Symbol *symbol = create_symbol(token, token ? token->text : name, type);
 	symbol->table = scope;
 
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
-		error_at(token, SEMATIC_ERROR, "Redefined symbol");
+		error_at(symbol->token, SEMATIC_ERROR, "Redefined symbol");
 
 	hashtable_add(scope->symbols, symbol);
 
@@ -184,7 +183,8 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_CLASS1:
-		symbol = add_symbol(NULL, tree->token, S_Class);
+		symbol = simple_symbol(tree->token, NULL, S_Class);
+		add_symbol(symbol);
 		enter_scope(symbol->string, S_Class);
 		scan_children(tree);
 		exit_scope();
@@ -192,13 +192,17 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	case R_DEFINE1:
 	case R_DEFINE3:
-		symbol = add_symbol(NULL, tree->token, S_Variable);
+		symbol = simple_symbol(tree->token, NULL, S_Variable);
+		add_symbol(symbol);
 		scan_children(tree);
 		return NULL;
 
 	case R_DEFINE2:
 		if (tree->children[1]->rule == ID)
-			add_symbol(NULL, tree->children[1]->token, S_Variable);
+		{
+			symbol = simple_symbol(tree->children[1]->token, NULL, S_Variable);
+			add_symbol(symbol);
+		}
 
 		scan_children(tree);
 		return NULL;
@@ -209,13 +213,15 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return exit_scope();
 
 	case R_METHOD1:
-		symbol = add_symbol(NULL, tree->token, S_Method);
+		symbol = simple_symbol(tree->token, NULL, S_Method);
+		add_symbol(symbol);
 		enter_scope(symbol->string, S_Method);
 		scan_children(tree);
 		return exit_scope();
 
 	case R_METHOD3:
-		add_symbol(NULL, tree->token, S_Method);
+		symbol = simple_symbol(tree->token, NULL, S_Method);
+		add_symbol(symbol);
 		scan_children(tree);
 		return NULL;
 
@@ -230,8 +236,8 @@ SymbolTable *populate_symboltable(Tree *tree)
 	case R_VAR_GROUP:
 		for (int i = 0; i < tree->count; i++)
 		{
-			if (tree->children[i]->rule == ID)
-				add_symbol(NULL, tree->children[i]->token, S_Variable);
+			//if (tree->children[i]->rule == ID)
+			//	add_symbol(NULL, tree->children[i]->token, S_Variable);
 
 			populate_symboltable(tree->children[i]);
 		}
@@ -266,15 +272,15 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 void populate_builtin()
 {
-	add_symbol("System", NULL, S_SYSTEM);
+	add_symbol(simple_symbol(NULL, "System", S_SYSTEM));
 	enter_scope("System", S_Class);
-	add_symbol("out", NULL, S_SYSTEM_OUT);
+	add_symbol(simple_symbol(NULL, "out", S_SYSTEM_OUT));
 	enter_scope("out", S_Class);
-	add_symbol("println", NULL, S_SYSTEM_OUT_PRINTLN);
+	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_OUT_PRINTLN));
 	exit_scope();
 	exit_scope();
 
-	add_symbol("String", NULL, S_STRING);
+	add_symbol(simple_symbol(NULL, "String", S_STRING));
 }
 
 SymbolTable *generate_symboltable(Tree *tree)

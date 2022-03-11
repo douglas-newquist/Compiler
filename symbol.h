@@ -1,4 +1,5 @@
 #include "token.h"
+#include "type.h"
 
 #ifndef Symbol
 #define Symbol struct symbol
@@ -8,14 +9,15 @@ Symbol
 {
 	int id;
 	char *string;
-	int type;
+	Type *type;
 	int attributes;
 	Token *token;
 	// Scope this symbol belongs
 	SymbolTable *table;
 };
 
-Symbol *create_symbol(Token *token, char *string, int type);
+Symbol *create_symbol(Token *token, char *string, Type *type);
+Symbol *simple_symbol(Token *token, char *string, int type);
 void free_symbols();
 void print_symbols(SymbolTable *table);
 #endif

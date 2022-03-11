@@ -7,7 +7,7 @@
 int symbol_count = 0;
 List *symbols = NULL;
 
-Symbol *create_symbol(Token *token, char *string, int type)
+Symbol *create_symbol(Token *token, char *string, Type *type)
 {
 	Symbol *symbol = malloc(sizeof(Symbol));
 	symbol->id = symbol_count++;
@@ -22,8 +22,18 @@ Symbol *create_symbol(Token *token, char *string, int type)
 	return symbol;
 }
 
+Symbol *simple_symbol(Token *token, char *string, int type)
+{
+	return create_symbol(token, token ? token->text : string, create_type(type));
+}
+
 void free_symbol(void *symbol)
 {
+	Symbol *s = (Symbol *)symbol;
+
+	if (s->type)
+		free_type(s->type);
+
 	free(symbol);
 }
 

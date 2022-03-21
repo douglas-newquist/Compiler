@@ -94,26 +94,32 @@ void free_symboltables()
  * @param symbol Symbol to search for
  * @param mode What scope(s) to search in
  */
-int table_contains(SymbolTable *table, Symbol *symbol, int mode)
+SymbolTable *table_contains(SymbolTable *table, Symbol *symbol, int mode)
 {
+	SymbolTable *result = NULL;
+
 	if (table == NULL || symbol == NULL)
-		return FALSE;
+		return result;
 
 	if (mode & LOCAL_SYMBOLS && hashtable_contains(table->symbols, symbol))
-		return TRUE;
+		return table;
 
 	if (mode & GLOBAL_SYMBOLS && table->parent)
-		if (table_contains(table->parent, symbol, mode | LOCAL_SYMBOLS))
-			return TRUE;
+	{
+		result = table_contains(table->parent, symbol, mode | LOCAL_SYMBOLS);
+		if (result != NULL)
+			return table->parent;
+	}
 
 	if (mode & CHILD_SYMBOLS)
 		foreach_list(child, table->children)
 		{
-			if (table_contains((SymbolTable *)(child->value), symbol, LOCAL_SYMBOLS))
-				return TRUE;
+			result = table_contains((SymbolTable *)(child->value), symbol, LOCAL_SYMBOLS);
+			if (result != NULL)
+				return (SymbolTable *)(child->value);
 		}
 
-	return FALSE;
+	return NULL;
 }
 
 /**
@@ -123,7 +129,7 @@ int table_contains(SymbolTable *table, Symbol *symbol, int mode)
  * @param symbol Symbol to search for
  * @param mode What scope(s) to search in
  */
-int lookup(SymbolTable *scope, char *symbol, int mode)
+SymbolTable *lookup(SymbolTable *scope, char *symbol, int mode)
 {
 	return table_contains(scope, create_symbol(NULL, symbol, 0), mode);
 }
@@ -161,6 +167,25 @@ SymbolTable *exit_scope()
 
 SymbolTable *populate_symboltable(Tree *tree);
 
+SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
+{
+	SymbolTable *found;
+
+	if (tree->rule == R_ACCESS1)
+	{
+		found = check_defined(scope, tree->children[0]);
+		printf("%s -> %s\n", scope->name, found->name);
+		scope = found;
+	}
+
+	found = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+	if (found != NULL)
+		return found;
+
+	error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
+	return NULL;
+}
+
 /**
  * @brief Calls generate_symboltable on each child node in the given tree
  */
@@ -184,6 +209,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	case R_CLASS1:
 		symbol = simple_symbol(tree->token, NULL, S_Class);
+		symbol->type->string = tree->token->text;
 		add_symbol(symbol);
 		enter_scope(symbol->string, S_Class);
 		scan_children(tree);
@@ -191,6 +217,12 @@ SymbolTable *populate_symboltable(Tree *tree)
 		break;
 
 	case R_DEFINE1:
+		symbol = simple_symbol(tree->token, NULL, S_Variable);
+		symbol->type->subtype = parse_type(tree->children[0]);
+		add_symbol(symbol);
+		scan_children(tree);
+		return NULL;
+
 	case R_DEFINE3:
 		symbol = simple_symbol(tree->token, NULL, S_Variable);
 		add_symbol(symbol);
@@ -231,6 +263,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return exit_scope();
 
 	case R_SWITCH:
+		// TODO switch
 		return NULL;
 
 	case R_VAR_GROUP:
@@ -253,11 +286,9 @@ SymbolTable *populate_symboltable(Tree *tree)
 		scan_children(tree);
 		return exit_scope();
 
-	case R_ACCESS1:
-		// TODO Check if defined
-		break;
-
 	case ID:
+	case R_ACCESS1:
+		check_defined(scope, tree);
 		if (lookup(scope, tree->token->text, SCOPE_SYMBOLS) == FALSE)
 			error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
 		return NULL;

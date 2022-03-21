@@ -11,12 +11,15 @@
 #include "parser.h"
 #include "token.h"
 
+int token_count = 0;
+
 /*
 	Creates a new token with the given category
 */
 Token *create_token(int category)
 {
 	Token *token = (Token *)malloc(sizeof(Token));
+	token->id = token_count++;
 	token->category = category;
 	token->line = line;
 	token->column = column;

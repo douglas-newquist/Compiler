@@ -12,6 +12,7 @@ Tokens *tokens;
 
 Token
 {
+	int id;
 	int category;
 	char *text;
 	int line, column;

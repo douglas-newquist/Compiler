@@ -37,14 +37,5 @@ void free_symboltables();
  * @param symbol Symbol to search for
  * @param mode What scope(s) to search in
  */
-SymbolTable *table_contains(SymbolTable *table, Symbol *symbol, int mode);
-
-/**
- * @brief Checks if the given table contains a symbol
- *
- * @param table Table to search
- * @param symbol Symbol to search for
- * @param mode What scope(s) to search in
- */
-SymbolTable *lookup(SymbolTable *table, char *symbol, int mode);
+Symbol *lookup(SymbolTable *table, char *symbol, int mode);
 #endif

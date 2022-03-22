@@ -169,6 +169,24 @@ SymbolTable *exit_scope()
 	return old_scope;
 }
 
+/**
+ * @brief Gets a child scope with the given name
+ */
+SymbolTable *get_sub_scope(SymbolTable *scope, char *name)
+{
+	if (scope == NULL)
+		return NULL;
+
+	foreach_list(children, scope->children)
+	{
+		SymbolTable *child = (SymbolTable *)children->value;
+		if (strcmp(name, child->name) == 0)
+			return child;
+	}
+
+	return NULL;
+}
+
 SymbolTable *populate_symboltable(Tree *tree);
 
 /**
@@ -251,11 +269,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_ACCESS1:
-		return NULL;
-
 	case ID:
-		if (lookup(scope, tree->token->text, SCOPE_SYMBOLS) == FALSE)
-			error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
 		return NULL;
 
 	default:
@@ -272,7 +286,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 /**
  * @brief
  */
-void check_table(SymbolTable *table, Tree *tree)
+void check_table(SymbolTable *scope, Tree *tree)
 {
 	if (tree == NULL)
 		return;
@@ -281,10 +295,33 @@ void check_table(SymbolTable *table, Tree *tree)
 
 	switch (tree->rule)
 	{
+	case R_ACCESS1:
+		// TODO
+		return;
+
+	case R_CLASS1:
+	case R_METHOD1:
+		scope = get_sub_scope(scope, tree->token->text);
+		break;
+
+	case ID:
+		// Check that symbol is defined at all
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		if (symbol == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
+
+		// Check if symbol is defined in a valid location
+		if (symbol->type->super == S_Variable)
+		{
+			if (symbol->token->id > tree->token->id)
+				error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
+		}
+
+		return;
 	}
 
 	for (int i = 0; i < tree->count; i++)
-		check_table(table, tree->children[i]);
+		check_table(scope, tree->children[i]);
 }
 
 void populate_builtin()

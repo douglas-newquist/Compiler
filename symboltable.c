@@ -190,7 +190,7 @@ SymbolTable *get_sub_scope(SymbolTable *scope, char *name)
 SymbolTable *populate_symboltable(Tree *tree);
 
 /**
- * @brief Calls generate_symboltable on each child node in the given tree
+ * @brief Calls populate_symboltable on each child node in the given tree
  */
 void scan_children(Tree *tree)
 {
@@ -204,6 +204,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	Symbol *symbol;
+	Tree *names;
 
 	switch (tree->rule)
 	{
@@ -225,21 +226,27 @@ SymbolTable *populate_symboltable(Tree *tree)
 		add_symbol(symbol);
 		return NULL;
 
-	case R_DEFINE3:
-		symbol = simple_symbol(tree->token, NULL, S_Variable);
-		symbol->type->subtype = parse_type(tree->children[0]);
-		add_symbol(symbol);
-		scan_children(tree);
-		return NULL;
-
 	case R_DEFINE2:
-		if (tree->children[1]->rule == ID)
+		names = tree->children[1];
+		switch (names->rule)
 		{
-			symbol = simple_symbol(tree->children[1]->token, NULL, S_Variable);
+		case ID:
+		case R_DEFINE3:
+			symbol = simple_symbol(names->token, NULL, S_Variable);
+			symbol->type->subtype = parse_type(tree->children[0]);
 			add_symbol(symbol);
+			break;
+
+		case R_VAR_GROUP:
+			for (int i = 0; i < names->count; i++)
+			{
+				symbol = simple_symbol(names->children[i]->token, NULL, S_Variable);
+				symbol->type->subtype = parse_type(tree->children[0]);
+				add_symbol(symbol);
+			}
+			break;
 		}
 
-		scan_children(tree);
 		return NULL;
 
 	case R_METHOD1:

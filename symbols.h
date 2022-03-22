@@ -11,8 +11,10 @@ enum symbols
 	S_Variable,
 
 	S_STRING,
-	S_SYSTEM,
+	S_SYSTEM_EXIT,
+	S_SYSTEM_OUT,
+	S_SYSTEM_OUT_PRINT,
 	S_SYSTEM_OUT_PRINTLN,
-	S_SYSTEM_OUT
+	S_SYSTEM
 };
 #endif

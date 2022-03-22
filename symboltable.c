@@ -223,11 +223,11 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = simple_symbol(tree->token, NULL, S_Variable);
 		symbol->type->subtype = parse_type(tree->children[0]);
 		add_symbol(symbol);
-		scan_children(tree);
 		return NULL;
 
 	case R_DEFINE3:
 		symbol = simple_symbol(tree->token, NULL, S_Variable);
+		symbol->type->subtype = parse_type(tree->children[0]);
 		add_symbol(symbol);
 		scan_children(tree);
 		return NULL;
@@ -244,16 +244,11 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	case R_METHOD1:
 		symbol = simple_symbol(tree->token, NULL, S_Method);
+		// TODO method type
 		add_symbol(symbol);
 		enter_scope(symbol->string, S_Method);
 		scan_children(tree);
 		return exit_scope();
-
-	case R_METHOD3:
-		symbol = simple_symbol(tree->token, NULL, S_Method);
-		add_symbol(symbol);
-		scan_children(tree);
-		return NULL;
 
 	case R_VAR_GROUP:
 		for (int i = 0; i < tree->count; i++)
@@ -266,10 +261,6 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 			populate_symboltable(tree->children[i]);
 		}
-		return NULL;
-
-	case R_ACCESS1:
-	case ID:
 		return NULL;
 
 	default:
@@ -324,8 +315,6 @@ void check_table(SymbolTable *scope, Tree *tree)
 	if (tree == NULL)
 		return;
 
-	Symbol *symbol = NULL;
-
 	switch (tree->rule)
 	{
 	case R_CLASS1:
@@ -347,9 +336,11 @@ void populate_builtin()
 {
 	add_symbol(simple_symbol(NULL, "System", S_SYSTEM));
 	enter_scope("System", S_Class);
+	add_symbol(simple_symbol(NULL, "exit", S_SYSTEM_EXIT));
 	add_symbol(simple_symbol(NULL, "out", S_SYSTEM_OUT));
 	enter_scope("out", S_Class);
 	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_OUT_PRINTLN));
+	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_OUT_PRINT));
 	exit_scope();
 	exit_scope();
 
@@ -358,7 +349,6 @@ void populate_builtin()
 
 SymbolTable *generate_symboltable(Tree *tree)
 {
-
 	if (tree == NULL)
 		return NULL;
 

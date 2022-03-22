@@ -34,6 +34,9 @@ int type_matches(Type *t1, Type *t2)
 	if (t1 == NULL || t2 == NULL)
 		return FALSE;
 
+	if (t1->super != t2->super)
+		return FALSE;
+
 	// TODO type check
 
 	return FALSE;

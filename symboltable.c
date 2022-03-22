@@ -283,6 +283,39 @@ SymbolTable *populate_symboltable(Tree *tree)
 	return NULL;
 }
 
+SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
+{
+	Symbol *symbol = NULL;
+	Token *token = NULL;
+
+	switch (tree->rule)
+	{
+	case R_ACCESS1:
+		scope = check_defined(scope, tree->children[0]);
+		token = tree->token;
+		symbol = lookup(scope, tree->token->text, CHILD_SYMBOLS);
+		break;
+
+	case ID:
+		token = tree->token;
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		break;
+	}
+
+	// Check that symbol is defined at all
+	if (symbol == NULL)
+		error_at(token, SEMATIC_ERROR, "Symbol not defined");
+
+	// Check if symbol is defined in a valid location
+	if (symbol->type->super == S_Variable)
+	{
+		if (symbol->token->id > token->id)
+			error_at(token, SEMATIC_ERROR, "Variable used before definition");
+	}
+
+	return symbol->table;
+}
+
 /**
  * @brief
  */
@@ -295,28 +328,14 @@ void check_table(SymbolTable *scope, Tree *tree)
 
 	switch (tree->rule)
 	{
-	case R_ACCESS1:
-		// TODO
-		return;
-
 	case R_CLASS1:
 	case R_METHOD1:
 		scope = get_sub_scope(scope, tree->token->text);
 		break;
 
 	case ID:
-		// Check that symbol is defined at all
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
-		if (symbol == NULL)
-			error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
-
-		// Check if symbol is defined in a valid location
-		if (symbol->type->super == S_Variable)
-		{
-			if (symbol->token->id > tree->token->id)
-				error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
-		}
-
+	case R_ACCESS1:
+		check_defined(scope, tree);
 		return;
 	}
 

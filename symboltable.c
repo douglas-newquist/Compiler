@@ -347,48 +347,53 @@ void check_table(SymbolTable *scope, Tree *tree)
 		check_table(scope, tree->children[i]);
 }
 
+Symbol *add_builtin(char *name, int type)
+{
+	return add_symbol(simple_symbol(NULL, name, type));
+}
+
 void populate_builtin()
 {
-	add_symbol(simple_symbol(NULL, "System", S_SYSTEM));
+	add_builtin("System", S_SYSTEM);
 	enter_scope("System", S_Class);
-	add_symbol(simple_symbol(NULL, "exit", S_SYSTEM_EXIT));
-	add_symbol(simple_symbol(NULL, "out", S_SYSTEM_OUT));
-	add_symbol(simple_symbol(NULL, "err", S_SYSTEM_ERR));
+	add_builtin("exit", S_SYSTEM_EXIT);
+	add_builtin("out", S_SYSTEM_OUT);
+	add_builtin("err", S_SYSTEM_ERR);
 	enter_scope("out", S_Class);
-	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_OUT_PRINTLN));
-	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_OUT_PRINT));
+	add_builtin("println", S_SYSTEM_OUT_PRINTLN);
+	add_builtin("print", S_SYSTEM_OUT_PRINT);
 	exit_scope();
 	enter_scope("err", S_Class);
-	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_ERR_PRINTLN));
-	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_ERR_PRINT));
+	add_builtin("println", S_SYSTEM_ERR_PRINTLN);
+	add_builtin("print", S_SYSTEM_ERR_PRINT);
 	exit_scope();
 	exit_scope();
 
-	add_symbol(simple_symbol(NULL, "String", S_STRING));
+	add_builtin("String", S_STRING);
 	enter_scope("String", S_Class);
-	add_symbol(simple_symbol(NULL, "charAt", S_STRING_CHARAT));
-	add_symbol(simple_symbol(NULL, "equals", S_STRING_EQUALS));
-	add_symbol(simple_symbol(NULL, "join", S_STRING_JOIN));
-	add_symbol(simple_symbol(NULL, "length", S_STRING_LENGTH));
-	add_symbol(simple_symbol(NULL, "substring", S_STRING_SUBSTRING));
-	add_symbol(simple_symbol(NULL, "valueOf", S_STRING_VALUEOF));
+	add_builtin("charAt", S_STRING_CHARAT);
+	add_builtin("equals", S_STRING_EQUALS);
+	add_builtin("join", S_STRING_JOIN);
+	add_builtin("length", S_STRING_LENGTH);
+	add_builtin("substring", S_STRING_SUBSTRING);
+	add_builtin("valueOf", S_STRING_VALUEOF);
 	exit_scope();
 
-	add_symbol(simple_symbol(NULL, "InputStream", S_INPUTSTREAM));
+	add_builtin("InputStream", S_INPUTSTREAM);
 	enter_scope("InputStream", S_Class);
-	add_symbol(simple_symbol(NULL, "read", S_INPUTSTREAM_READ));
-	add_symbol(simple_symbol(NULL, "close", S_INPUTSTREAM_CLOSE));
+	add_builtin("read", S_INPUTSTREAM_READ);
+	add_builtin("close", S_INPUTSTREAM_CLOSE);
 	exit_scope();
 
-	add_symbol(simple_symbol(NULL, "PrintStream", S_PRINTSTREAM));
+	add_builtin("PrintStream", S_PRINTSTREAM);
 	enter_scope("PrintStream", S_Class);
-	add_symbol(simple_symbol(NULL, "println", S_PRINTSTREAM_PRINTLN));
-	add_symbol(simple_symbol(NULL, "print", S_PRINTSTREAM_PRINT));
+	add_builtin("println", S_PRINTSTREAM_PRINTLN);
+	add_builtin("print", S_PRINTSTREAM_PRINT);
 	exit_scope();
 
-	add_symbol(simple_symbol(NULL, "Array", S_ARRAY));
+	add_builtin("Array", S_ARRAY);
 	enter_scope("Array", S_Class);
-	add_symbol(simple_symbol(NULL, "length", S_ARRAY_LENGTH));
+	add_builtin("length", S_ARRAY_LENGTH);
 	exit_scope();
 }
 

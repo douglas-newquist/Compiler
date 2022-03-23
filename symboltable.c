@@ -345,13 +345,23 @@ void populate_builtin()
 	enter_scope("System", S_Class);
 	add_symbol(simple_symbol(NULL, "exit", S_SYSTEM_EXIT));
 	add_symbol(simple_symbol(NULL, "out", S_SYSTEM_OUT));
+	add_symbol(simple_symbol(NULL, "err", S_SYSTEM_ERR));
 	enter_scope("out", S_Class);
 	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_OUT_PRINTLN));
 	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_OUT_PRINT));
+	enter_scope("err", S_Class);
+	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_ERR_PRINTLN));
+	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_ERR_PRINT));
+	exit_scope();
 	exit_scope();
 	exit_scope();
 
 	add_symbol(simple_symbol(NULL, "String", S_STRING));
+
+	add_symbol(simple_symbol(NULL, "Array", S_ARRAY));
+	enter_scope("Array", S_Class);
+	add_symbol(simple_symbol(NULL, "length", S_ARRAY_LENGTH));
+	exit_scope();
 }
 
 SymbolTable *generate_symboltable(Tree *tree)

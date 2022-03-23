@@ -5,13 +5,14 @@
 #include <stdlib.h>
 #include "jzero.tab.h"
 #include "main.h"
+#include "mmemory.h"
 #include "tree.h"
 #include "type.h"
 #include "rules.h"
 
 Type *create_type(int super_type)
 {
-	Type *type = malloc(sizeof(Type));
+	Type *type = alloc(sizeof(Type));
 	type->super = super_type;
 	type->size = 0;
 	type->subtype = NULL;

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "id.h"
 #include "list.h"
+#include "mmemory.h"
 #include "symbol.h"
 #include "symboltable.h"
 
@@ -9,7 +10,7 @@ List *symbols = NULL;
 
 Symbol *create_symbol(Token *token, char *string, Type *type)
 {
-	Symbol *symbol = malloc(sizeof(Symbol));
+	Symbol *symbol = alloc(sizeof(Symbol));
 	symbol->id = next_id();
 	symbol->string = string;
 	symbol->type = type;
@@ -25,22 +26,6 @@ Symbol *create_symbol(Token *token, char *string, Type *type)
 Symbol *simple_symbol(Token *token, char *string, int type)
 {
 	return create_symbol(token, token ? token->text : string, create_type(type));
-}
-
-void free_symbol(void *symbol)
-{
-	Symbol *s = (Symbol *)symbol;
-
-	if (s->type)
-		free_type(s->type);
-
-	free(symbol);
-}
-
-void free_symbols()
-{
-	free_list(symbols, free_symbol);
-	symbols = NULL;
 }
 
 void print_symbol(void *symbol)

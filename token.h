@@ -37,11 +37,6 @@ Token
  */
 Token *create_token(int category);
 
-/*
-	Frees the given token list from memory
-*/
-void free_tokens();
-
 /**
  * @brief Prints the parsed version of this token's text
  */

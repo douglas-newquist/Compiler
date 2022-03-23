@@ -58,9 +58,4 @@ Tree *tree(char *message, int rule, Tree *leaf, int argc, ...);
  */
 Tree *group(char *message, int rule, Tree *t1, Tree *t2);
 
-/**
- * @brief Frees all loaded trees
- */
-void free_trees();
-
 #endif

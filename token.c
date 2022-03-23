@@ -9,6 +9,7 @@
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
+#include "mmemory.h"
 #include "parser.h"
 #include "token.h"
 
@@ -17,17 +18,17 @@
 */
 Token *create_token(int category)
 {
-	Token *token = (Token *)malloc(sizeof(Token));
+	Token *token = (Token *)alloc(sizeof(Token));
 	token->id = next_id();
 	token->category = category;
 	token->line = line;
 	token->column = column;
 
-	token->filename = malloc(sizeof(char) * (strlen(current_file) + 1));
+	token->filename = alloc(sizeof(char) * (strlen(current_file) + 1));
 	strcpy(token->filename, current_file);
 
 	// Copy yytext to the token
-	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
+	token->text = (char *)alloc(sizeof(char) * (strlen(yytext) + 1));
 	strcpy(token->text, yytext);
 
 	// Zero values
@@ -67,29 +68,6 @@ Token *create_token(int category)
 	yylval.token = token;
 
 	return token;
-}
-
-/*
-	Frees the given token from memory
-*/
-void free_token(void *token)
-{
-	if (token == NULL)
-		return;
-
-	Token *t = (Token *)token;
-
-	if (t->sval)
-		free(t->sval);
-
-	free(t->text);
-	free(t->filename);
-	free(token);
-}
-
-void free_tokens()
-{
-	tokens = free_list(tokens, free_token);
 }
 
 void print_token_value(Token *token)

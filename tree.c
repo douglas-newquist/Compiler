@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include "id.h"
 #include "jzero.tab.h"
+#include "mmemory.h"
 #include "rules.h"
 #include "token.h"
 #include "tree.h"
@@ -21,7 +22,7 @@
  */
 Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 {
-	Tree *tree = (Tree *)malloc(sizeof(Tree));
+	Tree *tree = (Tree *)alloc(sizeof(Tree));
 
 	// Store tree values
 	tree->id = next_id();
@@ -32,7 +33,7 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 
 	// Create array for children if needed
 	if (child_count > 0)
-		tree->children = (Tree **)malloc(sizeof(Tree *) * child_count);
+		tree->children = (Tree **)alloc(sizeof(Tree *) * child_count);
 	else
 		tree->children = NULL;
 
@@ -45,24 +46,6 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 Tree *tree_token(Token *token)
 {
 	return create_tree("Token", token->category, 0, token);
-}
-
-/**
- * @brief Frees the given tree
- */
-void free_tree(void *tree)
-{
-	Tree *t = (Tree *)tree;
-	if (t == NULL)
-		return;
-
-	free(t->children);
-	free(t);
-}
-
-void free_trees()
-{
-	trees = free_list(trees, free_tree);
 }
 
 /**

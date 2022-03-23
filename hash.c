@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "hash.h"
 #include "main.h"
+#include "mmemory.h"
 
 /**
  * @brief Create a new hash table
@@ -15,35 +16,17 @@
  */
 HashTable *create_hashtable(int buckets, int (*hasher)(void *), int (*equals)(void *, void *))
 {
-	HashTable *hash = (HashTable *)malloc(sizeof(HashTable));
+	HashTable *hash = (HashTable *)alloc(sizeof(HashTable));
 	hash->count = 0;
 	hash->bucket_count = buckets;
 	hash->hasher = hasher;
 	hash->equals = equals;
-	hash->buckets = (List **)malloc(sizeof(List *) * buckets);
+	hash->buckets = (List **)alloc(sizeof(List *) * buckets);
 
 	for (int i = 0; i < buckets; i++)
 		hash->buckets[i] = NULL;
 
 	return hash;
-}
-
-/**
- * @brief Frees the given hash table
- *
- * @param list
- * @param freer Function to free an individual element
- */
-void free_hashtable(HashTable *hashtable, void (*freer)(void *))
-{
-	if (hashtable == NULL)
-		return;
-
-	for (int i = 0; i < hashtable->bucket_count; i++)
-		free_list(hashtable->buckets[i], freer);
-
-	free(hashtable->buckets);
-	free(hashtable);
 }
 
 /**

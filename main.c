@@ -9,6 +9,7 @@
 #include "flags.h"
 #include "jzero.tab.h"
 #include "main.h"
+#include "mmemory.h"
 #include "symbol.h"
 #include "symboltable.h"
 #include "token.h"
@@ -16,10 +17,7 @@
 
 void free_all()
 {
-	free_trees();
-	free_tokens();
-	free_symboltables();
-	free_symbols();
+	free_memory();
 
 	if (yyin && yyin != stdin)
 	{

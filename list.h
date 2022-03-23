@@ -32,12 +32,4 @@ List *create_list();
  */
 List *list_add(List *list, void *value);
 
-/**
- * @brief Frees the given linked list
- *
- * @param list
- * @param freer Function to free an individual element
- */
-List *free_list(List *list, void (*freer)(void *));
-
 #endif

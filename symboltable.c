@@ -10,6 +10,7 @@
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
+#include "mmemory.h"
 #include "rules.h"
 #include "symbols.h"
 #include "symboltable.h"
@@ -57,7 +58,7 @@ int equals(void *symbol1, void *symbol2)
 
 SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
 {
-	SymbolTable *table = malloc(sizeof(SymbolTable));
+	SymbolTable *table = alloc(sizeof(SymbolTable));
 	table->id = table_count++;
 	table->name = name;
 	table->type = type;
@@ -71,20 +72,6 @@ SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
 	tables = list_add(tables, table);
 
 	return table;
-}
-
-void free_symboltable(void *symboltable)
-{
-	SymbolTable *table = (SymbolTable *)symboltable;
-	free_list(table->children, NULL);
-	free_hashtable(table->symbols, NULL);
-	free(table);
-}
-
-void free_symboltables()
-{
-	free_list(tables, free_symboltable);
-	tables = NULL;
 }
 
 /**

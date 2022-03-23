@@ -33,14 +33,6 @@ HashTable
 HashTable *create_hashtable(int buckets, int (*hasher)(void *), int (*equals)(void *, void *));
 
 /**
- * @brief Frees the given hash table
- *
- * @param list
- * @param freer Function to free an individual element
- */
-void free_hashtable(HashTable *hashtable, void (*freer)(void *));
-
-/**
  * @brief Adds an element to the given hash table
  */
 void hashtable_add(HashTable *hashtable, void *element);

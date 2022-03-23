@@ -214,6 +214,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 	case R_CLASS1:
 		symbol = simple_symbol(tree->token, NULL, S_Class);
 		symbol->type->string = tree->token->text;
+		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
 		enter_scope(symbol->string, S_Class);
 		scan_children(tree);
@@ -223,6 +224,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 	case R_DEFINE1:
 		symbol = simple_symbol(tree->token, NULL, S_Variable);
 		symbol->type->subtype = parse_type(tree->children[0]);
+		symbol->attributes |= ATR_DEFINED;
 		add_symbol(symbol);
 		return NULL;
 
@@ -231,9 +233,15 @@ SymbolTable *populate_symboltable(Tree *tree)
 		switch (names->rule)
 		{
 		case ID:
+			symbol = simple_symbol(names->token, NULL, S_Variable);
+			symbol->type->subtype = parse_type(tree->children[0]);
+			add_symbol(symbol);
+			break;
+
 		case R_DEFINE3:
 			symbol = simple_symbol(names->token, NULL, S_Variable);
 			symbol->type->subtype = parse_type(tree->children[0]);
+			symbol->attributes |= ATR_DEFINED;
 			add_symbol(symbol);
 			break;
 
@@ -349,10 +357,10 @@ void populate_builtin()
 	enter_scope("out", S_Class);
 	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_OUT_PRINTLN));
 	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_OUT_PRINT));
+	exit_scope();
 	enter_scope("err", S_Class);
 	add_symbol(simple_symbol(NULL, "println", S_SYSTEM_ERR_PRINTLN));
 	add_symbol(simple_symbol(NULL, "print", S_SYSTEM_ERR_PRINT));
-	exit_scope();
 	exit_scope();
 	exit_scope();
 

@@ -5,13 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "errors.h"
+#include "id.h"
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
 #include "parser.h"
 #include "token.h"
-
-int token_count = 0;
 
 /*
 	Creates a new token with the given category
@@ -19,7 +18,7 @@ int token_count = 0;
 Token *create_token(int category)
 {
 	Token *token = (Token *)malloc(sizeof(Token));
-	token->id = token_count++;
+	token->id = next_id();
 	token->category = category;
 	token->line = line;
 	token->column = column;

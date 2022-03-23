@@ -5,12 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "id.h"
 #include "jzero.tab.h"
-#include "tree.h"
-#include "token.h"
 #include "rules.h"
-
-int tree_count = 0;
+#include "token.h"
+#include "tree.h"
 
 /**
  * @brief Create a new tree object
@@ -24,10 +23,8 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 {
 	Tree *tree = (Tree *)malloc(sizeof(Tree));
 
-	tree_count++;
-
 	// Store tree values
-	tree->id = tree_count;
+	tree->id = next_id();
 	tree->rule = rule;
 	tree->name = message;
 	tree->count = child_count;

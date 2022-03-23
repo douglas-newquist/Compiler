@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "id.h"
 #include "list.h"
 #include "symbol.h"
 #include "symboltable.h"
 
-int symbol_count = 0;
 List *symbols = NULL;
 
 Symbol *create_symbol(Token *token, char *string, Type *type)
 {
 	Symbol *symbol = malloc(sizeof(Symbol));
-	symbol->id = symbol_count++;
+	symbol->id = next_id();
 	symbol->string = string;
 	symbol->type = type;
 	symbol->attributes = 0;
@@ -91,20 +91,22 @@ void print_dot_symbols(SymbolTable *table)
 
 	indent++;
 
-	printf("\"Table %d\"[shape=box]\n", table->id);
+	printf("\"%d %s\" [shape=box]\n", table->id, table->name);
 
 	foreach_hashtable(element, table->symbols)
 	{
 		Symbol *symbol = (Symbol *)element->value;
-		printf("\"Table %d\" -- \"%d %s\"\n",
-			   table->id, symbol->id,
-			   symbol->string);
+		printf("\"%d %s\" -- \"%d %s\"\n",
+			   table->id, table->name,
+			   symbol->id, symbol->string);
 	}
 
 	foreach_list(element, table->children)
 	{
 		SymbolTable *t2 = (SymbolTable *)element->value;
-		printf("\"Table %d\" -- \"Table %d\"\n", table->id, t2->id);
+		printf("\"%d %s\" -- \"%d %s\"\n",
+			   table->id, table->name,
+			   t2->id, t2->name);
 		print_dot_symbols(t2);
 	}
 

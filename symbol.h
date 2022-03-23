@@ -5,6 +5,11 @@
 #define Symbol struct symbol
 #define SymbolTable struct symboltable
 
+#define ATR_CONST (1 << 0)
+#define ATR_DEFINED (1 << 1)
+#define ATR_PUBLIC (1 << 2)
+#define ATR_STATIC (1 << 3)
+
 Symbol
 {
 	int id;

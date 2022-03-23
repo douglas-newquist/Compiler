@@ -357,6 +357,26 @@ void populate_builtin()
 	exit_scope();
 
 	add_symbol(simple_symbol(NULL, "String", S_STRING));
+	enter_scope("String", S_Class);
+	add_symbol(simple_symbol(NULL, "charAt", S_STRING_CHARAT));
+	add_symbol(simple_symbol(NULL, "equals", S_STRING_EQUALS));
+	add_symbol(simple_symbol(NULL, "join", S_STRING_JOIN));
+	add_symbol(simple_symbol(NULL, "length", S_STRING_LENGTH));
+	add_symbol(simple_symbol(NULL, "substring", S_STRING_SUBSTRING));
+	add_symbol(simple_symbol(NULL, "valueOf", S_STRING_VALUEOF));
+	exit_scope();
+
+	add_symbol(simple_symbol(NULL, "InputStream", S_INPUTSTREAM));
+	enter_scope("InputStream", S_Class);
+	add_symbol(simple_symbol(NULL, "read", S_INPUTSTREAM_READ));
+	add_symbol(simple_symbol(NULL, "close", S_INPUTSTREAM_CLOSE));
+	exit_scope();
+
+	add_symbol(simple_symbol(NULL, "PrintStream", S_PRINTSTREAM));
+	enter_scope("PrintStream", S_Class);
+	add_symbol(simple_symbol(NULL, "println", S_PRINTSTREAM_PRINTLN));
+	add_symbol(simple_symbol(NULL, "print", S_PRINTSTREAM_PRINT));
+	exit_scope();
 
 	add_symbol(simple_symbol(NULL, "Array", S_ARRAY));
 	enter_scope("Array", S_Class);

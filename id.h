@@ -1,3 +1,6 @@
+/*
+	Douglas Newquist
+*/
 
 /**
  * @brief Gets a new ID number

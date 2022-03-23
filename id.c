@@ -1,3 +1,6 @@
+/*
+	Douglas Newquist
+*/
 
 int id = 0;
 

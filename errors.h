@@ -8,6 +8,7 @@
 #define LEX_ERROR 1
 #define SYNTAX_ERROR 2
 #define SEMATIC_ERROR 3
+#define OUT_OF_MEMORY -1
 
 void error(int code, char *message);
 void yyerror(char *message);

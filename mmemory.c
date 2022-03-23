@@ -4,8 +4,9 @@
 	Automates freeing blocks of memory allocated
 */
 
-#include "mmemory.h"
+#include "errors.h"
 #include "list.h"
+#include "mmemory.h"
 
 #define Memory struct memory_list
 
@@ -29,7 +30,13 @@ Memory *head = NULL, *tail = NULL;
 void *alloc(size_t size)
 {
 	Memory *element = malloc(sizeof(Memory));
+	if (element == NULL)
+		error(OUT_OF_MEMORY, "Out of Memory");
+
 	element->block = malloc(size);
+	if (element->block == NULL)
+		error(OUT_OF_MEMORY, "Out of Memory");
+
 	element->next = NULL;
 
 	if (head == NULL)

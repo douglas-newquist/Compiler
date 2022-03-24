@@ -3,12 +3,14 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include "jzero.tab.h"
 #include "main.h"
 #include "mmemory.h"
+#include "rules.h"
+#include "symbols.h"
 #include "tree.h"
 #include "type.h"
-#include "rules.h"
 
 Type *create_type(int super_type)
 {
@@ -17,14 +19,6 @@ Type *create_type(int super_type)
 	type->size = 0;
 	type->subtype = NULL;
 	return type;
-}
-
-void free_type(Type *type)
-{
-	if (type->subtype)
-		free_type(type->subtype);
-
-	free(type);
 }
 
 int type_matches(Type *t1, Type *t2)
@@ -71,6 +65,11 @@ Type *parse_type(Tree *tree)
 	case LITERAL_STRING:
 		return create_type(TYPE_STRING);
 
+	case R_CLASS1:
+		type = create_type(TYPE_CLASS);
+		type->string = tree->token->text;
+		return type;
+
 	case R_ACCESS1:
 		// TODO
 		break;
@@ -85,4 +84,59 @@ Type *parse_type(Tree *tree)
 	}
 
 	return NULL;
+}
+
+char *type_name(Type *type)
+{
+	char *s1, *s2;
+
+	if (type == NULL)
+		return "<NULL>";
+
+	switch (type->super)
+	{
+	case S_Variable:
+		return type_name(type->subtype);
+
+	case TYPE_INT:
+		return "int";
+
+	case TYPE_BOOL:
+		return "boolean";
+
+	case TYPE_CHAR:
+		return "char";
+
+	case TYPE_DOUBLE:
+		return "double";
+
+	case TYPE_CLASS:
+		return type->string;
+
+	case TYPE_VOID:
+		return "void";
+
+	case TYPE_NULL:
+		return "null";
+
+	case TYPE_ARRAY:
+		s2 = type_name(type->subtype);
+		s1 = alloc(sizeof(char) * (3 + 32 + strlen(s2)));
+
+		if (type->size == 0)
+			sprintf(s1, "%s[]", s2);
+		else
+			sprintf(s1, "%s[%d]", s2, type->size);
+
+		return s1;
+
+	case TYPE_METHOD:
+		return "method";
+
+	default:
+#ifdef DEBUG
+		printf("Unhandled type name %d\n", type->super);
+#endif
+		return "";
+	}
 }

@@ -7,6 +7,7 @@
 #include <string.h>
 #include "attributes.h"
 #include "errors.h"
+#include "id.h"
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
@@ -14,8 +15,8 @@
 #include "rules.h"
 #include "symbols.h"
 #include "symboltable.h"
+#include "type.h"
 
-int table_count = 0;
 List *tables = NULL;
 // The current scope
 SymbolTable *scope;
@@ -59,7 +60,7 @@ int equals(void *symbol1, void *symbol2)
 SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
 {
 	SymbolTable *table = alloc(sizeof(SymbolTable));
-	table->id = table_count++;
+	table->id = next_id();
 	table->name = name;
 	table->type = type;
 	table->parent = parent;
@@ -199,11 +200,11 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_CLASS1:
-		symbol = simple_symbol(tree->token, NULL, S_Class);
+		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
 		symbol->type->string = tree->token->text;
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
-		enter_scope(symbol->string, S_Class);
+		enter_scope(symbol->string, TYPE_CLASS);
 		scan_children(tree);
 		exit_scope();
 		break;
@@ -245,10 +246,10 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_METHOD1:
-		symbol = simple_symbol(tree->token, NULL, S_Method);
+		symbol = simple_symbol(tree->token, NULL, TYPE_METHOD);
 		// TODO method type
 		add_symbol(symbol);
-		enter_scope(symbol->string, S_Method);
+		enter_scope(symbol->string, TYPE_METHOD);
 		scan_children(tree);
 		return exit_scope();
 
@@ -341,46 +342,106 @@ Symbol *add_builtin(char *name, int type)
 
 void populate_builtin()
 {
-	add_builtin("System", S_SYSTEM);
-	enter_scope("System", S_Class);
-	add_builtin("exit", S_SYSTEM_EXIT);
-	add_builtin("out", S_SYSTEM_OUT);
-	add_builtin("err", S_SYSTEM_ERR);
-	enter_scope("out", S_Class);
-	add_builtin("println", S_SYSTEM_OUT_PRINTLN);
-	add_builtin("print", S_SYSTEM_OUT_PRINT);
+	Symbol *symbol = NULL;
+
+	symbol = add_builtin("System", S_SYSTEM);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->string = symbol->string;
+
+	enter_scope("System", TYPE_CLASS);
+
+	symbol = add_builtin("exit", S_SYSTEM_EXIT);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("out", S_SYSTEM_OUT);
+	symbol = add_builtin("err", S_SYSTEM_ERR);
+
+	enter_scope("out", TYPE_CLASS);
+
+	symbol = add_builtin("println", S_SYSTEM_OUT_PRINTLN);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("print", S_SYSTEM_OUT_PRINT);
+	symbol->type = create_type(TYPE_METHOD);
+
 	exit_scope();
-	enter_scope("err", S_Class);
-	add_builtin("println", S_SYSTEM_ERR_PRINTLN);
-	add_builtin("print", S_SYSTEM_ERR_PRINT);
+
+	enter_scope("err", TYPE_CLASS);
+
+	symbol = add_builtin("println", S_SYSTEM_ERR_PRINTLN);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("print", S_SYSTEM_ERR_PRINT);
+	symbol->type = create_type(TYPE_METHOD);
 	exit_scope();
 	exit_scope();
 
-	add_builtin("String", S_STRING);
-	enter_scope("String", S_Class);
-	add_builtin("charAt", S_STRING_CHARAT);
-	add_builtin("equals", S_STRING_EQUALS);
-	add_builtin("join", S_STRING_JOIN);
-	add_builtin("length", S_STRING_LENGTH);
-	add_builtin("substring", S_STRING_SUBSTRING);
-	add_builtin("valueOf", S_STRING_VALUEOF);
+	symbol = add_builtin("String", S_STRING);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->string = symbol->string;
+
+	enter_scope("String", TYPE_CLASS);
+
+	symbol = add_builtin("charAt", S_STRING_CHARAT);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("equals", S_STRING_EQUALS);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("compareTo", S_STRING_COMPARETO);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("join", S_STRING_JOIN);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("length", S_STRING_LENGTH);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("substring", S_STRING_SUBSTRING);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("valueOf", S_STRING_VALUEOF);
+	symbol->type = create_type(TYPE_METHOD);
+
 	exit_scope();
 
-	add_builtin("InputStream", S_INPUTSTREAM);
-	enter_scope("InputStream", S_Class);
-	add_builtin("read", S_INPUTSTREAM_READ);
-	add_builtin("close", S_INPUTSTREAM_CLOSE);
+	symbol = add_builtin("InputStream", S_INPUTSTREAM);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->string = symbol->string;
+
+	enter_scope("InputStream", TYPE_CLASS);
+
+	symbol = add_builtin("read", S_INPUTSTREAM_READ);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("close", S_INPUTSTREAM_CLOSE);
+	symbol->type = create_type(TYPE_METHOD);
+
 	exit_scope();
 
-	add_builtin("PrintStream", S_PRINTSTREAM);
-	enter_scope("PrintStream", S_Class);
-	add_builtin("println", S_PRINTSTREAM_PRINTLN);
-	add_builtin("print", S_PRINTSTREAM_PRINT);
+	symbol = add_builtin("PrintStream", S_PRINTSTREAM);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->string = symbol->string;
+
+	enter_scope("PrintStream", TYPE_CLASS);
+
+	symbol = add_builtin("println", S_PRINTSTREAM_PRINTLN);
+	symbol->type = create_type(TYPE_METHOD);
+
+	symbol = add_builtin("print", S_PRINTSTREAM_PRINT);
+	symbol->type = create_type(TYPE_METHOD);
+
 	exit_scope();
 
-	add_builtin("Array", S_ARRAY);
-	enter_scope("Array", S_Class);
-	add_builtin("length", S_ARRAY_LENGTH);
+	symbol = add_builtin("Array", S_ARRAY);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->string = symbol->string;
+
+	enter_scope("Array", TYPE_CLASS);
+
+	symbol = add_builtin("length", S_ARRAY_LENGTH);
+	symbol->type = create_type(TYPE_METHOD);
+
 	exit_scope();
 }
 

@@ -3,10 +3,7 @@
 enum symbols
 {
 	S_Unknown = 2000,
-	S_Block,
-	S_Class,
 	S_Global,
-	S_Method,
 	S_Name,
 	S_Variable,
 
@@ -19,6 +16,7 @@ enum symbols
 	S_PRINTSTREAM_PRINTLN,
 	S_PRINTSTREAM,
 	S_STRING_CHARAT,
+	S_STRING_COMPARETO,
 	S_STRING_EQUALS,
 	S_STRING_JOIN,
 	S_STRING_LENGTH,

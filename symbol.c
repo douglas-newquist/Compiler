@@ -35,7 +35,7 @@ void print_symbol(void *symbol)
 	if (s == NULL)
 		return;
 
-	printf("    %s\n", s->string);
+	printf("    %s\t%s\n", s->string, type_name(s->type));
 }
 
 int indent = 0;

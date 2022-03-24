@@ -4,14 +4,14 @@
 #define Type struct type
 enum TYPES
 {
-	TYPE_ARRAY,
+	TYPE_ARRAY = 3000,
 	TYPE_BOOL,
 	TYPE_CHAR,
 	TYPE_CLASS,
 	TYPE_DOUBLE,
 	TYPE_INT,
+	TYPE_METHOD,
 	TYPE_NULL,
-	TYPE_OBJECT,
 	TYPE_STRING,
 	TYPE_VOID
 };
@@ -25,7 +25,7 @@ Type
 };
 
 Type *create_type(int super_type);
-void free_type(Type *type);
 int type_matches(Type *t1, Type *t2);
 Type *parse_type(Tree *tree);
+char *type_name(Type *type);
 #endif

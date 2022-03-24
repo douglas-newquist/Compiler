@@ -9,6 +9,7 @@
 #define ATR_DEFINED (1 << 1)
 #define ATR_PUBLIC (1 << 2)
 #define ATR_STATIC (1 << 3)
+#define ATR_BUILTIN (1 << 4)
 
 Symbol
 {

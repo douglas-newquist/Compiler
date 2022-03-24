@@ -337,7 +337,9 @@ void check_table(SymbolTable *scope, Tree *tree)
 
 Symbol *add_builtin(char *name, int type)
 {
-	return add_symbol(simple_symbol(NULL, name, type));
+	Symbol *symbol = add_symbol(simple_symbol(NULL, name, type));
+	symbol->attributes |= ATR_BUILTIN;
+	return symbol;
 }
 
 void populate_builtin()

@@ -32,16 +32,11 @@ List *list_add(List *list, void *value)
 		list = create_list();
 
 	if (list->size == 0)
-	{
-		list->tail = current;
 		list->head = current;
-	}
 	else
-	{
 		list->tail->next = current;
-		list->tail = current;
-	}
 
+	list->tail = current;
 	list->size++;
 
 	return list;

@@ -1,15 +1,17 @@
 #include "token.h"
-#include "type.h"
 
-#ifndef Symbol
+#ifndef _SYMBOL
+#define _SYMBOL
 #define Symbol struct symbol
 #define SymbolTable struct symboltable
+#define Type struct type
 
 #define ATR_CONST (1 << 0)
 #define ATR_DEFINED (1 << 1)
 #define ATR_PUBLIC (1 << 2)
 #define ATR_STATIC (1 << 3)
 #define ATR_BUILTIN (1 << 4)
+#define ATR_VARIABLE (1 << 5)
 
 Symbol
 {

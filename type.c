@@ -12,12 +12,29 @@
 #include "tree.h"
 #include "type.h"
 
-Type *create_type(int super_type)
+Type *create_type(int basetype)
 {
 	Type *type = alloc(sizeof(Type));
-	type->super = super_type;
-	type->size = 0;
-	type->subtype = NULL;
+	type->base = basetype;
+
+	switch (basetype)
+	{
+	case TYPE_METHOD:
+		type->info.method.scope = NULL;
+		type->info.method.builtin = 0;
+		break;
+
+	case TYPE_CLASS:
+		type->info.class.name = NULL;
+		type->info.class.scope = NULL;
+		break;
+
+	case TYPE_ARRAY:
+		type->info.array.size = -1;
+		type->info.array.type = NULL;
+		break;
+	}
+
 	return type;
 }
 
@@ -29,7 +46,7 @@ int type_matches(Type *t1, Type *t2)
 	if (t1 == NULL || t2 == NULL)
 		return FALSE;
 
-	if (t1->super != t2->super)
+	if (t1->base != t2->base)
 		return FALSE;
 
 	// TODO type check
@@ -67,7 +84,7 @@ Type *parse_type(Tree *tree)
 
 	case R_CLASS1:
 		type = create_type(TYPE_CLASS);
-		type->string = tree->token->text;
+		type->info.class.name = tree->token->text;
 		return type;
 
 	case R_ACCESS1:
@@ -76,7 +93,7 @@ Type *parse_type(Tree *tree)
 
 	case R_ARRAY1:
 		type = create_type(TYPE_ARRAY);
-		type->subtype = parse_type(tree->children[0]);
+		type->info.array.type = parse_type(tree->children[0]);
 		return type;
 
 	case VOID:
@@ -93,11 +110,8 @@ char *type_name(Type *type)
 	if (type == NULL)
 		return "<NULL>";
 
-	switch (type->super)
+	switch (type->base)
 	{
-	case S_Variable:
-		return type_name(type->subtype);
-
 	case TYPE_INT:
 		return "int";
 
@@ -111,7 +125,7 @@ char *type_name(Type *type)
 		return "double";
 
 	case TYPE_CLASS:
-		return type->string;
+		return type->info.class.name;
 
 	case TYPE_VOID:
 		return "void";
@@ -120,13 +134,13 @@ char *type_name(Type *type)
 		return "null";
 
 	case TYPE_ARRAY:
-		s2 = type_name(type->subtype);
+		s2 = type_name(type->info.array.type);
 		s1 = alloc(sizeof(char) * (3 + 32 + strlen(s2)));
 
-		if (type->size == 0)
-			sprintf(s1, "%s[]", s2);
+		if (type->info.array.size > 0)
+			sprintf(s1, "%s[%d]", s2, type->info.array.size);
 		else
-			sprintf(s1, "%s[%d]", s2, type->size);
+			sprintf(s1, "%s[]", s2);
 
 		return s1;
 
@@ -135,7 +149,7 @@ char *type_name(Type *type)
 
 	default:
 #ifdef DEBUG
-		printf("Unhandled type name %d\n", type->super);
+		printf("Unhandled type name %d\n", type->base);
 #endif
 		return "";
 	}

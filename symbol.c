@@ -5,6 +5,7 @@
 #include "mmemory.h"
 #include "symbol.h"
 #include "symboltable.h"
+#include "type.h"
 
 List *symbols = NULL;
 

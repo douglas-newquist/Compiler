@@ -1,7 +1,8 @@
 #include "tree.h"
+#include "symboltable.h"
 
-#ifndef Type
-#define Type struct type
+#ifndef _TYPE
+#define _TYPE
 enum TYPES
 {
 	TYPE_ARRAY = 3000,
@@ -18,10 +19,29 @@ enum TYPES
 
 Type
 {
-	int super;
-	int size;
-	Type *subtype;
-	char *string;
+	int base;
+
+	union
+	{
+		struct class_info
+		{
+			char *name;
+			SymbolTable *scope;
+		} class;
+
+		struct array_info
+		{
+			int size;
+			Type *type;
+		} array;
+
+		struct method_info
+		{
+			SymbolTable *scope;
+			// What built-in method if relevent
+			int builtin;
+		} method;
+	} info;
 };
 
 Type *create_type(int super_type);

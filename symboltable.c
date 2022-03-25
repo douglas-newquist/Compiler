@@ -193,6 +193,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	Symbol *symbol;
 	Tree *names;
+	Type *type;
 
 	switch (tree->rule)
 	{
@@ -201,43 +202,57 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	case R_CLASS1:
 		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
-		symbol->type->string = tree->token->text;
+		symbol->type->info.class.name = tree->token->text;
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
 		enter_scope(symbol->text, TYPE_CLASS);
+		symbol->type->info.class.scope = scope;
 		scan_children(tree);
 		exit_scope();
 		break;
 
 	case R_DEFINE1:
-		symbol = simple_symbol(tree->token, NULL, S_Variable);
-		symbol->type->subtype = parse_type(tree->children[0]);
-		symbol->attributes |= ATR_DEFINED;
+		symbol = create_symbol(tree->token,
+							   tree->token->text,
+							   parse_type(tree->children[0]));
+		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
 		return NULL;
 
 	case R_DEFINE2:
 		names = tree->children[1];
+		type = parse_type(tree->children[0]);
+
 		switch (names->rule)
 		{
 		case ID:
-			symbol = simple_symbol(names->token, NULL, S_Variable);
-			symbol->type->subtype = parse_type(tree->children[0]);
+			symbol = create_symbol(names->token,
+								   names->token->text,
+								   type);
+			symbol->attributes |= ATR_VARIABLE;
 			add_symbol(symbol);
 			break;
 
 		case R_DEFINE3:
-			symbol = simple_symbol(names->token, NULL, S_Variable);
-			symbol->type->subtype = parse_type(tree->children[0]);
-			symbol->attributes |= ATR_DEFINED;
+			symbol = create_symbol(names->token,
+								   names->token->text,
+								   type);
+			symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 			add_symbol(symbol);
 			break;
 
 		case R_VAR_GROUP:
 			for (int i = 0; i < names->count; i++)
 			{
-				symbol = simple_symbol(names->children[i]->token, NULL, S_Variable);
-				symbol->type->subtype = parse_type(tree->children[0]);
+				symbol = create_symbol(names->children[i]->token,
+									   names->children[i]->token->text,
+									   type);
+
+				symbol->attributes |= ATR_VARIABLE;
+
+				if (names->children[i]->rule == R_DEFINE3)
+					symbol->attributes |= ATR_DEFINED;
+
 				add_symbol(symbol);
 			}
 			break;
@@ -250,6 +265,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		// TODO method type
 		add_symbol(symbol);
 		enter_scope(symbol->text, TYPE_METHOD);
+		symbol->type->info.method.scope = scope;
 		scan_children(tree);
 		return exit_scope();
 
@@ -301,7 +317,7 @@ SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
 		error_at(token, SEMATIC_ERROR, "Symbol not defined");
 
 	// Check if symbol is defined in a valid location
-	if (symbol->type->super == S_Variable)
+	if (symbol->attributes & ATR_VARIABLE)
 	{
 		if (symbol->token->id > token->id)
 			error_at(token, SEMATIC_ERROR, "Variable used before definition");
@@ -322,6 +338,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 	{
 	case R_CLASS1:
 	case R_METHOD1:
+		//scope = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		scope = get_sub_scope(scope, tree->token->text);
 		break;
 
@@ -346,25 +363,27 @@ void populate_builtin()
 {
 	Symbol *symbol = NULL;
 
-	symbol = add_builtin("System", S_SYSTEM);
-	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->text;
+	symbol = add_builtin("System", TYPE_CLASS);
+	enter_scope(symbol->text, TYPE_CLASS);
+	symbol->type->info.class.name = symbol->text;
+	symbol->type->info.class.scope = scope;
 
-	enter_scope("System", TYPE_CLASS);
+	symbol = add_builtin("exit", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_SYSTEM_EXIT;
 
-	symbol = add_builtin("exit", S_SYSTEM_EXIT);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("out", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_SYSTEM_OUT;
 
-	symbol = add_builtin("out", S_SYSTEM_OUT);
-	symbol = add_builtin("err", S_SYSTEM_ERR);
+	symbol = add_builtin("err", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_SYSTEM_ERR;
 
 	enter_scope("out", TYPE_CLASS);
 
-	symbol = add_builtin("println", S_SYSTEM_OUT_PRINTLN);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("println", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_SYSTEM_OUT_PRINTLN;
 
-	symbol = add_builtin("print", S_SYSTEM_OUT_PRINT);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("print", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_SYSTEM_OUT_PRINT;
 
 	exit_scope();
 
@@ -375,74 +394,73 @@ void populate_builtin()
 
 	symbol = add_builtin("print", S_SYSTEM_ERR_PRINT);
 	symbol->type = create_type(TYPE_METHOD);
-	exit_scope();
-	exit_scope();
-
-	symbol = add_builtin("String", S_STRING);
-	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->text;
-
-	enter_scope("String", TYPE_CLASS);
-
-	symbol = add_builtin("charAt", S_STRING_CHARAT);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("equals", S_STRING_EQUALS);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("compareTo", S_STRING_COMPARETO);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("join", S_STRING_JOIN);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("length", S_STRING_LENGTH);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("substring", S_STRING_SUBSTRING);
-	symbol->type = create_type(TYPE_METHOD);
-
-	symbol = add_builtin("valueOf", S_STRING_VALUEOF);
-	symbol->type = create_type(TYPE_METHOD);
 
 	exit_scope();
 
-	symbol = add_builtin("InputStream", S_INPUTSTREAM);
-	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->text;
+	exit_scope();
 
-	enter_scope("InputStream", TYPE_CLASS);
+	symbol = add_builtin("String", TYPE_METHOD);
+	enter_scope(symbol->text, TYPE_CLASS);
+	symbol->type->info.class.name = symbol->text;
+	symbol->type->info.class.scope = scope;
 
-	symbol = add_builtin("read", S_INPUTSTREAM_READ);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("charAt", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_CHARAT;
 
-	symbol = add_builtin("close", S_INPUTSTREAM_CLOSE);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("equals", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_EQUALS;
+
+	symbol = add_builtin("compareTo", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_COMPARETO;
+
+	symbol = add_builtin("join", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_JOIN;
+
+	symbol = add_builtin("length", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_LENGTH;
+
+	symbol = add_builtin("substring", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_SUBSTRING;
+
+	symbol = add_builtin("valueOf", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_STRING_VALUEOF;
+
+	exit_scope();
+
+	symbol = add_builtin("InputStream", TYPE_CLASS);
+	enter_scope(symbol->text, TYPE_CLASS);
+	symbol->type->info.class.name = symbol->text;
+	symbol->type->info.class.scope = scope;
+
+	symbol = add_builtin("read", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_INPUTSTREAM_READ;
+
+	symbol = add_builtin("close", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_INPUTSTREAM_CLOSE;
 
 	exit_scope();
 
 	symbol = add_builtin("PrintStream", S_PRINTSTREAM);
-	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->text;
-
 	enter_scope("PrintStream", TYPE_CLASS);
+	symbol->type = create_type(TYPE_CLASS);
+	symbol->type->info.class.name = symbol->text;
+	symbol->type->info.class.scope = scope;
 
-	symbol = add_builtin("println", S_PRINTSTREAM_PRINTLN);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("println", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_PRINTSTREAM_PRINTLN;
 
-	symbol = add_builtin("print", S_PRINTSTREAM_PRINT);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("print", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_PRINTSTREAM_PRINT;
 
 	exit_scope();
 
-	symbol = add_builtin("Array", S_ARRAY);
-	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->text;
+	symbol = add_builtin("Array", TYPE_CLASS);
+	enter_scope(symbol->text, TYPE_CLASS);
+	symbol->type->info.class.name = symbol->text;
+	symbol->type->info.class.scope = scope;
 
-	enter_scope("Array", TYPE_CLASS);
-
-	symbol = add_builtin("length", S_ARRAY_LENGTH);
-	symbol->type = create_type(TYPE_METHOD);
+	symbol = add_builtin("length", TYPE_METHOD);
+	symbol->type->info.method.builtin = S_ARRAY_LENGTH;
 
 	exit_scope();
 }

@@ -1,5 +1,11 @@
-#include "tree.h"
+/*
+	Douglas Newquist
+*/
+
+#include "list.h"
 #include "symboltable.h"
+#include "types.h"
+#include "tree.h"
 
 #ifndef _TYPE
 #define _TYPE
@@ -39,6 +45,8 @@ Type
 		struct method_info
 		{
 			SymbolTable *scope;
+			Type *result;
+			List *params;
 			// What built-in method if relevent
 			int builtin;
 		} method;

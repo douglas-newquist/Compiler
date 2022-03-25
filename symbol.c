@@ -1,3 +1,7 @@
+/*
+	Douglas Newquist
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "id.h"
@@ -17,7 +21,7 @@ Symbol *create_symbol(Token *token, char *string, Type *type)
 	symbol->type = type;
 	symbol->attributes = 0;
 	symbol->token = token;
-	symbol->table = NULL;
+	symbol->scope = NULL;
 
 	symbols = list_add(symbols, symbol);
 

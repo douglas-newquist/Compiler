@@ -13,6 +13,7 @@
 #include "main.h"
 #include "mmemory.h"
 #include "rules.h"
+#include "symbol.h"
 #include "symbols.h"
 #include "symboltable.h"
 #include "type.h"
@@ -134,7 +135,7 @@ Symbol *lookup(SymbolTable *scope, char *symbol, int mode)
  */
 Symbol *add_symbol(Symbol *symbol)
 {
-	symbol->table = scope;
+	symbol->scope = scope;
 
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
 		error_at(symbol->token, SEMATIC_ERROR, "Redefined symbol");
@@ -323,7 +324,7 @@ SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
 			error_at(token, SEMATIC_ERROR, "Variable used before definition");
 	}
 
-	return symbol->table;
+	return symbol->scope;
 }
 
 /**

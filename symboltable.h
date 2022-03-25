@@ -2,9 +2,9 @@
 	Douglas Newquist
 */
 
+#include "types.h"
 #include "hash.h"
 #include "list.h"
-#include "symbol.h"
 #include "tree.h"
 
 #ifndef _SYMBOLTABLE

@@ -1,10 +1,13 @@
+/*
+	Douglas Newquist
+*/
+
+#include "types.h"
+#include "symboltable.h"
 #include "token.h"
 
 #ifndef _SYMBOL
 #define _SYMBOL
-#define Symbol struct symbol
-#define SymbolTable struct symboltable
-#define Type struct type
 
 #define ATR_CONST (1 << 0)
 #define ATR_DEFINED (1 << 1)
@@ -21,7 +24,7 @@ Symbol
 	int attributes;
 	Token *token;
 	// Scope this symbol belongs
-	SymbolTable *table;
+	SymbolTable *scope;
 };
 
 Symbol *create_symbol(Token *token, char *string, Type *type);

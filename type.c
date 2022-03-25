@@ -8,6 +8,7 @@
 #include "main.h"
 #include "mmemory.h"
 #include "rules.h"
+#include "symbol.h"
 #include "symbols.h"
 #include "tree.h"
 #include "type.h"

@@ -5,7 +5,8 @@
 #define _TYPE
 enum TYPES
 {
-	TYPE_ARRAY = 3000,
+	TYPE_UNKNOWN = 3000,
+	TYPE_ARRAY,
 	TYPE_BOOL,
 	TYPE_CHAR,
 	TYPE_CLASS,
@@ -46,6 +47,6 @@ Type
 
 Type *create_type(int super_type);
 int type_matches(Type *t1, Type *t2);
-Type *parse_type(Tree *tree);
+Type *parse_type(SymbolTable *scope, Tree *tree);
 char *type_name(Type *type);
 #endif

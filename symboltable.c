@@ -214,14 +214,14 @@ SymbolTable *populate_symboltable(Tree *tree)
 	case R_DEFINE1:
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
-							   parse_type(tree->children[0]));
+							   parse_type(scope, tree->children[0]));
 		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
 		return NULL;
 
 	case R_DEFINE2:
 		names = tree->children[1];
-		type = parse_type(tree->children[0]);
+		type = parse_type(scope, tree->children[0]);
 
 		switch (names->rule)
 		{
@@ -399,7 +399,7 @@ void populate_builtin()
 
 	exit_scope();
 
-	symbol = add_builtin("String", TYPE_METHOD);
+	symbol = add_builtin("String", TYPE_CLASS);
 	enter_scope(symbol->text, TYPE_CLASS);
 	symbol->type->info.class.name = symbol->text;
 	symbol->type->info.class.scope = scope;

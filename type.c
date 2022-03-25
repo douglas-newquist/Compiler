@@ -54,9 +54,10 @@ int type_matches(Type *t1, Type *t2)
 	return FALSE;
 }
 
-Type *parse_type(Tree *tree)
+Type *parse_type(SymbolTable *scope, Tree *tree)
 {
 	Type *type;
+	Symbol *symbol;
 
 	switch (tree->rule)
 	{
@@ -91,9 +92,15 @@ Type *parse_type(Tree *tree)
 		// TODO
 		break;
 
+	case ID:
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		if (symbol == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
+		return symbol->type;
+
 	case R_ARRAY1:
 		type = create_type(TYPE_ARRAY);
-		type->info.array.type = parse_type(tree->children[0]);
+		type->info.array.type = parse_type(scope, tree->children[0]);
 		return type;
 
 	case VOID:
@@ -146,6 +153,9 @@ char *type_name(Type *type)
 
 	case TYPE_METHOD:
 		return "method";
+
+	case TYPE_UNKNOWN:
+		return "<UNKNOWN>";
 
 	default:
 #ifdef DEBUG

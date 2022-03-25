@@ -14,7 +14,7 @@
 Symbol
 {
 	int id;
-	char *string;
+	char *text;
 	Type *type;
 	int attributes;
 	Token *token;

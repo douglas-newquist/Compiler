@@ -27,7 +27,7 @@ SymbolTable *scope;
 int hash(void *symbol)
 {
 	Symbol *s = (Symbol *)symbol;
-	char *str = s->string;
+	char *str = s->text;
 	register int h = 0;
 	register char c;
 
@@ -54,7 +54,7 @@ int equals(void *symbol1, void *symbol2)
 	Symbol *s1 = (Symbol *)symbol1;
 	Symbol *s2 = (Symbol *)symbol2;
 
-	return strcmp(s1->string, s2->string) == 0;
+	return strcmp(s1->text, s2->text) == 0;
 }
 
 SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
@@ -204,7 +204,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol->type->string = tree->token->text;
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
-		enter_scope(symbol->string, TYPE_CLASS);
+		enter_scope(symbol->text, TYPE_CLASS);
 		scan_children(tree);
 		exit_scope();
 		break;
@@ -249,7 +249,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = simple_symbol(tree->token, NULL, TYPE_METHOD);
 		// TODO method type
 		add_symbol(symbol);
-		enter_scope(symbol->string, TYPE_METHOD);
+		enter_scope(symbol->text, TYPE_METHOD);
 		scan_children(tree);
 		return exit_scope();
 
@@ -348,7 +348,7 @@ void populate_builtin()
 
 	symbol = add_builtin("System", S_SYSTEM);
 	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->string;
+	symbol->type->string = symbol->text;
 
 	enter_scope("System", TYPE_CLASS);
 
@@ -380,7 +380,7 @@ void populate_builtin()
 
 	symbol = add_builtin("String", S_STRING);
 	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->string;
+	symbol->type->string = symbol->text;
 
 	enter_scope("String", TYPE_CLASS);
 
@@ -409,7 +409,7 @@ void populate_builtin()
 
 	symbol = add_builtin("InputStream", S_INPUTSTREAM);
 	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->string;
+	symbol->type->string = symbol->text;
 
 	enter_scope("InputStream", TYPE_CLASS);
 
@@ -423,7 +423,7 @@ void populate_builtin()
 
 	symbol = add_builtin("PrintStream", S_PRINTSTREAM);
 	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->string;
+	symbol->type->string = symbol->text;
 
 	enter_scope("PrintStream", TYPE_CLASS);
 
@@ -437,7 +437,7 @@ void populate_builtin()
 
 	symbol = add_builtin("Array", S_ARRAY);
 	symbol->type = create_type(TYPE_CLASS);
-	symbol->type->string = symbol->string;
+	symbol->type->string = symbol->text;
 
 	enter_scope("Array", TYPE_CLASS);
 

@@ -22,6 +22,9 @@ Type *create_type(int basetype)
 	{
 	case TYPE_METHOD:
 		type->info.method.scope = NULL;
+		type->info.method.params = NULL;
+		type->info.method.result = NULL;
+		type->info.method.count = 0;
 		type->info.method.builtin = 0;
 		break;
 
@@ -89,6 +92,35 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		type->info.class.name = tree->token->text;
 		return type;
 
+	case R_DEFINE1:
+		return parse_type(scope, tree->children[0]);
+
+	case R_METHOD2:
+		return parse_type(scope, tree->children[2]);
+
+	case R_METHOD1:
+		type = create_type(TYPE_METHOD);
+		type->info.method.result = parse_type(scope, tree->children[0]);
+
+		switch (tree->children[1]->rule)
+		{
+		case R_ARG_DEF_GROUP:
+			type->info.method.params = alloc(sizeof(Type *) * tree->count);
+			type->info.method.count = tree->count;
+
+			for (int i = 0; i < tree->count - 1; i++)
+				type->info.method.params[i] = parse_type(scope, tree->children[1]->children[i]);
+			break;
+
+		case R_DEFINE1:
+			type->info.method.params = alloc(sizeof(Type *));
+			type->info.method.count = 1;
+			type->info.method.params[0] = parse_type(scope, tree->children[1]->children[0]);
+			break;
+		}
+
+		return type;
+
 	case R_ACCESS1:
 		// TODO
 		break;
@@ -153,7 +185,19 @@ char *type_name(Type *type)
 		return s1;
 
 	case TYPE_METHOD:
-		return "method";
+		s1 = alloc(sizeof(char) * 4096);
+		sprintf(s1, "%s(", type_name(type->info.method.result));
+		int count = 0;
+		for (int i = 0; i < type->info.method.count; i++)
+		{
+			if (count > 0)
+				sprintf(s1, "%s, %s", s1, type_name(type->info.method.params[i]));
+			else
+				sprintf(s1, "%s%s", s1, type_name(type->info.method.params[i]));
+			count++;
+		}
+		sprintf(s1, "%s)", s1);
+		return s1;
 
 	case TYPE_UNKNOWN:
 		return "<UNKNOWN>";

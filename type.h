@@ -46,7 +46,8 @@ Type
 		{
 			SymbolTable *scope;
 			Type *result;
-			List *params;
+			int count;
+			Type **params;
 			// What built-in method if relevent
 			int builtin;
 		} method;

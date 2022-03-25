@@ -7,12 +7,10 @@
 #include "flags.h"
 
 int options = 0;
-int flag_count = 0;
 
 #define check_flag(arg, compare, code) \
 	if (strcmp(compare, arg) == 0)     \
 	{                                  \
-		flag_count++;                  \
 		options |= code;               \
 		return code;                   \
 	}
@@ -22,11 +20,13 @@ int flag_count = 0;
  */
 int get_flag_code(char *arg)
 {
-	check_flag(arg, "--none", NONE_FLAG);
-	check_flag(arg, "--tokens", TOKENS_FLAG);
-	check_flag(arg, "--tree", TREE_FLAG);
-	check_flag(arg, "--bison", BISON_FLAG);
-	check_flag(arg, "--dot", DOT_FLAG);
+	check_flag(arg, "-none", NONE_FLAG);
+	check_flag(arg, "-tokens", TOKENS_FLAG);
+	check_flag(arg, "-tree", TREE_FLAG);
+	check_flag(arg, "-bison", BISON_FLAG);
+	check_flag(arg, "-dot", DOT_FLAG);
+	check_flag(arg, "-symbols", SYMBOLS_FLAG);
+	check_flag(arg, "-symtab", SYMBOLS_FLAG);
 
 	return 0;
 }
@@ -43,11 +43,12 @@ int flag(char *arg)
 	case NONE_FLAG:
 		options = 0;
 		break;
-
-	case DOT_FLAG:
-		options = DOT_FLAG;
-		break;
 	}
 
 	return cflag;
+}
+
+int has_flags(int v, int flags)
+{
+	return (v & flags) == flags;
 }

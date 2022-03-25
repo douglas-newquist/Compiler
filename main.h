@@ -2,8 +2,11 @@
 	Douglas Newquist
 */
 
-#ifndef comment
+#ifndef _MAIN
+#define _MAIN
 #include <stdio.h>
+#include "errors.h"
+#include "symboltable.h"
 #include "tree.h"
 
 #if DEBUG
@@ -20,6 +23,7 @@ char current_file[FILE_LENGTH];
 FILE *yyin;
 char *yytext;
 Tree *program;
+SymbolTable *table;
 
 int yylex_destroy();
 
@@ -44,7 +48,4 @@ void whitespace();
  * @param category
  */
 int token(int category);
-
-void error(int code, char *message);
-void yyerror(char *message);
 #endif

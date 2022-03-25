@@ -9,13 +9,15 @@
 #include "flags.h"
 #include "jzero.tab.h"
 #include "main.h"
+#include "mmemory.h"
+#include "symbol.h"
+#include "symboltable.h"
 #include "token.h"
 #include "tree.h"
 
 void free_all()
 {
-	free_trees();
-	free_tokens();
+	free_memory();
 
 	if (yyin && yyin != stdin)
 	{
@@ -32,14 +34,20 @@ void free_all()
  */
 void post_read()
 {
-	if (options & TOKENS_FLAG)
+	if (has_flags(options, TOKENS_FLAG))
 		print_tokens(tokens);
 
-	if (options & TREE_FLAG)
+	if (has_flags(options, DOT_FLAG | TREE_FLAG))
+		print_dot_tree(program, 0);
+	else if (has_flags(options, TREE_FLAG))
 		print_tree(program, 0, "| ");
 
-	if (options & DOT_FLAG)
-		print_dot_tree(program, 0);
+	table = generate_symboltable(program);
+
+	if (has_flags(options, DOT_FLAG | SYMBOLS_FLAG))
+		print_dot_symbols(table);
+	else if (has_flags(options, SYMBOLS_FLAG))
+		print_symbols(table);
 }
 
 /*
@@ -110,7 +118,7 @@ void read_file(char *filename)
 
 int main(int argc, char *argv[])
 {
-	options = TREE_FLAG;
+	options = 0;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -121,16 +129,21 @@ int main(int argc, char *argv[])
 			yydebug = 1;
 			break;
 #endif
-
-		case 0:
-			read_file(argv[i]);
-			break;
 		}
 	}
 
-	argc -= flag_count;
+	int files_read = 0;
 
-	if (argc == 1)
+	for (int i = 1; i < argc; i++)
+	{
+		if (flag(argv[i]) == 0)
+		{
+			read_file(argv[i]);
+			files_read++;
+		}
+	}
+
+	if (files_read == 0)
 	{
 		yyin = stdin;
 		strcpy(current_file, "stdin");
@@ -180,22 +193,3 @@ int token(int category)
 	column += strlen(yytext);
 	return category;
 }
-
-void error(int code, char *message)
-{
-	fprintf(stderr, "Error in %s at %d:%d\n%s: %s\n",
-			current_file,
-			line, column,
-			message,
-			yytext);
-
-	free_all();
-
-#if DEBUG
-	printf("Exit: %d\n", code);
-#endif
-
-	exit(code);
-}
-
-void yyerror(char *message) { error(SYNTAX_ERROR, message); }

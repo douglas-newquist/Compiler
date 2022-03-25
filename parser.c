@@ -4,9 +4,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "parser.h"
-#include "main.h"
 #include "errors.h"
+#include "main.h"
+#include "mmemory.h"
+#include "parser.h"
 
 #define BUFFER 128
 
@@ -106,7 +107,7 @@ char get_escaped_char(char c)
 char *parse_string(char *text)
 {
 	int size = strlen(text);
-	char *string = (char *)malloc(sizeof(char) * size);
+	char *string = (char *)alloc(sizeof(char) * size);
 	// Skip first quote
 	int offset = 1;
 

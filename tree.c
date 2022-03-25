@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "id.h"
 #include "jzero.tab.h"
-#include "tree.h"
-#include "token.h"
+#include "mmemory.h"
 #include "rules.h"
-
-int tree_count = 0;
+#include "token.h"
+#include "tree.h"
 
 /**
  * @brief Create a new tree object
@@ -22,12 +22,10 @@ int tree_count = 0;
  */
 Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 {
-	Tree *tree = (Tree *)malloc(sizeof(Tree));
-
-	tree_count++;
+	Tree *tree = (Tree *)alloc(sizeof(Tree));
 
 	// Store tree values
-	tree->id = tree_count;
+	tree->id = next_id();
 	tree->rule = rule;
 	tree->name = message;
 	tree->count = child_count;
@@ -35,12 +33,12 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 
 	// Create array for children if needed
 	if (child_count > 0)
-		tree->children = (Tree **)malloc(sizeof(Tree *) * child_count);
+		tree->children = (Tree **)alloc(sizeof(Tree *) * child_count);
 	else
 		tree->children = NULL;
 
 	// Add tree to list
-	trees = add(trees, tree);
+	trees = list_add(trees, tree);
 
 	return tree;
 }
@@ -48,31 +46,6 @@ Tree *create_tree(char *message, int rule, int child_count, Token *leaf)
 Tree *tree_token(Token *token)
 {
 	return create_tree("Token", token->category, 0, token);
-}
-
-/**
- * @brief Frees the given tree
- */
-void free_tree(Tree *tree)
-{
-	if (tree == NULL)
-		return;
-
-	free(tree->children);
-	free(tree);
-}
-
-/**
- * @brief Wrapper for free_tree for linked list
- */
-void free_list_tree(void *tree)
-{
-	free_tree((Tree *)tree);
-}
-
-void free_trees()
-{
-	trees = free_list(trees, free_list_tree);
 }
 
 /**
@@ -85,7 +58,7 @@ void free_trees()
 void print_tree(Tree *tree, int indent_level, char *indent)
 {
 	if (indent_level == 0)
-		printf("-----------------------------------------------------------\n");
+		printf("---- Syntax Tree ---------------------------------------------\n");
 
 	// Print indent characters
 	for (int i = 0; i < indent_level; i++)
@@ -117,7 +90,7 @@ void print_tree(Tree *tree, int indent_level, char *indent)
 		print_tree(tree->children[i], indent_level + 1, indent);
 
 	if (indent_level == 0)
-		printf("-----------------------------------------------------------\n");
+		printf("--------------------------------------------------------------\n");
 }
 
 /**
@@ -146,6 +119,18 @@ char *tree_dot_name(Tree *tree)
 	return "(nil)";
 }
 
+void print_dot_id(Tree *tree)
+{
+	printf("\"%d %s\nRule %d", tree->id, tree->name, tree->rule);
+	if (tree->token)
+		printf("\n%s\nat %d:%d",
+			   tree->token->sval ? "<String>" : tree->token->text,
+			   tree->token->line,
+			   tree->token->column);
+
+	printf("\"");
+}
+
 /**
  * @brief Prints the given tree in .dot file format
  *
@@ -157,13 +142,18 @@ void print_dot_tree(Tree *tree, int indent_level)
 	if (indent_level == 0)
 		printf("graph {\n");
 
+	print_dot_id(tree);
+	if (tree->rule >= 1000)
+		printf(" [shape=box]");
+
+	printf("\n");
+
 	for (int i = 0; i < tree->count; i++)
 	{
-		printf("\"%d %s\" -- \"%d %s\"\n",
-			   tree->id,
-			   tree_dot_name(tree),
-			   tree->children[i]->id,
-			   tree_dot_name(tree->children[i]));
+		print_dot_id(tree);
+		printf(" -- ");
+		print_dot_id(tree->children[i]);
+		printf("\n");
 
 		print_dot_tree(tree->children[i], indent_level + 1);
 	}

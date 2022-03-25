@@ -5,45 +5,39 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "list.h"
+#include "mmemory.h"
 
-List *tail(List *list)
+List *create_list()
 {
-	if (list == NULL)
-		return NULL;
-
-	while (list->next != NULL)
-		list = list->next;
-
+	List *list = alloc(sizeof(List));
+	list->size = 0;
+	list->head = NULL;
+	list->tail = NULL;
 	return list;
 }
 
-List *add(List *list, void *value)
+ListElement *create_list_element(void *value)
 {
-	List *current = (List *)malloc(sizeof(List));
-	current->value = value;
-	current->next = NULL;
-
-	if (list != NULL)
-	{
-		tail(list)->next = current;
-		return list;
-	}
-
-	return current;
+	ListElement *element = alloc(sizeof(ListElement));
+	element->value = value;
+	element->next = NULL;
+	return element;
 }
 
-List *free_list(List *list, void (*freer)(void *))
+List *list_add(List *list, void *value)
 {
-	while (list != NULL)
-	{
-		List *next = list->next;
+	ListElement *current = create_list_element(value);
 
-		if (freer != NULL)
-			(*freer)(list->value);
+	if (list == NULL)
+		list = create_list();
 
-		free(list);
-		list = next;
-	}
+	if (list->size == 0)
+		list->head = current;
+	else
+		list->tail->next = current;
 
-	return NULL;
+	list->tail = current;
+	list->size++;
+
+	return list;
 }

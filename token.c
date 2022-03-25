@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "errors.h"
+#include "id.h"
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
+#include "mmemory.h"
 #include "parser.h"
 #include "token.h"
 
@@ -16,14 +18,17 @@
 */
 Token *create_token(int category)
 {
-	Token *token = (Token *)malloc(sizeof(Token));
+	Token *token = (Token *)alloc(sizeof(Token));
+	token->id = next_id();
 	token->category = category;
-	token->filename = current_file;
 	token->line = line;
 	token->column = column;
 
+	token->filename = alloc(sizeof(char) * (strlen(current_file) + 1));
+	strcpy(token->filename, current_file);
+
 	// Copy yytext to the token
-	token->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
+	token->text = (char *)alloc(sizeof(char) * (strlen(yytext) + 1));
 	strcpy(token->text, yytext);
 
 	// Zero values
@@ -58,38 +63,11 @@ Token *create_token(int category)
 	}
 
 	// Add token to list
-	tokens = add(tokens, token);
+	tokens = list_add(tokens, token);
 
 	yylval.token = token;
 
 	return token;
-}
-
-/*
-	Frees the given token from memory
-*/
-void free_token(Token *token)
-{
-	if (token == NULL)
-		return;
-
-	if (token->text)
-		free(token->text);
-
-	if (token->sval)
-		free(token->sval);
-
-	free(token);
-}
-
-void free_list_token(void *token)
-{
-	free_token((Token *)token);
-}
-
-void free_tokens()
-{
-	tokens = free_list(tokens, free_list_token);
 }
 
 void print_token_value(Token *token)
@@ -118,14 +96,16 @@ void print_token_value(Token *token)
 	}
 }
 
-void print_token(Token *token)
+void print_token(void *token)
 {
+	Token *t = (Token *)token;
+
 	printf("%d:%d\t%d\t%s\t\t%s\t",
-		   token->line,
-		   token->column,
-		   token->category,
-		   token->text,
-		   token->filename);
+		   t->line,
+		   t->column,
+		   t->category,
+		   t->text,
+		   t->filename);
 
 	print_token_value(token);
 
@@ -134,14 +114,11 @@ void print_token(Token *token)
 
 void print_tokens(Tokens *tokens)
 {
+	printf("---- Tokens --------------------------------------------------\n");
 	printf("Line\tToken\tText\t\tFile\t\t\tValue\n");
-	printf("--------------------------------------------------------------\n");
 
-	while (tokens != NULL)
-	{
-		print_token((Token *)tokens->value);
-		tokens = tokens->next;
-	}
+	foreach_list(element, tokens)
+		print_token(element->value);
 
 	printf("--------------------------------------------------------------\n");
 }

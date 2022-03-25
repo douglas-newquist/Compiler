@@ -12,6 +12,7 @@ Tokens *tokens;
 
 Token
 {
+	int id;
 	int category;
 	char *text;
 	int line, column;
@@ -37,20 +38,10 @@ Token
 Token *create_token(int category);
 
 /**
- *	@brief Frees the given token from memory
- */
-void free_token(Token *token);
-
-/*
-	Frees the given token list from memory
-*/
-void free_tokens();
-
-/**
  * @brief Prints the parsed version of this token's text
  */
 void print_token_value(Token *token);
-void print_token(Token *token);
+void print_token(void *token);
 void print_tokens(Tokens *tokens);
 
 #endif

@@ -48,6 +48,43 @@ Type *create_type(int basetype)
 }
 
 /**
+ * @brief Checks if two types match, accounting for automatic casting
+ */
+int type_fuzzy_match(Type *t1, Type *t2)
+{
+	if (type_matches(t1, t2) == TRUE)
+		return TRUE;
+
+	switch (t1->base)
+	{
+	case TYPE_ARRAY:
+	case TYPE_CLASS:
+		switch (t2->base)
+		{
+		case TYPE_NULL:
+			return TRUE;
+		}
+		break;
+
+	case TYPE_DOUBLE:
+		switch (t2->base)
+		{
+		case TYPE_INT:
+			return TRUE;
+		}
+	case TYPE_INT:
+		switch (t2->base)
+		{
+		case TYPE_CHAR:
+			return TRUE;
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+/**
  * @brief Checks if two types exactly match
  */
 int type_matches(Type *t1, Type *t2)
@@ -110,7 +147,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		return create_type(TYPE_CHAR);
 
 	case LITERAL_STRING:
-		return create_type(TYPE_STRING);
+		return lookup(scope, "String", SCOPE_SYMBOLS)->type;
 
 	case R_CLASS1:
 		type = create_type(TYPE_CLASS);

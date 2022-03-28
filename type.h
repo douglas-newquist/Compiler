@@ -25,7 +25,6 @@ enum TYPES
 	TYPE_INT,
 	TYPE_METHOD,
 	TYPE_NULL,
-	TYPE_STRING,
 	TYPE_VOID
 };
 
@@ -65,6 +64,11 @@ Type
  * @param basetype The base type of this type
  */
 Type *create_type(int basetype);
+
+/**
+ * @brief Checks if two types match, accounting for automatic casting
+ */
+int type_fuzzy_match(Type *t1, Type *t2);
 
 /**
  * @brief Checks if two types exactly match

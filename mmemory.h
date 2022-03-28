@@ -2,10 +2,10 @@
 	Douglas Newquist
 */
 
-#include <stdlib.h>
-
 #ifndef _MEMORY
 #define _MEMORY
+
+#include <stdlib.h>
 
 /**
  * @brief Allocates a block of memory

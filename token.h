@@ -2,10 +2,12 @@
 	Douglas Newquist
 */
 
+#ifndef Token
+
+#define Token struct token
+
 #include "list.h"
 
-#ifndef Token
-#define Token struct token
 #define Tokens List
 
 Tokens *tokens;

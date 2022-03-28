@@ -3,6 +3,7 @@
 */
 
 #ifndef TOKENS_FLAG
+
 #define NONE_FLAG (1 << 0)
 #define TOKENS_FLAG (1 << 1)
 #define TREE_FLAG (1 << 2)

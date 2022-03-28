@@ -2,10 +2,11 @@
 	Douglas Newquist
 */
 
-#include "list.h"
-
 #ifndef HashTable
+
 #define HashTable struct hashtable
+
+#include "list.h"
 
 HashTable
 {

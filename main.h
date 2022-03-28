@@ -4,6 +4,7 @@
 
 #ifndef _MAIN
 #define _MAIN
+
 #include <stdio.h>
 #include "errors.h"
 #include "symboltable.h"

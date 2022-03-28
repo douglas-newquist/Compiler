@@ -44,6 +44,17 @@ enum RULES
 	R_UNARY_OP1,	   // op Exp
 	R_UNARY_OP2,	   // Exp op
 	R_VAR_GROUP,	   // (R_DEFINE3 | ID), ..., (R_DEFINE3 | ID)
-	R_WHILE			   // while(Exp) R_STATEMENT_GROUP
+	R_WHILE,		   // while(Exp) R_STATEMENT_GROUP
+	R_OP2_ADD,		   // a + b
+	R_OP2_MULT,		   // a * b
+	R_OP2_DIV,		   // a / b
+	R_OP2_MOD,		   // a % b
+	R_OP2_SUB,		   // a- b
+	R_OP2_EQUALS,	   // a == b
+	R_OP2_NOT_EQUAL,   // a != b
+	R_OP2_AND,		   // a && b
+	R_OP2_OR,		   // a || b
+	R_OP2_LESS,		   // a < b
+	R_OP2_GREATER	   // a > b
 };
 #endif

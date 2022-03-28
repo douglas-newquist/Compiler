@@ -129,7 +129,20 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	{
 	case BOOLEAN:
 	case LITERAL_BOOL:
+	case R_OP2_AND:
+	case R_OP2_EQUALS:
+	case R_OP2_GREATER:
+	case R_OP2_LESS:
+	case R_OP2_NOT_EQUAL:
+	case R_OP2_OR:
 		return create_type(TYPE_BOOL);
+
+	case R_OP2_ADD:
+	case R_OP2_DIV:
+	case R_OP2_MOD:
+	case R_OP2_MULT:
+	case R_OP2_SUB:
+		return parse_type(scope, tree->children[0]);
 
 	case INT:
 	case LITERAL_INT:
@@ -275,4 +288,47 @@ char *type_name(Type *type)
 #endif
 		return "";
 	}
+}
+
+int check_types(int op, Type *t1, Type *t2)
+{
+	if (t1 == NULL || t2 == NULL)
+		error(SEMATIC_ERROR, "Expected a type");
+
+	switch (op)
+	{
+	case R_OP2_AND:
+	case R_OP2_OR:
+		if (t1->base != TYPE_BOOL)
+			error(SEMATIC_ERROR, "Expected boolean type for first value");
+		if (t2->base != TYPE_BOOL)
+			error(SEMATIC_ERROR, "Expected boolean type for second value");
+		return TRUE;
+
+	case R_OP2_EQUALS:
+	case R_OP2_NOT_EQUAL:
+		return TRUE;
+
+	case R_OP2_ADD:
+	case R_OP2_DIV:
+	case R_OP2_MOD:
+	case R_OP2_MULT:
+	case R_OP2_SUB:
+		if (t1->base == TYPE_INT ||
+			t1->base == TYPE_DOUBLE)
+		{
+			if (type_fuzzy_match(t1, t2) == TRUE)
+				return TRUE;
+
+			error(SEMATIC_ERROR, "");
+		}
+		else
+			error(SEMATIC_ERROR, "");
+
+	default:
+		printf("Undefined op type %d\n", op);
+		break;
+	}
+
+	return FALSE;
 }

@@ -36,10 +36,7 @@ void error_at(Token *token, int code, char *message)
 	if (token == NULL)
 		error(code, message);
 
-	strcpy(current_file, token->filename);
-	yytext = token->text;
-	line = token->line;
-	column = token->column;
+	set_pos(token);
 
 	error(code, message);
 }

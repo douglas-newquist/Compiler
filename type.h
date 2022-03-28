@@ -87,4 +87,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree);
  * @brief Gets the name of the type
  */
 char *type_name(Type *type);
+
+int check_types(int op, Type *t1, Type *t2);
 #endif

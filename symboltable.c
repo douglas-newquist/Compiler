@@ -355,6 +355,23 @@ void check_table(SymbolTable *scope, Tree *tree)
 	case R_ACCESS1:
 		check_defined(scope, tree);
 		return;
+
+	case R_OP2_ADD:
+	case R_OP2_AND:
+	case R_OP2_DIV:
+	case R_OP2_EQUALS:
+	case R_OP2_GREATER:
+	case R_OP2_LESS:
+	case R_OP2_MOD:
+	case R_OP2_MULT:
+	case R_OP2_NOT_EQUAL:
+	case R_OP2_OR:
+	case R_OP2_SUB:
+		set_pos(tree->token);
+		check_types(tree->rule,
+					parse_type(scope, tree->children[0]),
+					parse_type(scope, tree->children[1]));
+		break;
 	}
 
 	for (int i = 0; i < tree->count; i++)

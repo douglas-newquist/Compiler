@@ -193,3 +193,11 @@ int token(int category)
 	column += strlen(yytext);
 	return category;
 }
+
+void set_pos(Token *token)
+{
+	strcpy(current_file, token->filename);
+	yytext = token->text;
+	line = token->line;
+	column = token->column;
+}

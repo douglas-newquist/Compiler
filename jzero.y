@@ -309,27 +309,27 @@ Exp14	: '-' Exp14 { $$=tree("Negate", R_UNARY_OP1, $1, 1, $2); }
 Exp13	: Instantiate
 		| Exp14;
 
-Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", R_BINARY_OP, $2, 2, $1, $3); }
-		| Exp12 '/' Exp14 { $$=tree("Div", R_BINARY_OP, $2, 2, $1, $3); }
-		| Exp12 '%' Exp14 { $$=tree("Mod", R_BINARY_OP, $2, 2, $1, $3); }
+Exp12	: Exp12 '*' Exp14 { $$=tree("Mult", R_OP2_MULT, $2, 2, $1, $3); }
+		| Exp12 '/' Exp14 { $$=tree("Div", R_OP2_DIV, $2, 2, $1, $3); }
+		| Exp12 '%' Exp14 { $$=tree("Mod", R_OP2_MOD, $2, 2, $1, $3); }
 		| Exp13;
 
-Exp11	: Exp11 '+' Exp12 { $$=tree("Add", R_BINARY_OP, $2, 2, $1, $3); }
-		| Exp11 '-' Exp12 { $$=tree("Sub", R_BINARY_OP, $2, 2, $1, $3); }
+Exp11	: Exp11 '+' Exp12 { $$=tree("Add", R_OP2_ADD, $2, 2, $1, $3); }
+		| Exp11 '-' Exp12 { $$=tree("Sub", R_OP2_SUB, $2, 2, $1, $3); }
 		| Exp12;
 
 Exp09	: Exp09 RelationOp Exp11
 		{ $$=tree("Compare", R_BINARY_OP, $2, 2, $1, $3); }
 		| Exp11;
 
-Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_BINARY_OP, $2, 2, $1, $3); }
-		| Exp08 NOT_EQUAL Exp09 { $$=tree("Not Equal", R_BINARY_OP, $2, 2, $1, $3); }
+Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_OP2_EQUALS, $2, 2, $1, $3); }
+		| Exp08 NOT_EQUAL Exp09 { $$=tree("Not Equal", R_OP2_NOT_EQUAL, $2, 2, $1, $3); }
 		| Exp09;
 
-Exp04	: Exp04 AND Exp08 { $$=tree("And", R_BINARY_OP, $2, 2, $1, $3); };
+Exp04	: Exp04 AND Exp08 { $$=tree("And", R_OP2_AND, $2, 2, $1, $3); };
 		| Exp08;
 
-Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_BINARY_OP, $2, 2, $1, $3); }
+Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_OP2_OR, $2, 2, $1, $3); }
 		| Exp04;
 
 Exp01	: Exp03;

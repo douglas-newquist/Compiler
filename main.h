@@ -49,4 +49,6 @@ void whitespace();
  * @param category
  */
 int token(int category);
+
+void set_pos(Token *token);
 #endif

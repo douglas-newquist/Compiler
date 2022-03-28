@@ -2,13 +2,18 @@
 	Douglas Newquist
 */
 
-#include "list.h"
-#include "symboltable.h"
-#include "types.h"
-#include "tree.h"
-
 #ifndef _TYPE
 #define _TYPE
+
+#define Type struct type
+
+#include "list.h"
+#include "param.h"
+#include "param.h"
+#include "symboltable.h"
+#include "tree.h"
+#include "type.h"
+
 enum TYPES
 {
 	TYPE_UNKNOWN = 3000,
@@ -47,7 +52,7 @@ Type
 			SymbolTable *scope;
 			Type *result;
 			int count;
-			Type **params;
+			Param **params;
 			// What built-in method if relevent
 			int builtin;
 		} method;

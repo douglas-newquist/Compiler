@@ -1,5 +1,7 @@
 
-#ifndef symbols
+#ifndef _SYMBOLS
+#define _SYMBOLS
+
 enum symbols
 {
 	S_Unknown = 2000,

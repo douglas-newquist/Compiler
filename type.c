@@ -53,7 +53,18 @@ int type_matches(Type *t1, Type *t2)
 	if (t1->base != t2->base)
 		return FALSE;
 
-	// TODO type check
+	switch (t1->base)
+	{
+	case TYPE_METHOD:
+		// TODO type check
+		break;
+
+	case TYPE_CLASS:
+		return strcmp(t1->info.class.name, t2->info.class.name) == 0;
+
+	case TYPE_ARRAY:
+		return type_matches(t1->info.array.type, t2->info.array.type);
+	}
 
 	return FALSE;
 }
@@ -105,17 +116,19 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		switch (tree->children[1]->rule)
 		{
 		case R_ARG_DEF_GROUP:
-			type->info.method.params = alloc(sizeof(Type *) * tree->count);
-			type->info.method.count = tree->count;
+			alloc_params(type, tree->children[1]->count);
 
-			for (int i = 0; i < tree->count - 1; i++)
-				type->info.method.params[i] = parse_type(scope, tree->children[1]->children[i]);
+			for (int i = 0; i < type->info.method.count; i++)
+				type->info.method.params[i] = create_param(
+					tree->children[1]->children[i]->token->text,
+					parse_type(scope, tree->children[1]->children[i]));
 			break;
 
 		case R_DEFINE1:
-			type->info.method.params = alloc(sizeof(Type *));
-			type->info.method.count = 1;
-			type->info.method.params[0] = parse_type(scope, tree->children[1]->children[0]);
+			alloc_params(type, 1);
+			type->info.method.params[0] = create_param(
+				tree->children[1]->token->text,
+				parse_type(scope, tree->children[1]->children[0]));
 			break;
 		}
 
@@ -175,12 +188,9 @@ char *type_name(Type *type)
 
 	case TYPE_ARRAY:
 		s2 = type_name(type->info.array.type);
-		s1 = alloc(sizeof(char) * (3 + 32 + strlen(s2)));
+		s1 = alloc(sizeof(char) * (3 + strlen(s2)));
 
-		if (type->info.array.size > 0)
-			sprintf(s1, "%s[%d]", s2, type->info.array.size);
-		else
-			sprintf(s1, "%s[]", s2);
+		sprintf(s1, "%s[]", s2);
 
 		return s1;
 
@@ -191,12 +201,15 @@ char *type_name(Type *type)
 		for (int i = 0; i < type->info.method.count; i++)
 		{
 			if (count > 0)
-				sprintf(s1, "%s, %s", s1, type_name(type->info.method.params[i]));
-			else
-				sprintf(s1, "%s%s", s1, type_name(type->info.method.params[i]));
+				strcat(s1, ", ");
+			strcat(s1, type_name(type->info.method.params[i]->type));
+#ifdef DEBUG
+			strcat(s1, " ");
+			strcat(s1, type->info.method.params[i]->name);
+#endif
 			count++;
 		}
-		sprintf(s1, "%s)", s1);
+		strcat(s1, ")");
 		return s1;
 
 	case TYPE_UNKNOWN:

@@ -2,12 +2,14 @@
 	Douglas Newquist
 */
 
-#include "types.h"
-#include "symboltable.h"
-#include "token.h"
-
 #ifndef _SYMBOL
 #define _SYMBOL
+
+#define Symbol struct symbol
+
+#include "type.h"
+#include "symboltable.h"
+#include "token.h"
 
 #define ATR_CONST (1 << 0)
 #define ATR_DEFINED (1 << 1)

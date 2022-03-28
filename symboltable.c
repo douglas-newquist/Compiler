@@ -203,6 +203,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	case R_CLASS1:
 		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
+		symbol->scope = scope;
 		symbol->type->info.class.name = tree->token->text;
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
@@ -216,6 +217,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree->children[0]));
+		symbol->scope = scope;
 		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
 		return NULL;
@@ -230,6 +232,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 			symbol = create_symbol(names->token,
 								   names->token->text,
 								   type);
+			symbol->scope = scope;
 			symbol->attributes |= ATR_VARIABLE;
 			add_symbol(symbol);
 			break;
@@ -238,6 +241,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 			symbol = create_symbol(names->token,
 								   names->token->text,
 								   type);
+			symbol->scope = scope;
 			symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 			add_symbol(symbol);
 			break;
@@ -249,6 +253,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 									   names->children[i]->token->text,
 									   type);
 
+				symbol->scope = scope;
 				symbol->attributes |= ATR_VARIABLE;
 
 				if (names->children[i]->rule == R_DEFINE3)
@@ -265,6 +270,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree));
+		symbol->scope = scope;
 		add_symbol(symbol);
 		enter_scope(symbol->text, TYPE_METHOD);
 		symbol->type->info.method.scope = scope;
@@ -277,6 +283,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 			if (tree->children[i]->rule == ID)
 			{
 				symbol = simple_symbol(tree->children[i]->token, NULL, S_Variable);
+				symbol->scope = scope;
 				add_symbol(symbol);
 			}
 
@@ -340,7 +347,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 	{
 	case R_CLASS1:
 	case R_METHOD1:
-		//scope = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		//scope = lookup(scope, tree->token->text, SCOPE_SYMBOLS)->scope;
 		scope = get_sub_scope(scope, tree->token->text);
 		break;
 
@@ -357,6 +364,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 Symbol *add_builtin(char *name, int type)
 {
 	Symbol *symbol = add_symbol(simple_symbol(NULL, name, type));
+	symbol->scope = scope;
 	symbol->attributes |= ATR_BUILTIN;
 	return symbol;
 }
@@ -376,29 +384,27 @@ void populate_builtin()
 
 	symbol = add_builtin("charAt", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_CHARAT;
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = create_type(TYPE_INT);
+	symbol->type->info.method.result = create_type(TYPE_CHAR);
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = simple_param("a1", TYPE_INT);
 
 	symbol = add_builtin("equals", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_EQUALS;
 	symbol->type->info.method.result = create_type(TYPE_BOOL);
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("compareTo", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_COMPARETO;
 	symbol->type->info.method.result = create_type(TYPE_INT);
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("join", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_JOIN;
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = string;
+	symbol->type->info.method.result = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("length", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_LENGTH;
@@ -406,6 +412,10 @@ void populate_builtin()
 
 	symbol = add_builtin("substring", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_SUBSTRING;
+	symbol->type->info.method.result = string;
+	alloc_params(symbol->type, 2);
+	symbol->type->info.method.params[0] = simple_param("a1", TYPE_INT);
+	symbol->type->info.method.params[1] = simple_param("a2", TYPE_INT);
 
 	symbol = add_builtin("valueOf", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_STRING_VALUEOF;
@@ -419,6 +429,7 @@ void populate_builtin()
 
 	symbol = add_builtin("exit", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_EXIT;
+	symbol->type->info.method.result = create_type(TYPE_VOID);
 
 	symbol = add_builtin("out", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_OUT;
@@ -431,16 +442,14 @@ void populate_builtin()
 	symbol = add_builtin("println", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_OUT_PRINTLN;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("print", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_OUT_PRINT;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	exit_scope();
 
@@ -449,16 +458,14 @@ void populate_builtin()
 	symbol = add_builtin("println", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_ERR_PRINTLN;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("print", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_SYSTEM_ERR_PRINT;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	exit_scope();
 
@@ -486,16 +493,14 @@ void populate_builtin()
 	symbol = add_builtin("println", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_PRINTSTREAM_PRINTLN;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("print", TYPE_METHOD);
 	symbol->type->info.method.builtin = S_PRINTSTREAM_PRINT;
 	symbol->type->info.method.result = create_type(TYPE_VOID);
-	symbol->type->info.method.count = 1;
-	symbol->type->info.method.params = alloc(sizeof(Type *));
-	symbol->type->info.method.params[0] = string;
+	alloc_params(symbol->type, 1);
+	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	exit_scope();
 

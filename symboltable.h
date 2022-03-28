@@ -2,13 +2,16 @@
 	Douglas Newquist
 */
 
-#include "types.h"
-#include "hash.h"
-#include "list.h"
-#include "tree.h"
-
 #ifndef _SYMBOLTABLE
 #define _SYMBOLTABLE
+
+#define SymbolTable struct symboltable
+
+#include "hash.h"
+#include "list.h"
+#include "symbol.h"
+#include "tree.h"
+
 SymbolTable
 {
 	int id;

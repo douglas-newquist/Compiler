@@ -5,7 +5,8 @@
 #include "token.h"
 #include "list.h"
 
-#ifndef Tree
+#ifndef _TREE
+#define _TREE
 #define Tree struct tree
 #define Trees List
 

@@ -8,9 +8,7 @@
 
 #include "list.h"
 
-#define Tokens List
-
-Tokens *tokens;
+List *tokens;
 
 Token
 {
@@ -44,6 +42,6 @@ Token *create_token(int category);
  */
 void print_token_value(Token *token);
 void print_token(void *token);
-void print_tokens(Tokens *tokens);
+void print_tokens(List *tokens);
 
 #endif

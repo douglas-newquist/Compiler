@@ -112,7 +112,7 @@ void print_token(void *token)
 	printf("\n");
 }
 
-void print_tokens(Tokens *tokens)
+void print_tokens(List *tokens)
 {
 	printf("---- Tokens --------------------------------------------------\n");
 	printf("Line\tToken\tText\t\tFile\t\t\tValue\n");

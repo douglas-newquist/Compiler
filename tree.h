@@ -10,9 +10,7 @@
 #include "token.h"
 #include "list.h"
 
-#define Trees List
-
-Trees *trees;
+List *trees;
 
 Tree
 {

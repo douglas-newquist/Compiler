@@ -59,8 +59,28 @@ Type
 	} info;
 };
 
-Type *create_type(int super_type);
+/**
+ * @brief Creates a new type
+ *
+ * @param basetype The base type of this type
+ */
+Type *create_type(int basetype);
+
+/**
+ * @brief Checks if two types exactly match
+ */
 int type_matches(Type *t1, Type *t2);
+
+/**
+ * @brief Parses a type from the given tree structure
+ *
+ * @param scope Scope to constrain to
+ * @param tree Tree to search
+ */
 Type *parse_type(SymbolTable *scope, Tree *tree);
+
+/**
+ * @brief Gets the name of the type
+ */
 char *type_name(Type *type);
 #endif

@@ -13,6 +13,11 @@
 #include "tree.h"
 #include "type.h"
 
+/**
+ * @brief Creates a new type
+ *
+ * @param basetype The base type of this type
+ */
 Type *create_type(int basetype)
 {
 	Type *type = alloc(sizeof(Type));
@@ -42,6 +47,9 @@ Type *create_type(int basetype)
 	return type;
 }
 
+/**
+ * @brief Checks if two types exactly match
+ */
 int type_matches(Type *t1, Type *t2)
 {
 	if (t1 == t2)
@@ -69,6 +77,12 @@ int type_matches(Type *t1, Type *t2)
 	return FALSE;
 }
 
+/**
+ * @brief Parses a type from the given tree structure
+ *
+ * @param scope Scope to constrain to
+ * @param tree Tree to search
+ */
 Type *parse_type(SymbolTable *scope, Tree *tree)
 {
 	Type *type;
@@ -156,6 +170,9 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	return NULL;
 }
 
+/**
+ * @brief Gets the name of the type
+ */
 char *type_name(Type *type)
 {
 	char *s1, *s2;

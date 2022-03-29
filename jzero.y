@@ -51,7 +51,6 @@
 // Non-terminal tokens
 %type <tree> FixedType
 %type <tree> Literal
-%type <tree> RelationOp
 %type <tree> Visability
 %type <tree> Owner
 
@@ -294,16 +293,16 @@ Value	: Primary
 		| ArrayAccess
 		| Name;
 
-Step: Name INCREMENT { $$=tree("++", R_UNARY_OP2, $2, 1, $1); }
-	| Name DECREMENT { $$=tree("--", R_UNARY_OP2, $2, 1, $1); }
+Step: Name INCREMENT { $$=tree("++", R_OP1_INCREMENT, $2, 1, $1); }
+	| Name DECREMENT { $$=tree("--", R_OP1_DECREMENT, $2, 1, $1); }
 
 Exp: Exp01;
 
 Exp15	: Step
 		| Value;
 
-Exp14	: '-' Exp14 { $$=tree("Negate", R_UNARY_OP1, $1, 1, $2); }
-		| '!' Exp14 { $$=tree("Not", R_UNARY_OP1, $1, 1, $2); }
+Exp14	: '-' Exp14 { $$=tree("Negate", R_OP1_NEGATE, $1, 1, $2); }
+		| '!' Exp14 { $$=tree("Not", R_OP1_NOT, $1, 1, $2); }
 		| Exp15;
 
 Exp13	: Instantiate
@@ -318,8 +317,14 @@ Exp11	: Exp11 '+' Exp12 { $$=tree("Add", R_OP2_ADD, $2, 2, $1, $3); }
 		| Exp11 '-' Exp12 { $$=tree("Sub", R_OP2_SUB, $2, 2, $1, $3); }
 		| Exp12;
 
-Exp09	: Exp09 RelationOp Exp11
-		{ $$=tree("Compare", R_BINARY_OP, $2, 2, $1, $3); }
+Exp09	: Exp09 '<' Exp11
+		{ $$=tree("<", R_OP2_LESS, $2, 2, $1, $3); }
+		| Exp09 '>' Exp11
+		{ $$=tree(">", R_OP2_GREATER, $2, 2, $1, $3); }
+		| Exp09 LESS_EQUAL Exp11
+		{ $$=tree("<=", R_OP2_LESS_EQUAL, $2, 2, $1, $3); }
+		| Exp09 GREATER_EQUAL Exp11
+		{ $$=tree(">=", R_OP2_GREATER_EQUAL, $2, 2, $1, $3); }
 		| Exp11;
 
 Exp08	: Exp08 EQUALS Exp09  	{ $$=tree("Equal", R_OP2_EQUALS, $2, 2, $1, $3); }
@@ -333,5 +338,3 @@ Exp03	: Exp03 OR Exp04 { $$=tree("Or", R_OP2_OR, $2, 2, $1, $3); }
 		| Exp04;
 
 Exp01	: Exp03;
-
-RelationOp: '<' | '>' | LESS_EQUAL | GREATER_EQUAL;

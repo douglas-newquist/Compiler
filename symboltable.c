@@ -85,10 +85,10 @@ SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
  */
 Symbol *table_contains(SymbolTable *table, Symbol *symbol, int mode)
 {
-	Symbol *result = NULL;
-
 	if (table == NULL || symbol == NULL)
-		return result;
+		return NULL;
+
+	Symbol *result = NULL;
 
 	if (mode & LOCAL_SYMBOLS)
 	{
@@ -125,6 +125,35 @@ Symbol *table_contains(SymbolTable *table, Symbol *symbol, int mode)
 Symbol *lookup(SymbolTable *scope, char *symbol, int mode)
 {
 	return table_contains(scope, create_symbol(NULL, symbol, 0), mode);
+}
+
+/**
+ * @brief
+ *
+ * @param table Table to search
+ * @param name
+ * @param mode What scope(s) to search in
+ */
+Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
+{
+	if (name == NULL)
+		return NULL;
+
+	Symbol *symbol = NULL;
+
+	switch (name->rule)
+	{
+	case R_ACCESS1:
+		symbol = lookup_name(scope, name->children[0], mode);
+		if (symbol == NULL)
+			return NULL;
+		return lookup(symbol->scope, name->token->text, mode | CHILD_SYMBOLS);
+
+	case ID:
+		return lookup(scope, name->token->text, mode);
+	}
+
+	return NULL;
 }
 
 /**
@@ -304,32 +333,17 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
 {
-	Symbol *symbol = NULL;
-	Token *token = NULL;
-
-	switch (tree->rule)
-	{
-	case R_ACCESS1:
-		scope = check_defined(scope, tree->children[0]);
-		token = tree->token;
-		symbol = lookup(scope, tree->token->text, CHILD_SYMBOLS);
-		break;
-
-	case ID:
-		token = tree->token;
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
-		break;
-	}
+	Symbol *symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
 
 	// Check that symbol is defined at all
 	if (symbol == NULL)
-		error_at(token, SEMATIC_ERROR, "Symbol not defined");
+		error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
 
 	// Check if symbol is defined in a valid location
 	if (symbol->attributes & ATR_VARIABLE)
 	{
-		if (symbol->token->id > token->id)
-			error_at(token, SEMATIC_ERROR, "Variable used before definition");
+		if (symbol->token->id > tree->token->id)
+			error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
 	}
 
 	return symbol->scope;

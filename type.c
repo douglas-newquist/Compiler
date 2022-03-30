@@ -192,6 +192,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case R_DEFINE1:
 		return parse_type(scope, tree->children[0]);
+
 	case R_METHOD1:
 		type = create_type(TYPE_METHOD);
 		type->info.method.result = parse_type(scope, tree->children[0]);

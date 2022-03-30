@@ -58,8 +58,6 @@ enum RULES
 	R_RETURN2,			 // Return Exp
 	R_STATEMENT_GROUP,	 // Statement Statement+
 	R_SWITCH,			 // switch(Exp) R_CASE_GROUP
-	R_UNARY_OP1,		 // op Exp
-	R_UNARY_OP2,		 // Exp op
 	R_VAR_GROUP,		 // (R_DEFINE3 | ID), ..., (R_DEFINE3 | ID)
 	R_WHILE,			 // while(Exp) R_STATEMENT_GROUP
 };

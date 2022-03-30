@@ -358,7 +358,8 @@ void check_table(SymbolTable *scope, Tree *tree)
 		return;
 
 	Symbol *symbol;
-	Type *type;
+	Type *type, *t2;
+	char *message;
 
 	switch (tree->rule)
 	{
@@ -410,13 +411,22 @@ void check_table(SymbolTable *scope, Tree *tree)
 									   tree->children[1]->count,
 									   type->info.method.count));
 
-			for (int i = 0; i < type->info.method.count; i++)
-				if (type_fuzzy_match(type->info.method.params[i]->type,
-									 parse_type(scope, tree->children[1]->children[i])) == FALSE)
-					error_at(tree->token, SEMATIC_ERROR,
-							 error_message("Paramter type mismatch, expected %s, got %s",
-										   type_name(type->info.method.params[i]->type),
-										   type_name(parse_type(scope, tree->children[1]->children[i]))));
+			switch (type->info.method.builtin)
+			{
+			default:
+				for (int i = 0; i < type->info.method.count; i++)
+				{
+					t2 = parse_type(scope, tree->children[1]->children[i]);
+					if (type_fuzzy_match(type->info.method.params[i]->type, t2) == FALSE)
+					{
+						message = error_message("Paramter type mismatch, expected %s, got %s",
+												type_name(type->info.method.params[i]->type),
+												type_name(t2));
+						error_at(tree->token, SEMATIC_ERROR, message);
+					}
+				}
+				break;
+			}
 			break;
 
 		default:
@@ -424,12 +434,14 @@ void check_table(SymbolTable *scope, Tree *tree)
 				error_at(tree->token, SEMATIC_ERROR,
 						 error_message("Incorrect number of arguments, got 1, expected %d",
 									   type->info.method.count));
-			if (type_fuzzy_match(type->info.method.params[0]->type,
-								 parse_type(scope, tree->children[1])) == FALSE)
-				error_at(tree->token, SEMATIC_ERROR,
-						 error_message("Paramter type mismatch, expected %s, got %s",
-									   type_name(type->info.method.params[0]->type),
-									   type_name(parse_type(scope, tree->children[1]))));
+			t2 = parse_type(scope, tree->children[1]);
+			if (type_fuzzy_match(type->info.method.params[0]->type, t2) == FALSE)
+			{
+				message = error_message("Paramter type mismatch, expected %s, got %s",
+										type_name(type->info.method.params[0]->type),
+										type_name(t2));
+				error_at(tree->token, SEMATIC_ERROR, message);
+			}
 			break;
 		}
 		break;

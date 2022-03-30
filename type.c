@@ -280,11 +280,16 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_METHOD2:
 		return parse_type(scope, tree->children[2]);
 
-	case ID:
 	case R_ACCESS1:
+		symbol = lookup_name(scope, tree->token->text, SCOPE_SYMBOLS);
+		if (symbol == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
+		return symbol->type;
+
+	case ID:
 	case R_DEFINE3:
 	case R_METHOD3:
-		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
 		return symbol->type;

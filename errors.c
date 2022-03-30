@@ -2,10 +2,12 @@
 	Douglas Newquist
 */
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "errors.h"
 #include "main.h"
+#include "mmemory.h"
 
 extern void free_all();
 
@@ -39,4 +41,14 @@ void error_at(Token *token, int code, char *message)
 	set_pos(token);
 
 	error(code, message);
+}
+
+char *error_message(char *pattern, ...)
+{
+	char *message = alloc(sizeof(char) * 4096);
+	va_list args;
+	va_start(args, pattern);
+	vsprintf(message, pattern, args);
+	va_end(args);
+	return message;
 }

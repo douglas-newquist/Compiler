@@ -41,4 +41,13 @@ void free_symboltables();
  * @param mode What scope(s) to search in
  */
 Symbol *lookup(SymbolTable *table, char *symbol, int mode);
+
+/**
+ * @brief
+ *
+ * @param table Table to search
+ * @param name
+ * @param mode What scope(s) to search in
+ */
+Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode);
 #endif

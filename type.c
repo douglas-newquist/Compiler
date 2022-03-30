@@ -141,6 +141,12 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	Type *type;
 	Symbol *symbol;
 
+	if (tree == NULL)
+		return NULL;
+
+	if (tree->token)
+		set_pos(tree->token);
+
 	switch (tree->rule)
 	{
 	case BOOLEAN:
@@ -218,17 +224,67 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 		return type;
 
+	case R_CALL1:
+		set_pos(tree->children[0]->token);
+		symbol = lookup_name(scope, tree->children[0], SCOPE_SYMBOLS);
+		type = symbol->type;
+
+		if (symbol == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Unknown method");
+		if (type == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Method has no type");
+		if (type->base != TYPE_METHOD)
+			error_at(tree->token, SEMATIC_ERROR, "Symbol is not a method");
+
+		switch (tree->children[1]->rule)
+		{
+		case R_EMPTY:
+			if (type->info.method.count != 0)
+				error_at(tree->token, SEMATIC_ERROR,
+						 error_message("Incorrect number of arguments, got 0, expected %d",
+									   type->info.method.count));
+			break;
+
+		case R_ARG_GROUP:
+			if (tree->children[1]->count != type->info.method.count)
+				error_at(tree->token, SEMATIC_ERROR,
+						 error_message("Incorrect number of arguments, got %d, expected %d",
+									   tree->children[1]->count,
+									   type->info.method.count));
+
+			for (int i = 0; i < type->info.method.count; i++)
+				if (type_fuzzy_match(type->info.method.params[i]->type,
+									 parse_type(scope, tree->children[1]->children[i])) == FALSE)
+					error_at(tree->token, SEMATIC_ERROR,
+							 error_message("Paramter type mismatch, expected %s, got %s",
+										   type_name(type->info.method.params[i]->type),
+										   type_name(parse_type(scope, tree->children[1]->children[i]))));
+			break;
+
+		default:
+			if (type->info.method.count != 1)
+				error_at(tree->token, SEMATIC_ERROR,
+						 error_message("Incorrect number of arguments, got 1, expected %d",
+									   type->info.method.count));
+			if (type_fuzzy_match(type->info.method.params[0]->type,
+								 parse_type(scope, tree->children[1])) == FALSE)
+				error_at(tree->token, SEMATIC_ERROR,
+						 error_message("Paramter type mismatch, expected %s, got %s",
+									   type_name(type->info.method.params[0]->type),
+									   type_name(parse_type(scope, tree->children[1]))));
+			break;
+		}
+
+		return type->info.method.result;
+
 	case R_METHOD2:
 		return parse_type(scope, tree->children[2]);
 
-	case R_ACCESS1:
-		// TODO
-		break;
-
 	case ID:
+	case R_ACCESS1:
 	case R_DEFINE3:
 	case R_METHOD3:
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
 		return symbol->type;

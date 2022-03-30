@@ -14,6 +14,8 @@
 void error(int code, char *message);
 void yyerror(char *message);
 
+char *error_message(char *pattern, ...);
+
 /**
  * @brief Calls error at the given token's position
  */

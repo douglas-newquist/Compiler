@@ -242,7 +242,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		return parse_type(scope, tree->children[2]);
 
 	case R_ACCESS1:
-		symbol = lookup_name(scope, tree->token->text, SCOPE_SYMBOLS);
+		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
 		return symbol->type;
@@ -466,6 +466,33 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		return FALSE;
 
 	case R_OP2_ADD:
+		switch (t1->base)
+		{
+		case TYPE_INT:
+		case TYPE_DOUBLE:
+			if (type_fuzzy_match(t1, t2) == TRUE)
+				return TRUE;
+
+			error(SEMATIC_ERROR, type_error("Incompatible types between %s and %s", t1, t2));
+			break;
+
+		case TYPE_CLASS:
+			if (strcmp(t1->info.class.name, "String") == 0)
+				switch (t2->base)
+				{
+				case TYPE_BOOL:
+				case TYPE_CHAR:
+				case TYPE_CLASS:
+				case TYPE_DOUBLE:
+				case TYPE_INT:
+				case TYPE_NULL:
+					return TRUE;
+				}
+			break;
+		}
+		error(SEMATIC_ERROR, type_error("Invalid operation on %s", t1, t2));
+		return FALSE;
+
 	case R_OP2_DIV:
 	case R_OP2_MOD:
 	case R_OP2_MULT:
@@ -483,6 +510,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		error(SEMATIC_ERROR, type_error("Invalid operation on %s", t1, t2));
 		return FALSE;
 
+	case R_ASSIGN:
 	case R_DEFINE3:
 		if (type_fuzzy_match(t1, t2) == TRUE)
 			return TRUE;

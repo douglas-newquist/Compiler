@@ -356,11 +356,30 @@ void check_table(SymbolTable *scope, Tree *tree)
 		check_defined(scope, tree);
 		return;
 
+	case R_OP1_DECREMENT:
+	case R_OP1_INCREMENT:
+	case R_OP1_NEGATE:
+	case R_OP1_NOT:
+		set_pos(tree->children[0]->token);
+		check_types(tree->rule, 1,
+					parse_type(scope, tree->children[0]), NULL);
+		break;
+
+	case R_DEFINE3:
+		set_pos(tree->token);
+		check_types(tree->rule, 1,
+					parse_type(scope, tree),
+					parse_type(scope, tree->children[0]));
+		break;
+
+	case R_ASSIGN:
 	case R_OP2_ADD:
 	case R_OP2_AND:
 	case R_OP2_DIV:
 	case R_OP2_EQUALS:
+	case R_OP2_GREATER_EQUAL:
 	case R_OP2_GREATER:
+	case R_OP2_LESS_EQUAL:
 	case R_OP2_LESS:
 	case R_OP2_MOD:
 	case R_OP2_MULT:
@@ -368,7 +387,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 	case R_OP2_OR:
 	case R_OP2_SUB:
 		set_pos(tree->token);
-		check_types(tree->rule,
+		check_types(tree->rule, 2,
 					parse_type(scope, tree->children[0]),
 					parse_type(scope, tree->children[1]));
 		break;

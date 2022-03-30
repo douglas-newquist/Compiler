@@ -88,5 +88,5 @@ Type *parse_type(SymbolTable *scope, Tree *tree);
  */
 char *type_name(Type *type);
 
-int check_types(int op, Type *t1, Type *t2);
+int check_types(int op, int argc, Type *t1, Type *t2);
 #endif

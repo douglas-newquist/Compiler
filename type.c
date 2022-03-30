@@ -58,6 +58,13 @@ int type_fuzzy_match(Type *t1, Type *t2)
 	switch (t1->base)
 	{
 	case TYPE_ARRAY:
+		switch (t2->base)
+		{
+		case TYPE_NULL:
+			return TRUE;
+		}
+		break;
+
 	case TYPE_CLASS:
 		switch (t2->base)
 		{
@@ -95,20 +102,29 @@ int type_matches(Type *t1, Type *t2)
 	if (t1 == NULL || t2 == NULL)
 		return FALSE;
 
-	if (t1->base != t2->base)
-		return FALSE;
-
-	switch (t1->base)
+	if (t1->base == t2->base)
 	{
-	case TYPE_METHOD:
-		// TODO type check
-		break;
+		switch (t1->base)
+		{
+		case TYPE_BOOL:
+		case TYPE_CHAR:
+		case TYPE_DOUBLE:
+		case TYPE_INT:
+		case TYPE_NULL:
+		case TYPE_UNKNOWN:
+		case TYPE_VOID:
+			return TRUE;
 
-	case TYPE_CLASS:
-		return strcmp(t1->info.class.name, t2->info.class.name) == 0;
+		case TYPE_METHOD:
+			// TODO type check
+			break;
 
-	case TYPE_ARRAY:
-		return type_matches(t1->info.array.type, t2->info.array.type);
+		case TYPE_CLASS:
+			return strcmp(t1->info.class.name, t2->info.class.name) == 0;
+
+		case TYPE_ARRAY:
+			return type_matches(t1->info.array.type, t2->info.array.type);
+		}
 	}
 
 	return FALSE;
@@ -129,19 +145,26 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	{
 	case BOOLEAN:
 	case LITERAL_BOOL:
+	case R_OP1_NOT:
 	case R_OP2_AND:
 	case R_OP2_EQUALS:
+	case R_OP2_GREATER_EQUAL:
 	case R_OP2_GREATER:
+	case R_OP2_LESS_EQUAL:
 	case R_OP2_LESS:
 	case R_OP2_NOT_EQUAL:
 	case R_OP2_OR:
 		return create_type(TYPE_BOOL);
 
+	case R_OP1_DECREMENT:
+	case R_OP1_INCREMENT:
+	case R_OP1_NEGATE:
 	case R_OP2_ADD:
 	case R_OP2_DIV:
 	case R_OP2_MOD:
 	case R_OP2_MULT:
 	case R_OP2_SUB:
+	case R_RETURN2:
 		return parse_type(scope, tree->children[0]);
 
 	case INT:
@@ -169,10 +192,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case R_DEFINE1:
 		return parse_type(scope, tree->children[0]);
-
-	case R_METHOD2:
-		return parse_type(scope, tree->children[2]);
-
 	case R_METHOD1:
 		type = create_type(TYPE_METHOD);
 		type->info.method.result = parse_type(scope, tree->children[0]);
@@ -198,11 +217,16 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 		return type;
 
+	case R_METHOD2:
+		return parse_type(scope, tree->children[2]);
+
 	case R_ACCESS1:
 		// TODO
 		break;
 
 	case ID:
+	case R_DEFINE3:
+	case R_METHOD3:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
@@ -213,8 +237,15 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		type->info.array.type = parse_type(scope, tree->children[0]);
 		return type;
 
+	case R_RETURN1:
 	case VOID:
 		return create_type(TYPE_VOID);
+
+#ifdef DEBUG
+	default:
+		printf("No type parse rule for %d\n", tree->rule);
+		break;
+#endif
 	}
 
 	return NULL;
@@ -282,17 +313,26 @@ char *type_name(Type *type)
 	case TYPE_UNKNOWN:
 		return "<UNKNOWN>";
 
-	default:
 #ifdef DEBUG
+	default:
 		printf("Unhandled type name %d\n", type->base);
+		break;
 #endif
-		return "";
 	}
+
+	return "";
 }
 
-int check_types(int op, Type *t1, Type *t2)
+char *type_error(char *pattern, Type *t1, Type *t2)
 {
-	if (t1 == NULL || t2 == NULL)
+	char *message = alloc(sizeof(char) * 4096);
+	sprintf(message, pattern, type_name(t1), type_name(t2));
+	return message;
+}
+
+int check_types(int op, int argc, Type *t1, Type *t2)
+{
+	if (t1 == NULL || (argc > 1 && t2 == NULL))
 		error(SEMATIC_ERROR, "Expected a type");
 
 	switch (op)
@@ -305,29 +345,132 @@ int check_types(int op, Type *t1, Type *t2)
 			error(SEMATIC_ERROR, "Expected boolean type for second value");
 		return TRUE;
 
+	case R_OP1_NEGATE:
+		switch (t1->base)
+		{
+		case TYPE_INT:
+		case TYPE_DOUBLE:
+			return TRUE;
+		}
+		error(SEMATIC_ERROR, type_error("Cannot negate %s", t1, NULL));
+		return FALSE;
+
+	case R_OP1_INCREMENT:
+	case R_OP1_DECREMENT:
+		switch (t1->base)
+		{
+		case TYPE_CHAR:
+		case TYPE_DOUBLE:
+		case TYPE_INT:
+			return TRUE;
+		}
+		error(SEMATIC_ERROR, type_error("STEP not supported for %s", t1, NULL));
+		return FALSE;
+
+	case R_OP1_NOT:
+		if (t1->base == TYPE_BOOL)
+			return TRUE;
+		error(SEMATIC_ERROR, type_error("NOT not supported for %s", t1, NULL));
+		return FALSE;
+
 	case R_OP2_EQUALS:
 	case R_OP2_NOT_EQUAL:
-		return TRUE;
+		if (t1->base == t2->base)
+			return TRUE;
+
+		switch (t1->base)
+		{
+		case TYPE_CHAR:
+		case TYPE_DOUBLE:
+		case TYPE_INT:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+			case TYPE_DOUBLE:
+			case TYPE_INT:
+				return TRUE;
+			}
+			break;
+
+		case TYPE_NULL:
+			switch (t2->base)
+			{
+			case CLASS:
+			case TYPE_ARRAY:
+			case TYPE_NULL:
+				return TRUE;
+			}
+			break;
+
+		case CLASS:
+			switch (t2->base)
+			{
+			case TYPE_NULL:
+			case TYPE_CLASS:
+				return TRUE;
+			}
+			break;
+		}
+		error(SEMATIC_ERROR, type_error("Compare not supported for %s", t1, t2));
+		return FALSE;
+
+	case R_OP2_LESS:
+	case R_OP2_LESS_EQUAL:
+	case R_OP2_GREATER:
+	case R_OP2_GREATER_EQUAL:
+		switch (t1->base)
+		{
+		case TYPE_CHAR:
+		case TYPE_DOUBLE:
+		case TYPE_INT:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+			case TYPE_DOUBLE:
+			case TYPE_INT:
+				return TRUE;
+
+			default:
+				error(SEMATIC_ERROR, type_error("Cannot compare %s and %s", t1, t2));
+				break;
+			}
+			break;
+
+		case TYPE_CLASS:
+			break;
+		}
+		error(SEMATIC_ERROR, type_error("Compare not supported for %s", t1, t2));
+		return FALSE;
 
 	case R_OP2_ADD:
 	case R_OP2_DIV:
 	case R_OP2_MOD:
 	case R_OP2_MULT:
 	case R_OP2_SUB:
-		if (t1->base == TYPE_INT ||
-			t1->base == TYPE_DOUBLE)
+		switch (t1->base)
 		{
+		case TYPE_INT:
+		case TYPE_DOUBLE:
 			if (type_fuzzy_match(t1, t2) == TRUE)
 				return TRUE;
 
-			error(SEMATIC_ERROR, "");
+			error(SEMATIC_ERROR, type_error("Incompatible types between %s and %s", t1, t2));
+			break;
 		}
-		else
-			error(SEMATIC_ERROR, "");
+		error(SEMATIC_ERROR, type_error("Invalid operation on %s", t1, t2));
+		return FALSE;
 
+	case R_DEFINE3:
+		if (type_fuzzy_match(t1, t2) == TRUE)
+			return TRUE;
+		error(SEMATIC_ERROR, type_error("Type mismatch between %s and %s", t1, t2));
+		return FALSE;
+
+#ifdef DEBUG
 	default:
 		printf("Undefined op type %d\n", op);
 		break;
+#endif
 	}
 
 	return FALSE;

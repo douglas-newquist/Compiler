@@ -147,7 +147,7 @@ Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
 		symbol = lookup_name(scope, name->children[0], mode);
 		if (symbol == NULL)
 			return NULL;
-		return lookup(symbol->scope, name->token->text, mode | CHILD_SYMBOLS);
+		return lookup(symbol->scope, name->token->text, CHILD_SYMBOLS);
 
 	case ID:
 		return lookup(scope, name->token->text, mode);
@@ -539,6 +539,7 @@ void populate_builtin()
 	symbol->type->info.method.params[0] = create_param("a1", string);
 
 	symbol = add_builtin("length", TYPE_METHOD);
+	symbol->attributes |= ATR_PROPERTY;
 	symbol->type->info.method.builtin = S_STRING_LENGTH;
 	symbol->type->info.method.result = create_type(TYPE_INT);
 
@@ -642,6 +643,7 @@ void populate_builtin()
 	symbol->type->info.class.scope = scope;
 
 	symbol = add_builtin("length", TYPE_METHOD);
+	symbol->attributes |= ATR_PROPERTY;
 	symbol->type->info.method.builtin = S_ARRAY_LENGTH;
 
 	exit_scope();

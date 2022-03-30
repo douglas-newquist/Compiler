@@ -244,7 +244,9 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_ACCESS1:
 		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
 		if (symbol == NULL)
-			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
+			error_at(tree->token, SEMATIC_ERROR, "Unknown reference");
+		if (symbol->attributes & ATR_PROPERTY)
+			return symbol->type->info.method.result;
 		return symbol->type;
 
 	case ID:
@@ -253,6 +255,8 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");
+		if (symbol->attributes & ATR_PROPERTY)
+			return symbol->type->info.method.result;
 		return symbol->type;
 
 	case R_ARRAY1:

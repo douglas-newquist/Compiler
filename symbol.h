@@ -17,6 +17,8 @@
 #define ATR_STATIC (1 << 3)
 #define ATR_BUILTIN (1 << 4)
 #define ATR_VARIABLE (1 << 5)
+#define ATR_PROPERTY (1 << 6)
+#define ATR_RUNTIME (1 << 7)
 
 Symbol
 {

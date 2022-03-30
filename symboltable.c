@@ -397,6 +397,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 
 		switch (tree->children[1]->rule)
 		{
+			// Zero argument method call
 		case R_EMPTY:
 			if (type->info.method.count != 0)
 				error_at(tree->token, SEMATIC_ERROR,
@@ -404,6 +405,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 									   type->info.method.count));
 			break;
 
+			// Multi-argument method call
 		case R_ARG_GROUP:
 			if (tree->children[1]->count != type->info.method.count)
 				error_at(tree->token, SEMATIC_ERROR,
@@ -414,11 +416,13 @@ void check_table(SymbolTable *scope, Tree *tree)
 			switch (type->info.method.builtin)
 			{
 			default:
+				// Check input types
 				for (int i = 0; i < type->info.method.count; i++)
 				{
 					t2 = parse_type(scope, tree->children[1]->children[i]);
 					if (type_fuzzy_match(type->info.method.params[i]->type, t2) == FALSE)
 					{
+						// Type mismatch
 						message = error_message("Paramter type mismatch, expected %s, got %s",
 												type_name(type->info.method.params[i]->type),
 												type_name(t2));
@@ -429,18 +433,36 @@ void check_table(SymbolTable *scope, Tree *tree)
 			}
 			break;
 
+			// Single argument method call
 		default:
 			if (type->info.method.count != 1)
 				error_at(tree->token, SEMATIC_ERROR,
 						 error_message("Incorrect number of arguments, got 1, expected %d",
 									   type->info.method.count));
-			t2 = parse_type(scope, tree->children[1]);
-			if (type_fuzzy_match(type->info.method.params[0]->type, t2) == FALSE)
+
+			switch (type->info.method.builtin)
 			{
-				message = error_message("Paramter type mismatch, expected %s, got %s",
-										type_name(type->info.method.params[0]->type),
-										type_name(t2));
-				error_at(tree->token, SEMATIC_ERROR, message);
+				// Skip type checking for these built-in methods
+			case S_PRINTSTREAM_PRINT:
+			case S_PRINTSTREAM_PRINTLN:
+			case S_SYSTEM_ERR_PRINT:
+			case S_SYSTEM_ERR_PRINTLN:
+			case S_SYSTEM_OUT_PRINT:
+			case S_SYSTEM_OUT_PRINTLN:
+				break;
+
+				// Check input type
+			default:
+				t2 = parse_type(scope, tree->children[1]);
+				if (type_fuzzy_match(type->info.method.params[0]->type, t2) == FALSE)
+				{
+					// Type mismatch
+					message = error_message("Paramter type mismatch, expected %s, got %s",
+											type_name(type->info.method.params[0]->type),
+											type_name(t2));
+					error_at(tree->token, SEMATIC_ERROR, message);
+				}
+				break;
 			}
 			break;
 		}

@@ -54,7 +54,6 @@
 %type <tree> Visability
 %type <tree> Owner
 
-%type <tree> AnyType
 %type <tree> ArgDef
 %type <tree> ArgDefs
 %type <tree> Args
@@ -68,7 +67,6 @@
 %type <tree> ClassBody
 %type <tree> ClassBodyDecl
 %type <tree> ClassBodyDecls
-%type <tree> Constructor
 %type <tree> Exp
 %type <tree> Exp01
 %type <tree> Exp03
@@ -93,8 +91,6 @@
 %type <tree> IfThenChainElse
 %type <tree> IfThenElse
 %type <tree> Instantiate
-%type <tree> Method
-%type <tree> MethodHead
 %type <tree> MethodCall
 %type <tree> Name
 %type <tree> Primary
@@ -111,7 +107,6 @@
 %type <tree> Value
 %type <tree> VarDecl
 %type <tree> VarDecls
-%type <tree> VarDefs
 %type <tree> While
 %type <tree> ZeroArgDefs
 %type <tree> ZeroArgs
@@ -126,8 +121,6 @@ Program: Class { program=$1; }
 Name: ID | QualifiedName;
 
 QualifiedName: Name '.' ID { $$=tree("Name", R_ACCESS1, $3, 1, $1); };
-
-AnyType: VOID | Type;
 
 Type: SingleType
 	| Type '[' ']' { $$=tree("Array", R_ARRAY1, NULL, 1, $1); };
@@ -145,9 +138,9 @@ Literal	: LITERAL_INT
 
 FieldAccess: Primary '.' ID { $$=tree("Field", R_ACCESS2, $3, 1, $1); };
 
-Visability: PUBLIC;
+Visability: PUBLIC | { $$=EMPTY_TREE; }
 
-Owner: STATIC;
+Owner: STATIC | { $$=EMPTY_TREE; }
 
 // Zero or more arg defs
 ZeroArgDefs: ArgDefs | { $$=EMPTY_TREE; }
@@ -173,32 +166,20 @@ ClassBodyDecls	: ClassBodyDecl
 				| ClassBodyDecl ClassBodyDecls
 				{ $$=group("Group", R_CLASS_GROUP, $1, $2); };
 
-ClassBodyDecl: VarDefs ';' | Method | Constructor;
+ClassBodyDecl	: Visability Owner Type VarDecls ';'
+				{ $$=tree("Field", R_FIELD, NULL, 4, $1, $2, $3, $4); }
+				| Visability Owner Type ID '(' ZeroArgDefs ')' Block
+				{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); }
+				| Visability Owner VOID ID '(' ZeroArgDefs ')' Block
+				{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); }
+				| Visability ID '(' ZeroArgDefs ')' Block
+				{ $$=tree("Constructor", R_METHOD3, $2, 3, $1, $4, $6); }
 
-VarDefs: Type VarDecls { $$=tree("Variable", R_DEFINE2, NULL, 2, $1, $2); };
-
-VarDecls	: VarDecl ',' VarDecls
-			{ $$=group("Vars", R_VAR_GROUP, $1, $3); }
-			| VarDecl;
+VarDecls: VarDecl ',' VarDecls { $$=group("Variables", R_DEFINE2, $1, $3); }
+		| VarDecl
 
 VarDecl	: ID
 		| ID '=' Exp	{ $$=tree("Let", R_DEFINE3, $1, 1, $3); };
-
-// public static type name(args) { ... }
-Method	: Visability Owner MethodHead
-		{ $$=tree("Method", R_METHOD2, NULL, 3, $1, $2, $3); }
-		| Visability MethodHead
-		{ $$=tree("Method", R_METHOD2, NULL, 3, $1, EMPTY_TREE, $2); }
-		| Owner MethodHead
-		{ $$=tree("Method", R_METHOD2, NULL, 3, EMPTY_TREE, $1, $2); }
-		| MethodHead
-		{ $$=tree("Method", R_METHOD2, NULL, 3, EMPTY_TREE, EMPTY_TREE, $1); }
-
-MethodHead	: AnyType ID '(' ZeroArgDefs ')' Block
-			{ $$=tree("Head", R_METHOD1, $2, 3, $1, $4, $6); }
-
-Constructor	: Visability ID '(' ZeroArgDefs ')' Block
-			{ $$=tree("Constructor", R_METHOD3, $2, 3, $1, $4, $6); }
 
 Block: '{' ZeroStatments '}' { $$=$2; }
 
@@ -223,7 +204,7 @@ Statement	: ';' { $$=EMPTY_TREE; }
 Assignment: Name '=' Exp { $$=tree("Assign", R_ASSIGN, $2, 2, $1, $3); }
 
 ExpStatement: MethodCall
-			| VarDefs
+			| Type VarDecl { $$=tree("Variable", R_DEFINE4, NULL, 2, $1, $2); }
 			| Step
 			| Assignment
 			| Instantiate

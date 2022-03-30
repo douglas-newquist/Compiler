@@ -27,7 +27,9 @@ enum RULES
 	R_DEFINE1,			 // Type ID
 	R_DEFINE2,			 // Type R_VAR_GROUP
 	R_DEFINE3,			 // ID = Exp
+	R_DEFINE4,			 //
 	R_EXP_GROUP,		 //
+	R_FIELD,			 // public static R_VAR_GROUP
 	R_FOR,				 // for(R_EXP_GROUP?; Exp?, R_EXP_GROUP?) R_STATEMENT_GROUP
 	R_IF1,				 // if (Exp) R_STATEMENT_GROUP
 	R_IF2,				 // R_IF1 else R_STATEMENT_GROUP

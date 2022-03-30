@@ -201,24 +201,24 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case R_METHOD1:
 		type = create_type(TYPE_METHOD);
-		type->info.method.result = parse_type(scope, tree->children[0]);
+		type->info.method.result = parse_type(scope, tree->children[2]);
 
-		switch (tree->children[1]->rule)
+		switch (tree->children[3]->rule)
 		{
 		case R_ARG_DEF_GROUP:
-			alloc_params(type, tree->children[1]->count);
+			alloc_params(type, tree->children[3]->count);
 
 			for (int i = 0; i < type->info.method.count; i++)
 				type->info.method.params[i] = create_param(
-					tree->children[1]->children[i]->token->text,
-					parse_type(scope, tree->children[1]->children[i]));
+					tree->children[3]->children[i]->token->text,
+					parse_type(scope, tree->children[3]->children[i]));
 			break;
 
 		case R_DEFINE1:
 			alloc_params(type, 1);
 			type->info.method.params[0] = create_param(
-				tree->children[1]->token->text,
-				parse_type(scope, tree->children[1]->children[0]));
+				tree->children[3]->token->text,
+				parse_type(scope, tree->children[3]->children[0]));
 			break;
 		}
 
@@ -238,7 +238,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 		return type->info.method.result;
 
-	case R_METHOD2:
+	case R_FIELD:
 		return parse_type(scope, tree->children[2]);
 
 	case R_ACCESS1:

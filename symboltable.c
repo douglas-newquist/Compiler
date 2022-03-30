@@ -180,29 +180,14 @@ SymbolTable *enter_scope(char *name, int type)
 	return scope;
 }
 
+/**
+ * @brief Exits the current scope
+ */
 SymbolTable *exit_scope()
 {
 	SymbolTable *old_scope = scope;
 	scope = scope->parent;
 	return old_scope;
-}
-
-/**
- * @brief Gets a child scope with the given name
- */
-SymbolTable *get_sub_scope(SymbolTable *scope, char *name)
-{
-	if (scope == NULL)
-		return NULL;
-
-	foreach_list(children, scope->children)
-	{
-		SymbolTable *child = (SymbolTable *)children->value;
-		if (strcmp(name, child->name) == 0)
-			return child;
-	}
-
-	return NULL;
 }
 
 SymbolTable *populate_symboltable(Tree *tree);
@@ -216,14 +201,56 @@ void scan_children(Tree *tree)
 		populate_symboltable(tree->children[i]);
 }
 
+void define_variables(Tree *tree, Type *type)
+{
+	Symbol *symbol;
+
+	switch (tree->rule)
+	{
+	case ID:
+		symbol = create_symbol(tree->token,
+							   tree->token->text,
+							   type);
+		symbol->scope = scope;
+		symbol->attributes |= ATR_VARIABLE;
+		add_symbol(symbol);
+		break;
+
+	case R_DEFINE3:
+		symbol = create_symbol(tree->token,
+							   tree->token->text,
+							   type);
+		symbol->scope = scope;
+		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
+		add_symbol(symbol);
+		break;
+
+	case R_VAR_GROUP:
+		for (int i = 0; i < tree->count; i++)
+		{
+			symbol = create_symbol(tree->children[i]->token,
+								   tree->children[i]->token->text,
+								   type);
+
+			symbol->scope = scope;
+			symbol->attributes |= ATR_VARIABLE;
+
+			if (tree->children[i]->rule == R_DEFINE3)
+				symbol->attributes |= ATR_DEFINED;
+
+			add_symbol(symbol);
+		}
+		break;
+	}
+}
+
 SymbolTable *populate_symboltable(Tree *tree)
 {
 	if (tree == NULL)
 		return NULL;
 
-	Symbol *symbol;
-	Tree *names;
-	Type *type;
+	Symbol *symbol = NULL;
+	Type *type = NULL;
 
 	switch (tree->rule)
 	{
@@ -251,58 +278,23 @@ SymbolTable *populate_symboltable(Tree *tree)
 		add_symbol(symbol);
 		return NULL;
 
+	case R_FIELD:
+		type = parse_type(scope, tree->children[2]);
+		define_variables(tree->children[3], type);
+		return NULL;
+
 	case R_DEFINE2:
-		names = tree->children[1];
+	case R_DEFINE4:
 		type = parse_type(scope, tree->children[0]);
-
-		switch (names->rule)
-		{
-		case ID:
-			symbol = create_symbol(names->token,
-								   names->token->text,
-								   type);
-			symbol->scope = scope;
-			symbol->attributes |= ATR_VARIABLE;
-			add_symbol(symbol);
-			break;
-
-		case R_DEFINE3:
-			symbol = create_symbol(names->token,
-								   names->token->text,
-								   type);
-			symbol->scope = scope;
-			symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
-			add_symbol(symbol);
-			break;
-
-		case R_VAR_GROUP:
-			for (int i = 0; i < names->count; i++)
-			{
-				symbol = create_symbol(names->children[i]->token,
-									   names->children[i]->token->text,
-									   type);
-
-				symbol->scope = scope;
-				symbol->attributes |= ATR_VARIABLE;
-
-				if (names->children[i]->rule == R_DEFINE3)
-					symbol->attributes |= ATR_DEFINED;
-
-				add_symbol(symbol);
-			}
-			break;
-		}
-
+		define_variables(tree->children[1], type);
 		return NULL;
 
 	case R_METHOD1:
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree));
-		symbol->scope = scope;
 		add_symbol(symbol);
-		enter_scope(symbol->text, TYPE_METHOD);
-		symbol->type->info.method.scope = scope;
+		symbol->type->info.method.scope = enter_scope(symbol->text, TYPE_METHOD);
 		scan_children(tree);
 		return exit_scope();
 
@@ -331,24 +323,6 @@ SymbolTable *populate_symboltable(Tree *tree)
 	return NULL;
 }
 
-SymbolTable *check_defined(SymbolTable *scope, Tree *tree)
-{
-	Symbol *symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
-
-	// Check that symbol is defined at all
-	if (symbol == NULL)
-		error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
-
-	// Check if symbol is defined in a valid location
-	if (symbol->attributes & ATR_VARIABLE)
-	{
-		if (symbol->token->id > tree->token->id)
-			error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
-	}
-
-	return symbol->scope;
-}
-
 /**
  * @brief
  */
@@ -364,14 +338,29 @@ void check_table(SymbolTable *scope, Tree *tree)
 	switch (tree->rule)
 	{
 	case R_CLASS1:
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		scope = symbol->type->info.class.scope;
+		break;
+
 	case R_METHOD1:
-		//scope = lookup(scope, tree->token->text, SCOPE_SYMBOLS)->scope;
-		scope = get_sub_scope(scope, tree->token->text);
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		scope = symbol->type->info.method.scope;
 		break;
 
 	case ID:
 	case R_ACCESS1:
-		check_defined(scope, tree);
+		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
+
+		// Check that symbol is defined at all
+		if (symbol == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "Symbol not defined");
+
+		// Check if symbol is defined in a valid location
+		if (symbol->attributes & ATR_VARIABLE)
+		{
+			if (symbol->token->id > tree->token->id)
+				error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
+		}
 		return;
 
 	case R_OP1_DECREMENT:
@@ -493,6 +482,12 @@ void check_table(SymbolTable *scope, Tree *tree)
 		check_table(scope, tree->children[i]);
 }
 
+/**
+ * @brief Adds a new built-in symbol
+ *
+ * @param name Name of the symbol
+ * @param type What base type is the symbol
+ */
 Symbol *add_builtin(char *name, int type)
 {
 	Symbol *symbol = add_symbol(simple_symbol(NULL, name, type));

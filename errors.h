@@ -11,6 +11,8 @@
 #define SEMATIC_ERROR 3
 #define OUT_OF_MEMORY -1
 
+#define ERROR_BUFFER_SIZE 4096
+
 void error(int code, char *message);
 void yyerror(char *message);
 

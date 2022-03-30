@@ -45,7 +45,7 @@ void error_at(Token *token, int code, char *message)
 
 char *error_message(char *pattern, ...)
 {
-	char *message = alloc(sizeof(char) * 4096);
+	char *message = alloc(sizeof(char) * ERROR_BUFFER_SIZE);
 	va_list args;
 	va_start(args, pattern);
 	vsprintf(message, pattern, args);

@@ -346,13 +346,6 @@ char *type_name(Type *type)
 	return "";
 }
 
-char *type_error(char *pattern, Type *t1, Type *t2)
-{
-	char *message = alloc(sizeof(char) * 4096);
-	sprintf(message, pattern, type_name(t1), type_name(t2));
-	return message;
-}
-
 int check_types(int op, int argc, Type *t1, Type *t2)
 {
 	if (t1 == NULL || (argc > 1 && t2 == NULL))
@@ -375,7 +368,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		case TYPE_DOUBLE:
 			return TRUE;
 		}
-		error(SEMATIC_ERROR, type_error("Cannot negate %s", t1, NULL));
+		error(SEMATIC_ERROR, error_message("Cannot negate %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP1_INCREMENT:
@@ -387,13 +380,13 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		case TYPE_INT:
 			return TRUE;
 		}
-		error(SEMATIC_ERROR, type_error("STEP not supported for %s", t1, NULL));
+		error(SEMATIC_ERROR, error_message("STEP not supported for %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP1_NOT:
 		if (t1->base == TYPE_BOOL)
 			return TRUE;
-		error(SEMATIC_ERROR, type_error("NOT not supported for %s", t1, NULL));
+		error(SEMATIC_ERROR, error_message("NOT not supported for %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP2_EQUALS:
@@ -434,7 +427,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 			}
 			break;
 		}
-		error(SEMATIC_ERROR, type_error("Compare not supported for %s", t1, t2));
+		error(SEMATIC_ERROR, error_message("Compare not supported for %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP2_LESS:
@@ -454,7 +447,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 				return TRUE;
 
 			default:
-				error(SEMATIC_ERROR, type_error("Cannot compare %s and %s", t1, t2));
+				error(SEMATIC_ERROR, error_message("Cannot compare %s and %s", type_name(t1), type_name(t2)));
 				break;
 			}
 			break;
@@ -462,7 +455,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		case TYPE_CLASS:
 			break;
 		}
-		error(SEMATIC_ERROR, type_error("Compare not supported for %s", t1, t2));
+		error(SEMATIC_ERROR, error_message("Compare not supported for %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP2_ADD:
@@ -473,7 +466,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 			if (type_fuzzy_match(t1, t2) == TRUE)
 				return TRUE;
 
-			error(SEMATIC_ERROR, type_error("Incompatible types between %s and %s", t1, t2));
+			error(SEMATIC_ERROR, error_message("Incompatible types between %s and %s", type_name(t1), type_name(t2)));
 			break;
 
 		case TYPE_CLASS:
@@ -490,7 +483,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 				}
 			break;
 		}
-		error(SEMATIC_ERROR, type_error("Invalid operation on %s", t1, t2));
+		error(SEMATIC_ERROR, error_message("Invalid operation on %s", type_name(t1)));
 		return FALSE;
 
 	case R_OP2_DIV:
@@ -504,17 +497,17 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 			if (type_fuzzy_match(t1, t2) == TRUE)
 				return TRUE;
 
-			error(SEMATIC_ERROR, type_error("Incompatible types between %s and %s", t1, t2));
+			error(SEMATIC_ERROR, error_message("Incompatible types between %s and %s", type_name(t1), type_name(t2)));
 			break;
 		}
-		error(SEMATIC_ERROR, type_error("Invalid operation on %s", t1, t2));
+		error(SEMATIC_ERROR, error_message("Invalid operation on %s", type_name(t1)));
 		return FALSE;
 
 	case R_ASSIGN:
 	case R_DEFINE3:
 		if (type_fuzzy_match(t1, t2) == TRUE)
 			return TRUE;
-		error(SEMATIC_ERROR, type_error("Type mismatch between %s and %s", t1, t2));
+		error(SEMATIC_ERROR, error_message("Type mismatch between %s and %s", type_name(t1), type_name(t2)));
 		return FALSE;
 
 #ifdef DEBUG

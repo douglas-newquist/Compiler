@@ -236,45 +236,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		if (type->base != TYPE_METHOD)
 			error_at(tree->token, SEMATIC_ERROR, "Symbol is not a method");
 
-		switch (tree->children[1]->rule)
-		{
-		case R_EMPTY:
-			if (type->info.method.count != 0)
-				error_at(tree->token, SEMATIC_ERROR,
-						 error_message("Incorrect number of arguments, got 0, expected %d",
-									   type->info.method.count));
-			break;
-
-		case R_ARG_GROUP:
-			if (tree->children[1]->count != type->info.method.count)
-				error_at(tree->token, SEMATIC_ERROR,
-						 error_message("Incorrect number of arguments, got %d, expected %d",
-									   tree->children[1]->count,
-									   type->info.method.count));
-
-			for (int i = 0; i < type->info.method.count; i++)
-				if (type_fuzzy_match(type->info.method.params[i]->type,
-									 parse_type(scope, tree->children[1]->children[i])) == FALSE)
-					error_at(tree->token, SEMATIC_ERROR,
-							 error_message("Paramter type mismatch, expected %s, got %s",
-										   type_name(type->info.method.params[i]->type),
-										   type_name(parse_type(scope, tree->children[1]->children[i]))));
-			break;
-
-		default:
-			if (type->info.method.count != 1)
-				error_at(tree->token, SEMATIC_ERROR,
-						 error_message("Incorrect number of arguments, got 1, expected %d",
-									   type->info.method.count));
-			if (type_fuzzy_match(type->info.method.params[0]->type,
-								 parse_type(scope, tree->children[1])) == FALSE)
-				error_at(tree->token, SEMATIC_ERROR,
-						 error_message("Paramter type mismatch, expected %s, got %s",
-									   type_name(type->info.method.params[0]->type),
-									   type_name(parse_type(scope, tree->children[1]))));
-			break;
-		}
-
 		return type->info.method.result;
 
 	case R_METHOD2:

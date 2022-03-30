@@ -65,7 +65,7 @@ SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
 	table->name = name;
 	table->type = type;
 	table->parent = parent;
-	table->symbols = create_hashtable(8, hash, equals);
+	table->symbols = create_hashtable(64, hash, equals);
 	table->children = create_list();
 
 	if (parent != NULL)

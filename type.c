@@ -173,6 +173,12 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_RETURN2:
 		return parse_type(scope, tree->children[0]);
 
+	case R_ACCESS3:
+		type = parse_type(scope, tree->children[0]);
+		if (type->base != TYPE_ARRAY)
+			error(SEMATIC_ERROR, error_message("Cannot index the type %s", type_name(type)));
+		return type->info.array.type;
+
 	case INT:
 	case LITERAL_INT:
 		return create_type(TYPE_INT);
@@ -197,6 +203,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		return type;
 
 	case R_DEFINE1:
+	case R_DEFINE4:
 		return parse_type(scope, tree->children[0]);
 
 	case R_METHOD1:

@@ -244,6 +244,18 @@ void define_variables(Tree *tree, Type *type)
 	}
 }
 
+int name_matches(Token *token)
+{
+	char *i = strrchr(token->filename, '/');
+
+	if (i == NULL)
+		i = token->filename;
+	else
+		i++;
+
+	return strncmp(i, token->text, strlen(i) - 5) == 0;
+}
+
 SymbolTable *populate_symboltable(Tree *tree)
 {
 	if (tree == NULL)
@@ -258,6 +270,8 @@ SymbolTable *populate_symboltable(Tree *tree)
 		return NULL;
 
 	case R_CLASS1:
+		if (name_matches(tree->token) == FALSE)
+			error_at(tree->token, SEMATIC_ERROR, "Class name does not match filename");
 		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
 		symbol->scope = scope;
 		symbol->type->info.class.name = tree->token->text;

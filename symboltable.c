@@ -387,6 +387,10 @@ void check_table(SymbolTable *scope, Tree *tree)
 	case R_CALL1:
 		set_pos(tree->children[0]->token);
 		symbol = lookup_name(scope, tree->children[0], SCOPE_SYMBOLS);
+
+		if (symbol == NULL)
+			error(SEMATIC_ERROR, "Undefined method");
+
 		type = symbol->type;
 
 		switch (tree->children[1]->rule)

@@ -130,6 +130,28 @@ int type_matches(Type *t1, Type *t2)
 	return FALSE;
 }
 
+void populate_params(SymbolTable *scope, Tree *tree, Type *type)
+{
+	switch (tree->rule)
+	{
+	case R_ARG_DEF_GROUP:
+		alloc_params(type, tree->count);
+
+		for (int i = 0; i < type->info.method.count; i++)
+			type->info.method.params[i] = create_param(
+				tree->children[i]->token->text,
+				parse_type(scope, tree->children[i]));
+		break;
+
+	case R_DEFINE1:
+		alloc_params(type, 1);
+		type->info.method.params[0] = create_param(
+			tree->token->text,
+			parse_type(scope, tree->children[0]));
+		break;
+	}
+}
+
 /**
  * @brief Parses a type from the given tree structure
  *
@@ -204,31 +226,13 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case R_DEFINE1:
 	case R_DEFINE4:
+	case R_NEW1:
 		return parse_type(scope, tree->children[0]);
 
 	case R_METHOD1:
 		type = create_type(TYPE_METHOD);
 		type->info.method.result = parse_type(scope, tree->children[2]);
-
-		switch (tree->children[3]->rule)
-		{
-		case R_ARG_DEF_GROUP:
-			alloc_params(type, tree->children[3]->count);
-
-			for (int i = 0; i < type->info.method.count; i++)
-				type->info.method.params[i] = create_param(
-					tree->children[3]->children[i]->token->text,
-					parse_type(scope, tree->children[3]->children[i]));
-			break;
-
-		case R_DEFINE1:
-			alloc_params(type, 1);
-			type->info.method.params[0] = create_param(
-				tree->children[3]->token->text,
-				parse_type(scope, tree->children[3]->children[0]));
-			break;
-		}
-
+		populate_params(scope, tree->children[3], type);
 		return type;
 
 	case R_CALL1:
@@ -258,7 +262,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case ID:
 	case R_DEFINE3:
-	case R_METHOD3:
+	case R_METHOD2:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");

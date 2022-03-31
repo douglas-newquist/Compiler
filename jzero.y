@@ -173,7 +173,7 @@ ClassBodyDecl	: Visability Owner Type VarDecls ';'
 				| Visability Owner VOID ID '(' ZeroArgDefs ')' Block
 				{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); }
 				| Visability ID '(' ZeroArgDefs ')' Block
-				{ $$=tree("Constructor", R_METHOD3, $2, 3, $1, $4, $6); }
+				{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
 
 VarDecls: VarDecl ',' VarDecls { $$=group("Variables", R_DEFINE2, $1, $3); }
 		| VarDecl

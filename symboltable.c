@@ -314,7 +314,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 
 	default:
 #if DEBUG
-		printf("Undefined rule action: %d\t%s\n", tree->rule, tree->name);
+		printf("Undefined populate rule action: %d\t%s\n", tree->rule, tree->name);
 #endif
 		scan_children(tree);
 		return NULL;
@@ -335,8 +335,14 @@ void check_table(SymbolTable *scope, Tree *tree)
 	Type *type, *t2;
 	char *message;
 
+	if (tree->token)
+		set_pos(tree->token);
+
 	switch (tree->rule)
 	{
+	case R_EMPTY:
+		return;
+
 	case R_CLASS1:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		scope = symbol->type->info.class.scope;
@@ -373,7 +379,6 @@ void check_table(SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_DEFINE3:
-		set_pos(tree->token);
 		check_types(tree->rule, 1,
 					parse_type(scope, tree),
 					parse_type(scope, tree->children[0]));
@@ -471,11 +476,21 @@ void check_table(SymbolTable *scope, Tree *tree)
 	case R_OP2_NOT_EQUAL:
 	case R_OP2_OR:
 	case R_OP2_SUB:
-		set_pos(tree->token);
 		check_types(tree->rule, 2,
 					parse_type(scope, tree->children[0]),
 					parse_type(scope, tree->children[1]));
 		break;
+
+	case PUBLIC:
+	case STATIC:
+	case VOID:
+		break;
+
+#ifdef DEBUG
+	default:
+		printf("Undefined symbol check rule: %d\n", tree->rule);
+		break;
+#endif
 	}
 
 	for (int i = 0; i < tree->count; i++)

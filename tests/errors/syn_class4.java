@@ -1,1 +1,1 @@
-public class syn_class4{
+ public class syn_class4 }

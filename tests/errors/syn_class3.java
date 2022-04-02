@@ -1,3 +1,1 @@
-public class syn_class3
-
-}
+ public class { }

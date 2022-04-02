@@ -238,10 +238,12 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_CALL1:
 		set_pos(tree->children[0]->token);
 		symbol = lookup_name(scope, tree->children[0], SCOPE_SYMBOLS);
-		type = symbol->type;
 
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown method");
+
+		type = symbol->type;
+
 		if (type == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Method has no type");
 		if (type->base != TYPE_METHOD)

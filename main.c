@@ -15,6 +15,30 @@
 #include "token.h"
 #include "tree.h"
 
+#ifdef DEBUG
+#include <signal.h>
+int in_panic = FALSE;
+
+/**
+ * @brief Catches a segmentation fault and prints out an error then continues exit
+ */
+void panic(int signal)
+{
+	if (in_panic)
+		// Problem ocurred inside panic
+		exit(signal);
+	in_panic = TRUE;
+
+	switch (signal)
+	{
+	case SIGSEGV:
+		error(SIGSEGV, "!!! Segmentation Fault !!!");
+	}
+
+	exit(-1);
+}
+#endif
+
 void free_all()
 {
 	free_memory();
@@ -119,6 +143,10 @@ void read_file(char *filename)
 int main(int argc, char *argv[])
 {
 	options = 0;
+
+#ifdef DEBUG
+	signal(SIGSEGV, panic);
+#endif
 
 	for (int i = 1; i < argc; i++)
 	{

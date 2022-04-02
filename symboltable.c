@@ -264,6 +264,9 @@ SymbolTable *populate_symboltable(Tree *tree)
 	Symbol *symbol = NULL;
 	Type *type = NULL;
 
+	if (tree->token)
+		set_pos(tree->token);
+
 	switch (tree->rule)
 	{
 	case R_EMPTY:

@@ -1,9 +1,10 @@
-#!/bin/python3
+#!/usr/bin/python3
+
+#! Run this script from the directory containing all project files
 
 import os
 from os import path
 from subprocess import Popen, PIPE
-from sys import stdout
 
 # Path to J0 executable
 j0 = "./j0"
@@ -20,6 +21,10 @@ FAIL = 5
 
 passed_tests = []
 failed_tests = []
+
+if not path.exists("README"):
+    print("Please run from the root of the project directory")
+    exit(1)
 
 os.system("make")
 
@@ -60,6 +65,8 @@ def test_file(outcome, level, file):
     if passed:
         passed_tests.append(f"PASS {file}")
     else:
+        if p.returncode == -11:
+            std_err = "Segmentation fault\n"
         failed_tests.append(
             f"FAIL {file} exit code: {p.returncode}\n{std_err}")
 

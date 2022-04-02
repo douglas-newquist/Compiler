@@ -20,3 +20,6 @@ Flags supported:
 Examples
 	./j0 JavaSamples/Hello.java
 	./j0 -tree -dot JavaSamples/Hello.java > hello.dot
+
+Test script
+	run tests/testrunner.py using python3 with the current working directory being the one that contains this file

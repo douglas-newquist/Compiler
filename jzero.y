@@ -157,7 +157,7 @@ Args: Args ',' Exp { $$=group("Args", R_ARG_GROUP, $1, $3); };
 	| Exp;
 
 // public class name { ... }
-Class: Visability CLASS ID ClassBody { $$=tree("Class", R_CLASS1, $3, 2, $1, $4); };
+Class: PUBLIC CLASS ID ClassBody { $$=tree("Class", R_CLASS1, $3, 2, $1, $4); };
 
 ClassBody	: '{' ClassBodyDecls '}'{ $$=$2; }
 			| '{' '}' 				{ $$=EMPTY_TREE; };

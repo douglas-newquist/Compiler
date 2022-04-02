@@ -50,13 +50,15 @@ def test_file(outcome, level, file):
 
     passed = False
 
-    if outcome == PASS:
-        if level == LEX and p.returncode != LEX:
-            passed = True
-        elif level == SYNTAX and (p.returncode == 0 or p.returncode > SYNTAX):
-            passed = True
-        elif level == SEMATIC and p.returncode == 0:
-            passed = True
+    if not 0 <= p.returncode <= SEMATIC:
+        passed = False
+    elif outcome == PASS:
+        if level == LEX:
+            passed = p.returncode == 0 or p.returncode > LEX
+        elif level == SYNTAX:
+            passed = p.returncode == 0 or p.returncode > SYNTAX
+        elif level == SEMATIC:
+            passed = p.returncode == 0
         else:
             passed = False
     else:

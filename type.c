@@ -509,9 +509,14 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		{
 		case TYPE_INT:
 		case TYPE_DOUBLE:
-			if (type_fuzzy_match(t1, t2) == TRUE)
+		case TYPE_CHAR:
+			switch (t2->base)
+			{
+			case TYPE_INT:
+			case TYPE_DOUBLE:
+			case TYPE_CHAR:
 				return TRUE;
-
+			}
 			error(SEMATIC_ERROR, error_message("Incompatible types between %s and %s", type_name(t1), type_name(t2)));
 			break;
 		}

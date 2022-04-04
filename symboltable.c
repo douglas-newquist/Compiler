@@ -147,7 +147,21 @@ Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
 		symbol = lookup_name(scope, name->children[0], mode);
 		if (symbol == NULL)
 			return NULL;
-		return lookup(symbol->scope, name->token->text, CHILD_SYMBOLS);
+		switch (symbol->type->base)
+		{
+		case TYPE_ARRAY:
+			scope = lookup(scope, "Array", SCOPE_SYMBOLS)->scope;
+			break;
+
+		case TYPE_CLASS:
+			scope = symbol->type->info.class.scope;
+			break;
+
+		default:
+			scope = symbol->scope;
+			break;
+		}
+		return lookup(scope, name->token->text, CHILD_SYMBOLS);
 
 	case ID:
 		return lookup(scope, name->token->text, mode);

@@ -201,6 +201,19 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 			error(SEMATIC_ERROR, error_message("Cannot index the type %s", type_name(type)));
 		return type->info.array.type;
 
+	case R_ARRAY2:
+		type = create_type(TYPE_ARRAY);
+		switch (tree->children[1]->rule)
+		{
+		case LITERAL_INT:
+			type->info.array.size = tree->children[1]->token->ival;
+			if (type->info.array.size < 0)
+				error_at(tree->children[1]->token, SEMATIC_ERROR, "Arrays cannot be negative in size");
+			break;
+		}
+		type->info.array.type = parse_type(scope, tree->children[0]);
+		return type;
+
 	case INT:
 	case LITERAL_INT:
 		return create_type(TYPE_INT);

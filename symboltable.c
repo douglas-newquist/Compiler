@@ -141,12 +141,15 @@ Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
 
 	Symbol *symbol = NULL;
 
+	if (name->token)
+		set_pos(name->token);
+
 	switch (name->rule)
 	{
 	case R_ACCESS1:
 		symbol = lookup_name(scope, name->children[0], mode);
 		if (symbol == NULL)
-			return NULL;
+			error(SEMATIC_ERROR, "Unknown reference");
 		switch (symbol->type->base)
 		{
 		case TYPE_ARRAY:
@@ -154,7 +157,11 @@ Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
 			break;
 
 		case TYPE_CLASS:
-			scope = symbol->type->info.class.scope;
+			symbol = lookup(scope, symbol->type->info.class.name, SCOPE_SYMBOLS);
+			if (symbol == NULL)
+				error(SEMATIC_ERROR, error_message("Cannot find scope for %s\n",
+												   symbol->type->info.class.name));
+			scope = symbol->scope;
 			break;
 
 		default:

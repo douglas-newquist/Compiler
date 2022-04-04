@@ -138,9 +138,9 @@ Literal	: LITERAL_INT
 
 FieldAccess: Primary '.' ID { $$=tree("Field", R_ACCESS2, $3, 1, $1); };
 
-Visability: PUBLIC | { $$=EMPTY_TREE; }
+Visability: PUBLIC
 
-Owner: STATIC | { $$=EMPTY_TREE; }
+Owner: STATIC
 
 // Zero or more arg defs
 ZeroArgDefs: ArgDefs | { $$=EMPTY_TREE; }

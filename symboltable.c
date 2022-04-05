@@ -407,6 +407,12 @@ void check_table(SymbolTable *scope, Tree *tree)
 		}
 		return;
 
+	case R_ACCESS3:
+		if (type_fuzzy_match(create_type(TYPE_INT),
+							 parse_type(scope, tree->children[1])) == FALSE)
+			error(SEMATIC_ERROR, "Array index must be an integer");
+		break;
+
 	case R_OP1_DECREMENT:
 	case R_OP1_INCREMENT:
 	case R_OP1_NEGATE:

@@ -203,6 +203,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	case R_ARRAY2:
 		type = create_type(TYPE_ARRAY);
+		type->info.array.type = parse_type(scope, tree->children[0]);
 		switch (tree->children[1]->rule)
 		{
 		case LITERAL_INT:
@@ -211,7 +212,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 				error_at(tree->children[1]->token, SEMATIC_ERROR, "Arrays cannot be negative in size");
 			break;
 		}
-		type->info.array.type = parse_type(scope, tree->children[0]);
 		return type;
 
 	case INT:
@@ -341,7 +341,10 @@ char *type_name(Type *type)
 		s2 = type_name(type->info.array.type);
 		s1 = alloc(sizeof(char) * (3 + strlen(s2)));
 
-		sprintf(s1, "%s[]", s2);
+		if (type->info.array.size >= 0)
+			sprintf(s1, "%s[%d]", s2, type->info.array.size);
+		else
+			sprintf(s1, "%s[]", s2);
 
 		return s1;
 

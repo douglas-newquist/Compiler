@@ -1,1 +1,3 @@
- class syn_class1 { }
+class syn_class1 {
+ 
+}

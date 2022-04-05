@@ -1,3 +1,3 @@
 public class lex_char1 {
-	char a ='asdasdsa';
+public static	char a ='asdasdsa';
 }

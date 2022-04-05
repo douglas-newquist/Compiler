@@ -1,3 +1,5 @@
-public class syn_method3{
- public static void main ( { }
+public class syn_method3 {
+public int main ( ) {
+ 
+}
 }

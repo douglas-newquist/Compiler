@@ -1,5 +1,7 @@
-public class syn_call9{
+public class syn_if10 {
 public static void main(String[] args){
- method(4, 3 ;
+if true ) {
+ 
+}
 }
 }

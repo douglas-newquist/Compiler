@@ -1,1 +1,3 @@
- public syn_class2 { }
+public syn_class2 {
+ 
+}

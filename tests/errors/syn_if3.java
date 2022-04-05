@@ -1,5 +1,7 @@
-public class syn_if3{
+public class syn_if3 {
 public static void main(String[] args){
- if ( ) { }
+if ( ) {
+ 
+}
 }
 }

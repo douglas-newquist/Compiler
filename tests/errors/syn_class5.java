@@ -1,1 +1,3 @@
- public class syn_class5 {
+public class {
+ 
+}

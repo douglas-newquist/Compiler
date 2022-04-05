@@ -1,3 +1,3 @@
 public class lex_hex {
-	float a = 0x11;
+	public static float a = 0x11;
 }

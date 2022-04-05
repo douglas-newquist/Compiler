@@ -1,3 +1,3 @@
 public class lex_number {
-	float c = 432j4532f0s;
+public static	float c = 4324f53d20s;
 }

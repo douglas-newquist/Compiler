@@ -1,5 +1,7 @@
-public class syn_while3{
+public class syn_while3 {
 public static void main(String[] args){
- while ( ) { }
+while ( ) {
+ 
+}
 }
 }

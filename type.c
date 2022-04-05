@@ -47,6 +47,14 @@ Type *create_type(int basetype)
 	return type;
 }
 
+int is_class(Type *type, char *name)
+{
+	if (type == NULL || type->base != TYPE_CLASS)
+		return FALSE;
+
+	return strcmp(type->info.class.name, name) == 0;
+}
+
 /**
  * @brief Checks if two types match, accounting for automatic casting
  */
@@ -73,12 +81,22 @@ int type_fuzzy_match(Type *t1, Type *t2)
 		}
 		break;
 
+	case TYPE_NULL:
+		switch (t2->base)
+		{
+		case TYPE_ARRAY:
+		case TYPE_CLASS:
+			return TRUE;
+		}
+		break;
+
 	case TYPE_DOUBLE:
 		switch (t2->base)
 		{
 		case TYPE_INT:
 			return TRUE;
 		}
+	case TYPE_CHAR:
 	case TYPE_INT:
 		switch (t2->base)
 		{
@@ -114,10 +132,6 @@ int type_matches(Type *t1, Type *t2)
 		case TYPE_UNKNOWN:
 		case TYPE_VOID:
 			return TRUE;
-
-		case TYPE_METHOD:
-			// TODO type check
-			break;
 
 		case TYPE_CLASS:
 			return strcmp(t1->info.class.name, t2->info.class.name) == 0;
@@ -384,6 +398,21 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 	if (t1 == NULL || (argc > 1 && t2 == NULL))
 		error(SEMATIC_ERROR, "Expected a type");
 
+	switch (t1->base)
+	{
+	case TYPE_UNKNOWN:
+	case TYPE_VOID:
+		error(SEMATIC_ERROR, "Operant 1 type cannot be void");
+	}
+
+	if (argc > 1)
+		switch (t2->base)
+		{
+		case TYPE_UNKNOWN:
+		case TYPE_VOID:
+			error(SEMATIC_ERROR, "Operant 2 type cannot be void");
+		}
+
 	switch (op)
 	{
 	case R_OP2_AND:
@@ -425,7 +454,7 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 
 	case R_OP2_EQUALS:
 	case R_OP2_NOT_EQUAL:
-		if (t1->base == t2->base)
+		if (type_fuzzy_match(t1, t2) == TRUE)
 			return TRUE;
 
 		switch (t1->base)
@@ -504,6 +533,10 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 			case TYPE_DOUBLE:
 			case TYPE_CHAR:
 				return TRUE;
+
+			case TYPE_CLASS:
+				if (is_class(t2, "String"))
+					return TRUE;
 			}
 			error(SEMATIC_ERROR, error_message("Incompatible types between %s and %s", type_name(t1), type_name(t2)));
 			break;
@@ -514,9 +547,9 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 				{
 				case TYPE_BOOL:
 				case TYPE_CHAR:
-				case TYPE_CLASS:
 				case TYPE_DOUBLE:
 				case TYPE_INT:
+				case TYPE_CLASS:
 				case TYPE_NULL:
 					return TRUE;
 				}
@@ -549,6 +582,8 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 
 	case R_ASSIGN:
 	case R_DEFINE3:
+		if (type_matches(t1, create_type(TYPE_NULL)))
+			error(SEMATIC_ERROR, "Cannot assign to null type");
 		if (type_fuzzy_match(t1, t2) == TRUE)
 			return TRUE;
 		error(SEMATIC_ERROR, error_message("Type mismatch between %s and %s", type_name(t1), type_name(t2)));

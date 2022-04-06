@@ -3,7 +3,7 @@
 from ast import Mult
 from itertools import chain, combinations, product
 from os import path
-from typing import List
+from typing import Iterable, List
 
 snippet_class = "public class <TYPE>_<NAME><ID>{\n<SNIPPET>\n}"
 snippet_main = snippet_class.replace(
@@ -12,7 +12,12 @@ snippet_main = snippet_class.replace(
 
 class Token:
     def __init__(self, elements) -> None:
-        self.elements = elements
+        if isinstance(elements, Iterable):
+            self.elements = Any(elements)
+        elif isinstance(elements, str):
+            self.elements = Any([elements])
+        else:
+            self.elements = elements
 
     def compile(self, passing: bool) -> List[str]:
         return [""]
@@ -21,9 +26,9 @@ class Token:
 class Any(Token):
     def __init__(self, elements) -> None:
         if isinstance(elements, str):
-            super().__init__([elements])
+            self.elements = [elements]
         else:
-            super().__init__(elements)
+            self.elements = elements
 
     def compile(self, passing: bool) -> List[str]:
         opts = []
@@ -45,12 +50,7 @@ class Any(Token):
 
 class Optional(Token):
     def __init__(self, elements, affects_fail=False) -> None:
-        if isinstance(elements, list):
-            super().__init__(Any(elements))
-        elif isinstance(elements, str):
-            super().__init__(Any([elements]))
-        else:
-            super().__init__(elements)
+        super().__init__(elements)
         self.affects_fail = affects_fail
 
     def compile(self, passing: bool) -> List[str]:
@@ -65,10 +65,7 @@ class Optional(Token):
 
 class Wrap(Token):
     def __init__(self, elements, prefix="", suffix="") -> None:
-        if isinstance(elements, list):
-            super().__init__(Any(elements))
-        else:
-            super().__init__(elements)
+        super().__init__(elements)
         self.prefix = prefix
         self.suffix = suffix
 
@@ -86,7 +83,12 @@ class Wrap(Token):
 
 class Group(Token):
     def __init__(self, elements) -> None:
-        super().__init__(elements)
+        if isinstance(elements, str):
+            self.elements = [elements]
+        elif isinstance(elements, Iterable):
+            self.elements = elements
+        else:
+            super().__init__(elements)
 
     def get_token_choices(self, passing: bool) -> List[str]:
         choices = []
@@ -114,25 +116,27 @@ class Group(Token):
 
 class Repeat(Group):
     def __init__(self, elements, count, separator=",") -> None:
-        if isinstance(elements, list):
-            super().__init__(Any(elements))
-        elif isinstance(elements, str):
-            super().__init__(Any([elements]))
-        else:
-            super().__init__(elements)
+        super().__init__(Any(elements))
         self.count = count
         self.separator = separator
 
     def get_token_choices(self, passing: bool) -> List[str]:
-        choices = [self.elements.compile(passing) for i in range(self.count)]
-        for i in range(self.count - 1):
-            choices.insert(2*i + 1, self.separator)
+        choices = []
+        for i in range(self.count):
+            choice = self.elements.compile(passing)
+            if i > 0:
+                if isinstance(self.separator, str):
+                    choices.append([self.separator])
+                elif isinstance(self.separator, Iterable):
+                    choices.append(list(self.separator))
+            if isinstance(choice, str):
+                choices.append([choice])
+            else:
+                choices.append(choice)
         return choices
 
     def compile(self, passing: bool) -> List[str]:
-        if not self.elements:
-            return []
-        if self.count == 0:
+        if not self.elements or self.count <= 0:
             return []
         if self.count == 1:
             return self.elements.compile(passing)
@@ -141,12 +145,7 @@ class Repeat(Group):
 
 class Count(Group):
     def __init__(self, elements, count, separator=",") -> None:
-        if isinstance(elements, list):
-            super().__init__(Any(elements))
-        elif isinstance(elements, str):
-            super().__init__(Any([elements]))
-        else:
-            super().__init__(elements)
+        super().__init__(elements)
         self.range = count if isinstance(count, range) else range(count)
         self.separator = separator
 
@@ -175,16 +174,31 @@ class Switch(Token):
 
 class Join(Token):
     def __init__(self, elements, separator=",") -> None:
-        if isinstance(elements, list):
-            super().__init__(Any(elements))
-        elif isinstance(elements, str):
-            super().__init__(Any([elements]))
-        else:
-            super().__init__(elements)
+        super().__init__(elements)
         self.separator = separator
 
     def compile(self, passing: bool) -> List[str]:
         return [self.separator.join(self.elements.compile(passing))]
+
+
+class Replace(Token):
+    def __init__(self, elements, old, new) -> None:
+        super().__init__(elements)
+        if isinstance(old, str):
+            self.old = old
+        elif isinstance(old, list):
+            self.old = old[0]
+            if len(old) > 1:
+                self.elements = Replace(elements, old[1:], new)
+
+        self.new = new if isinstance(new, list) else [new]
+
+    def compile(self, passing: bool) -> List[str]:
+        if not self.old or not self.new:
+            return []
+        for case in self.elements.compile(passing):
+            for new in self.new:
+                yield case.replace(self.old, new)
 
 
 class_prefix, class_suffix = "public class <TYPE>_<NAME><ID> {", "}"
@@ -206,10 +220,7 @@ def println(elements):
 
 
 def ops2(left, right, ops):
-    cases = []
-    for op in ops:
-        cases.append(Join(println(Group([left, op, right])), "\n"))
-    return Any(cases)
+    return Replace(Join(println(Group([left, "<OP>", right])), "\n"), "<OP>", ops)
 
 
 patterns = {
@@ -341,32 +352,49 @@ patterns = {
                      prefix=class_prefix +
                      "public static int method(int i, String s){}\npublic static void main(String[] args){\nint i; String s;\nmethod(",
                      suffix=");"+main_suffix),
-        "ops": Wrap(Switch([ops2(["14", "'f'", "43.51d", '"tsLRlkxnQtkwmmQUwFLU"',
+        "op": Wrap(Switch([ops2(["14", "'f'", "43.51d", '"tsLRlkxnQtkwmmQUwFLU"',
                                  "i", "d", "c", "s"],
-                                 ["24", "'p'", "74.1d", '"aXCwxJWglaSaCqKR"',
+                                ["24", "'p'", "74.1d", '"aXCwxJWglaSaCqKR"',
                                  "i", "d", "c", "s"],
-                                 ["+"]),
-                            ops2(["14", "'f'", "43.51d", "i", "d", "c"],
-                                 ["24", "'p'", "74.1d", "i", "d", "c"],
-                                 ["-", "*", "/", "%", "<", "<=", ">", ">="]),
-                            ops2(["true", "false"],
-                                 ["true", "false"],
-                                 ["||", "&&", "==", "!="]),
-                            ops2(["14", "'f'", "43.51d", "i", "d", "c"],
-                                 ["24", "'p'", "74.1d",  "i", "d", "c"],
-                                 ["==", "!="]),
-                            ops2(['"SMiqkH"', "s", "null"],
-                                 ['"NxkbE"', "s", "null"],
-                                 ["==", "!="]),
-                            ops2(["ints", "null"],
-                                 ["ints", "null"],
-                                 ["==", "!="]),
-                            ops2([""], ["1", "'h'", "5.30d", "i", "c", "d"], ["-"]),
-                            ops2(["i", "c", "d"], [""], ["++", "--"]),
-                            ops2([""], ["true", "false"], ["!"])]),
-                    prefix=main_prefix +
-                    'int i = 64;\nchar c = \'O\';\ndouble d = 71.87d;\nString s = "CjxDkIN";\nint[] ints = null;\n\n',
-                    suffix=main_suffix)
+                                ["+"]),
+                           ops2(["14", "'f'", "43.51d", "i", "d", "c"],
+                                ["24", "'p'", "74.1d", "i", "d", "c"],
+                                ["-", "*", "/", "%", "<", "<=", ">", ">="]),
+                           ops2(["true", "false"],
+                                ["true", "false"],
+                                ["||", "&&", "==", "!="]),
+                           ops2(["14", "'f'", "43.51d", "i", "d", "c"],
+                                ["24", "'p'", "74.1d",  "i", "d", "c"],
+                                ["==", "!="]),
+                           ops2(['"SMiqkH"', "s", "null"],
+                                ['"NxkbE"', "s", "null"],
+                                ["==", "!="]),
+                           ops2(["ints", "null"],
+                                ["ints", "null"],
+                                ["==", "!="]),
+                           ops2([""], ["1", "'h'", "5.30d", "i", "c", "d"], ["-"]),
+                           ops2(["i", "c", "d"], [""], ["++", "--"]),
+                           ops2([""], ["true", "false"], ["!"])],
+                          [println(Group([["i", "4", "d", "59.10d", "c", "'k'"],
+                                          ["+", "-", "*", "/", "%", "||", "&&",
+                                           "<", "<=", ">", ">=", "==", "!="],
+                                          ["true"]])),
+                           println(Group([["i", "5", "d", "41.37d", "c", "'z'"],
+                                          ["<", "<=", ">", ">=",
+                                              "==", "!=", "&&", "||"],
+                                          ["s"]])),
+                           println(Group([["s", '"VsSUsAByDmshAOnlE"'],
+                                          ["<", "<=", ">", ">=",
+                                              "==", "!=", "&&", "||"],
+                                          ["true"]])),
+                           println(Group([["ints"],
+                                          ["+", "-", "*", "/", "%", "||", "&&",
+                                           "<", "<=", ">", ">=", "==", "!="],
+                                          ["i", "85", "d", "c", "s", "true"]]))
+                           ]),
+                   prefix=main_prefix +
+                   'int i = 64;\nchar c = \'O\';\ndouble d = 71.87d;\nString s = "CjxDkIN";\nint[] ints = null;\n\n',
+                   suffix=main_suffix)
     }
 }
 

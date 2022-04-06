@@ -172,8 +172,8 @@ ClassBodyDecl	: Visability Owner Type VarDecls ';'
 				{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); }
 				| Visability Owner VOID ID '(' ZeroArgDefs ')' Block
 				{ $$=tree("Method", R_METHOD1, $4, 5, $1, $2, $3, $6, $8); }
-				| Visability ID '(' ZeroArgDefs ')' Block
-				{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
+//				| Visability ID '(' ZeroArgDefs ')' Block
+//				{ $$=tree("Constructor", R_METHOD2, $2, 3, $1, $4, $6); }
 
 VarDecls: VarDecl ',' VarDecls { $$=group("Variables", R_DEFINE2, $1, $3); }
 		| VarDecl
@@ -260,7 +260,7 @@ ReturnExp	: RETURN 		{ $$=tree("Return", R_RETURN1, $1, 0); }
 			| RETURN Exp 	{ $$=tree("Return", R_RETURN2, $1, 1, $2); };
 
 Instantiate	: NEW Type '[' Exp ']' 		{ $$=tree("New Array", R_ARRAY2, $1, 2, $2, $4); }
-			| NEW Type '(' ZeroArgs ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
+//			| NEW Type '(' ZeroArgs ')' { $$=tree("New", R_NEW1, $1, 2, $2, $4); };
 
 ArrayAccess	: Name '[' Exp ']'		{ $$=tree("Index", R_ACCESS3, NULL, 2, $1, $3); }
 			| Primary '[' Exp ']'	{ $$=tree("Index", R_ACCESS3, NULL, 2, $1, $3); }

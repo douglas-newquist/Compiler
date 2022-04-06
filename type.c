@@ -263,6 +263,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		return type;
 
 	case R_CALL1:
+	case R_CALL2:
 		set_pos(tree->children[0]->token);
 		symbol = lookup_name(scope, tree->children[0], SCOPE_SYMBOLS);
 
@@ -290,6 +291,7 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 		return symbol->type;
 
 	case ID:
+	case R_ACCESS2:
 	case R_DEFINE3:
 	case R_METHOD2:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);

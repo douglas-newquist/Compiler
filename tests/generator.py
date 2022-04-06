@@ -304,7 +304,21 @@ patterns = {
                              ")",
                              ";"])],
                      prefix=main_prefix,
-                     suffix=main_suffix)
+                     suffix=main_suffix),
+        "statement": Wrap([Switch(["return;",
+                                   "return 32;",
+                                   "break;",
+                                   "continue;"],
+                                  ["return",
+                                   "return 32",
+                                   "break",
+                                   "continue"]),
+                           Group(["a", ["++", "--"], ";"]),
+                           Group(["method", "()", ";"]),
+                           Group(["a", "=", "41", ";"]),
+                           Group(["a", "=", "new", ["int", "String"], "[", "32", "]", ";"])],
+                          prefix=main_prefix,
+                          suffix=main_suffix)
     },
     "sem": {
         "assign": Wrap(Switch([Group([["int", "double", "char"],

@@ -1,5 +1,6 @@
 JavaSamples
 .vscode
+tests/*/*.java
 
 *.out
 *.output

@@ -185,6 +185,21 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 
 	switch (tree->rule)
 	{
+	case R_FOR:
+	case R_IF1:
+	case R_IF2:
+	case R_IF3:
+	case R_IF4:
+	case R_SWITCH:
+	case R_WHILE:
+		return create_type(TYPE_VOID);
+
+	case PUBLIC:
+	case R_CLASS_GROUP:
+	case R_STATEMENT_GROUP:
+	case STATIC:
+		return NULL;
+
 	case BOOLEAN:
 	case LITERAL_BOOL:
 	case R_OP1_NOT:

@@ -17,6 +17,7 @@ Symbol *create_symbol(Token *token, char *string, Type *type)
 {
 	Symbol *symbol = alloc(sizeof(Symbol));
 	symbol->id = next_id();
+	symbol->offset = 0;
 	symbol->text = string;
 	symbol->type = type;
 	symbol->attributes = 0;

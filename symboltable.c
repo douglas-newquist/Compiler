@@ -190,6 +190,7 @@ Symbol *add_symbol(Symbol *symbol)
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
 		error_at(symbol->token, SEMATIC_ERROR, "Redefined symbol");
 
+	symbol->offset = scope->symbols->count;
 	hashtable_add(scope->symbols, symbol);
 
 	return symbol;

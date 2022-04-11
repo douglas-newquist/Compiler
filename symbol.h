@@ -23,6 +23,7 @@
 Symbol
 {
 	int id;
+	int offset;
 	char *text;
 	Type *type;
 	int attributes;

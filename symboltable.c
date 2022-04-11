@@ -405,6 +405,9 @@ void check_table(SymbolTable *scope, Tree *tree)
 			if (symbol->token->id > tree->token->id)
 				error_at(tree->token, SEMATIC_ERROR, "Variable used before definition");
 		}
+
+		if (symbol->type == NULL)
+			error_at(tree->token, SEMATIC_ERROR, "ID has no type");
 		return;
 
 	case R_ACCESS3:

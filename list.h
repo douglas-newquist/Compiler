@@ -33,4 +33,9 @@ List *create_list();
  */
 List *list_add(List *list, void *value);
 
+/**
+ * @brief Appends list 2 the end of list 1
+ */
+List *list_merge(List *l1, List *l2);
+
 #endif

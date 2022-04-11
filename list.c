@@ -41,3 +41,18 @@ List *list_add(List *list, void *value)
 
 	return list;
 }
+
+List *list_merge(List *l1, List *l2)
+{
+	if (l1 == NULL)
+		return l2;
+
+	if (l2 == NULL)
+		return l1;
+
+	l1->size += l2->size;
+	l1->tail->next = l2->head;
+	l1->tail = l2->tail;
+
+	return l1;
+}

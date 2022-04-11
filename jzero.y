@@ -58,6 +58,7 @@
 %type <tree> ArgDefs
 %type <tree> Args
 %type <tree> ArrayAccess
+%type <tree> ArrayAssign
 %type <tree> Assignment
 %type <tree> Block
 %type <tree> BreakExp
@@ -201,8 +202,9 @@ Statement	: ';' { $$=EMPTY_TREE; }
 			| CONTINUE ';'
 			| ExpStatement ';';
 
-Assignment	: Name '=' Exp { $$=tree("Assign", R_ASSIGN, $2, 2, $1, $3); }
-			| ArrayAccess '=' Exp { $$=tree("Assign", R_ASSIGN, $2, 2, $1, $2); }
+Assignment: Name '=' Exp { $$=tree("Assign", R_ASSIGN1, $2, 2, $1, $3); }
+
+ArrayAssign: ArrayAccess '=' Exp ';' { $$=tree("Assign", R_ASSIGN2, $2, 2, $1, $2); }
 
 ExpStatement: MethodCall
 			| Type VarDecl { $$=tree("Variable", R_DEFINE4, NULL, 2, $1, $2); }

@@ -513,7 +513,8 @@ void check_table(SymbolTable *scope, Tree *tree)
 		}
 		break;
 
-	case R_ASSIGN:
+	case R_ASSIGN1:
+	case R_ASSIGN2:
 	case R_OP2_ADD:
 	case R_OP2_AND:
 	case R_OP2_DIV:

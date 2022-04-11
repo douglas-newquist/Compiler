@@ -597,7 +597,8 @@ int check_types(int op, int argc, Type *t1, Type *t2)
 		error(SEMATIC_ERROR, error_message("Invalid operation on %s", type_name(t1)));
 		return FALSE;
 
-	case R_ASSIGN:
+	case R_ASSIGN1:
+	case R_ASSIGN2:
 	case R_DEFINE3:
 		if (type_matches(t1, create_type(TYPE_NULL)))
 			error(SEMATIC_ERROR, "Cannot assign to null type");

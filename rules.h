@@ -13,7 +13,8 @@ enum RULES
 	R_ARG_GROUP,		 // Exp, ..., Exp
 	R_ARRAY1,			 // Type[]
 	R_ARRAY2,			 // new Type[Exp]
-	R_ASSIGN,			 // Name = Exp
+	R_ASSIGN1,			 // Name = Exp
+	R_ASSIGN2,			 // Name[i] = Exp
 	R_BINARY_OP,		 // Exp op Exp
 	R_BREAK1,			 // Break
 	R_BREAK2,			 // Break ID

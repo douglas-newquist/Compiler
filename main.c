@@ -7,6 +7,7 @@
 #include <string.h>
 #include "errors.h"
 #include "flags.h"
+#include "imcode.h"
 #include "jzero.tab.h"
 #include "main.h"
 #include "mmemory.h"
@@ -72,6 +73,9 @@ void post_read()
 		print_dot_symbols(table);
 	else if (has_flags(options, SYMBOLS_FLAG))
 		print_symbols(table);
+
+	List *code = generate_code(table, program);
+	print_code(code);
 }
 
 /*

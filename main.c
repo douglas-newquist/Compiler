@@ -2,6 +2,7 @@
 	Douglas Newquist
 */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,7 +75,7 @@ void post_read()
 	else if (has_flags(options, SYMBOLS_FLAG))
 		print_symbols(table);
 
-	List *code = generate_code(table, program);
+	ICode *code = generate_code(table, program);
 	print_code(code);
 }
 
@@ -232,4 +233,14 @@ void set_pos(Token *token)
 	yytext = token->text;
 	line = token->line;
 	column = token->column;
+}
+
+char *message(char *pattern, ...)
+{
+	char *message = alloc(sizeof(char) * BUFFER_SIZE);
+	va_list args;
+	va_start(args, pattern);
+	vsprintf(message, pattern, args);
+	va_end(args);
+	return message;
 }

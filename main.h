@@ -18,6 +18,7 @@ int yydebug;
 #define FALSE 0
 
 #define FILE_LENGTH 256
+#define BUFFER_SIZE 4096
 
 int line, column;
 char current_file[FILE_LENGTH];
@@ -51,4 +52,6 @@ void whitespace();
 int token(int category);
 
 void set_pos(Token *token);
+
+char *message(char *pattern, ...);
 #endif

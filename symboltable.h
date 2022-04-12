@@ -17,6 +17,7 @@ SymbolTable
 	int id;
 	// Name of this table
 	char *name;
+	int region;
 	// Type of this table
 	int type;
 	SymbolTable *parent;

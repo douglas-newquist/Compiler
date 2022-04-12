@@ -11,6 +11,8 @@
 	if (list != NULL)            \
 		for (ListElement *name = list->head; name != NULL; name = name->next)
 
+#define LIST_ADD(list, element) list = list_add(list, element)
+
 ListElement
 {
 	void *value;
@@ -37,5 +39,4 @@ List *list_add(List *list, void *value);
  * @brief Appends list 2 the end of list 1
  */
 List *list_merge(List *l1, List *l2);
-
 #endif

@@ -5,11 +5,19 @@
 #ifndef _IMCODE
 #define _IMCODE
 
+#define ICode struct icode
+
 #include "list.h"
 #include "symboltable.h"
 #include "tree.h"
 
-List *generate_code(SymbolTable *scope, Tree *tree);
+ICode
+{
+	List *strings;
+	List *instructions;
+};
 
-void print_code(List *code);
+ICode *generate_code(SymbolTable *scope, Tree *tree);
+
+void print_code(ICode *code);
 #endif

@@ -63,6 +63,7 @@ SymbolTable *create_symboltable(SymbolTable *parent, char *name, int type)
 	SymbolTable *table = alloc(sizeof(SymbolTable));
 	table->id = next_id();
 	table->name = name;
+	table->region = RE_LOCAL;
 	table->type = type;
 	table->parent = parent;
 	table->symbols = create_hashtable(64, hash, equals);
@@ -190,7 +191,7 @@ Symbol *add_symbol(Symbol *symbol)
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
 		error_at(symbol->token, SEMATIC_ERROR, "Redefined symbol");
 
-	symbol->offset = scope->symbols->count;
+	symbol->address = create_address(scope->region, scope->symbols->count * 8);
 	hashtable_add(scope->symbols, symbol);
 
 	return symbol;
@@ -303,6 +304,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
 		enter_scope(symbol->text, TYPE_CLASS);
+		scope->region = RE_CLASS;
 		symbol->type->info.class.scope = scope;
 		scan_children(tree);
 		exit_scope();
@@ -720,6 +722,8 @@ SymbolTable *generate_symboltable(Tree *tree)
 	// Begin program scope
 	if (scope == NULL)
 		enter_scope("Global", S_Global);
+
+	scope->region = RE_GLOBAL;
 
 	populate_builtin();
 	populate_symboltable(tree);

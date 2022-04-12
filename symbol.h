@@ -7,6 +7,7 @@
 
 #define Symbol struct symbol
 
+#include "address.h"
 #include "type.h"
 #include "symboltable.h"
 #include "token.h"
@@ -23,7 +24,9 @@
 Symbol
 {
 	int id;
-	int offset;
+	Address *address;
+	char *start_label;
+	char *end_label;
 	char *text;
 	Type *type;
 	int attributes;

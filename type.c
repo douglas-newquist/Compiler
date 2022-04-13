@@ -189,7 +189,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_IF1:
 	case R_IF2:
 	case R_IF3:
-	case R_IF4:
 	case R_SWITCH:
 	case R_WHILE:
 		return create_type(TYPE_VOID);

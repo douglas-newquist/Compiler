@@ -15,7 +15,6 @@ enum RULES
 	R_ARRAY2,			 // new Type[Exp]
 	R_ASSIGN1,			 // Name = Exp
 	R_ASSIGN2,			 // Name[i] = Exp
-	R_BINARY_OP,		 // Exp op Exp
 	R_BREAK1,			 // Break
 	R_BREAK2,			 // Break ID
 	R_CALL1,			 // Name(R_ARG_GROUP)
@@ -35,7 +34,6 @@ enum RULES
 	R_IF1,				 // if (Exp) R_STATEMENT_GROUP
 	R_IF2,				 // R_IF1 else R_STATEMENT_GROUP
 	R_IF3,				 // (R_IF1 | R_IF3) else R_IF1
-	R_IF4,				 // R_IF3 else R_STATEMENT_GROUP
 	R_METHOD1,			 // Type ID(R_ARG_GROUP) R_STATEMENT_GROUP
 	R_METHOD2,			 // public ID(R_ARG_GROUP) R_STATEMENT_GROUP
 	R_NEW1,				 // new Type(R_ARG_GROUP)

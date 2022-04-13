@@ -247,7 +247,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_CLASS1:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		scope = symbol->type->info.class.scope;
-		add_instr(code, create_label(I_LABEL, symbol->start_label));
 		return populate_code(code, scope, tree->children[1]);
 
 	case R_DEFINE2:
@@ -385,8 +384,12 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return NULL;
 
 	case R_SWITCH:
+		prev_break = next_break;
+		next_break = message("break%d", i++);
 		// TODO
-		break;
+		add_instr(code, create_label(I_LABEL, next_break));
+		next_break = prev_break;
+		return NULL;
 
 	case R_VAR_GROUP:
 		// TODO

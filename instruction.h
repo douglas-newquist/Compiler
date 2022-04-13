@@ -13,23 +13,20 @@
 
 enum
 {
-	I_ADD = 5000,
+	I_ALLOC = 5000,
 	I_ASSIGN,
 	I_CALL,
 	I_DATA,
-	I_DIV,
 	I_JUMP_FALSE,
 	I_JUMP_IF,
 	I_JUMP_TRUE,
 	I_JUMP,
 	I_LABEL,
 	I_LOAD,
-	I_MULT,
 	I_PARAM,
 	I_REGION,
 	I_RETURN,
 	I_STORE,
-	I_SUB,
 };
 
 Instruction

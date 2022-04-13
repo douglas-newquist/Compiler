@@ -121,6 +121,21 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case STATIC:
 		break;
 
+	case R_ARRAY2:
+		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+		a2 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+		LIST_ADD(code->instructions,
+				 create_instruction(R_OP2_MULT,
+									a2,
+									populate_code(code, scope, tree->children[1]),
+									Const(BYTE_SIZE)));
+		LIST_ADD(code->instructions,
+				 create_instruction(I_ALLOC,
+									a1,
+									a2,
+									NULL));
+		return a1;
+
 	case R_ASSIGN1:
 		a1 = populate_code(code, scope, tree->children[0]);
 		a2 = populate_code(code, scope, tree->children[1]);

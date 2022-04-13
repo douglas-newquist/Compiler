@@ -32,6 +32,8 @@ char *instr_name(int instruction)
 {
 	switch (instruction)
 	{
+	case I_ALLOC:
+		return "ALLOC";
 	case I_ASSIGN:
 		return "ASSIGN";
 	case I_CALL:

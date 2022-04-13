@@ -78,17 +78,17 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return NULL;
 
 	case LITERAL_BOOL:
-		return Const(tree->token->bval);
+		return Literal(tree->token->bval);
 
 	case LITERAL_CHAR:
-		return Const(tree->token->cval);
+		return Literal(tree->token->cval);
 
 	case LITERAL_DOUBLE:
 		// TODO
 		break;
 
 	case LITERAL_INT:
-		return Const(tree->token->ival);
+		return Literal(tree->token->ival);
 
 	case LITERAL_STRING:
 		foreach_list(string, code->strings)
@@ -101,7 +101,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
 
 	case LITERAL_NULL:
-		return Const(0);
+		return Literal(0);
 
 	case ID:
 	case R_ACCESS1:
@@ -114,7 +114,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			symbol = tree->token->symbol;
 			if (symbol->attributes & ATR_VARIABLE)
 			{
-				i1 = create_instruction(I_ASSIGN, symbol->address, Const(0), NULL);
+				i1 = create_instruction(I_ASSIGN, symbol->address, Literal(0), NULL);
 				add_instr(code, i1);
 			}
 		}
@@ -146,7 +146,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		add_instr(code, create_instruction(R_OP2_MULT,
 										   a2,
 										   populate_code(code, scope, tree->children[1]),
-										   Const(BYTE_SIZE)));
+										   Literal(BYTE_SIZE)));
 		add_instr(code, create_instruction(I_ALLOC,
 										   a1,
 										   a2,
@@ -202,7 +202,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			a1 = create_label_address(symbol->start_label);
 		}
 
-		a2 = Const(symbol->type->info.method.count);
+		a2 = Literal(symbol->type->info.method.count);
 		a3 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
 		add_instr(code, create_instruction(I_CALL, a1, a2, a3));
 		return a3;

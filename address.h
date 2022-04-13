@@ -36,7 +36,8 @@ Address
  */
 Address *create_address(int region, int offset);
 
-#define Const(x) create_address(RE_IMMED, x)
+#define Literal(x) create_address(RE_IMMED, x)
+#define Const(x) create_address(RE_CONST, x)
 
 Address *create_label_address(char *name);
 

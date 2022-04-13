@@ -104,7 +104,9 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return create_address(RE_CONST, 0);
 
 	case ID:
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+	case R_ACCESS2:
+	case R_ACCESS1:
+		symbol = lookup_name(scope, tree, SCOPE_SYMBOLS);
 
 		if (tree->token->symbol)
 		{
@@ -118,14 +120,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 
 		return symbol->address;
 
-	case R_ACCESS1:
-		// TODO
-		break;
-
-	case R_ACCESS2:
-		// TODO
-		break;
-
 	case R_ACCESS3:
 		// TODO
 		break;
@@ -135,7 +129,11 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_ARG_GROUP:
-		generate_children_code(code, scope, tree);
+		for (j = tree->count - 1; j > -1; j--)
+			add_instr(code, create_instruction(I_PARAM,
+											   populate_code(code, scope, tree->children[j]),
+											   NULL,
+											   NULL));
 		break;
 
 	case R_ARRAY1:
@@ -144,16 +142,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_ARRAY2:
 		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
 		a2 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
-		add_instr(code,
-				  create_instruction(R_OP2_MULT,
-									 a2,
-									 populate_code(code, scope, tree->children[1]),
-									 Const(BYTE_SIZE)));
-		add_instr(code,
-				  create_instruction(I_ALLOC,
-									 a1,
-									 a2,
-									 NULL));
+		add_instr(code, create_instruction(R_OP2_MULT,
+										   a2,
+										   populate_code(code, scope, tree->children[1]),
+										   Const(BYTE_SIZE)));
+		add_instr(code, create_instruction(I_ALLOC,
+										   a1,
+										   a2,
+										   NULL));
 		return a1;
 
 	case R_ASSIGN1:
@@ -182,20 +178,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			break;
 
 		case R_ARG_GROUP:
-			for (j = tree->children[1]->count - 1; j > -1; j--)
-				add_instr(code,
-						  create_instruction(I_PARAM,
-											 populate_code(code, scope, tree->children[1]->children[j]),
-											 NULL,
-											 NULL));
+			populate_code(code, scope, tree->children[1]);
 			break;
 
 		default:
-			add_instr(code,
-					  create_instruction(I_PARAM,
-										 populate_code(code, scope, tree->children[1]),
-										 NULL,
-										 NULL));
+			add_instr(code, create_instruction(I_PARAM,
+											   populate_code(code, scope, tree->children[1]),
+											   NULL,
+											   NULL));
 			break;
 		}
 
@@ -227,7 +217,28 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_CLASS_GROUP:
-		generate_children_code(code, scope, tree);
+		code_region = RE_GLOBAL;
+		for (j = 0; j < tree->count; j++)
+		{
+			switch (tree->children[j]->rule)
+			{
+			case R_FIELD:
+				populate_code(code, scope, tree->children[j]);
+				break;
+			}
+		}
+
+		code_region = RE_LOCAL;
+		for (j = 0; j < tree->count; j++)
+		{
+			switch (tree->children[j]->rule)
+			{
+			case R_METHOD1:
+			case R_METHOD2:
+				populate_code(code, scope, tree->children[j]);
+				break;
+			}
+		}
 		break;
 
 	case R_CLASS1:
@@ -262,9 +273,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_FIELD:
-		code_region = RE_GLOBAL;
 		populate_code(code, scope, tree->children[3]);
-		code_region = RE_LOCAL;
 		break;
 
 	case R_FOR:

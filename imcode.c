@@ -16,6 +16,10 @@
 int i = 0;
 int has_main = FALSE;
 int offset = 0;
+// Stores the label of the next continue point
+char *next_continue = NULL;
+// Stores the label of the next break point
+char *next_break = NULL;
 
 Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree);
 
@@ -40,6 +44,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	Symbol *symbol = NULL;
 	Instruction *i1, *i2;
 	Address *a1 = NULL, *a2 = NULL, *a3 = NULL;
+	// Previous continue/break
+	char *prev_contine = NULL, *prev_break = NULL;
 	int j = 0;
 
 	set_pos(find_nearest(tree));
@@ -136,6 +142,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		LIST_ADD(code->instructions, create_instruction(I_ASSIGN, a1, a2, a3));
 		break;
 
+	case R_BREAK1:
+	case R_BREAK2:
+		if (next_break == NULL)
+			error(SEMATIC_ERROR, "Cannot break here");
+		LIST_ADD(code->instructions,
+				 create_instruction(I_JUMP, create_label_address(next_break), NULL, NULL));
+		break;
+
 	case R_CALL1:
 		symbol = lookup_name(scope, tree->children[0], SCOPE_SYMBOLS);
 		switch (tree->children[1]->rule)
@@ -175,6 +189,13 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		a3 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
 		LIST_ADD(code->instructions, create_instruction(I_CALL, a1, a2, a3));
 		return a3;
+
+	case CONTINUE:
+		if (next_continue == NULL)
+			error(SEMATIC_ERROR, "Cannot continue here");
+		LIST_ADD(code->instructions,
+				 create_instruction(I_JUMP, create_label_address(next_continue), NULL, NULL));
+		break;
 
 	case R_DEFINE2:
 		generate_children_code(code, scope, tree);
@@ -228,6 +249,10 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_FOR:
+		prev_break = next_break;
+		prev_contine = next_continue;
+		next_continue = message("continue%d", i++);
+		next_break = message("break%d", i++);
 		populate_code(code, scope, tree->children[0]);
 		i1 = create_label(I_LABEL, message("loop_body%d", i++));
 		i2 = create_label(I_LABEL, message("loop_if%d", i - 1));
@@ -238,6 +263,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 									NULL));
 		LIST_ADD(code->instructions, i1);
 		populate_code(code, scope, tree->children[3]);
+		LIST_ADD(code->instructions, create_label(I_LABEL, next_continue));
 		populate_code(code, scope, tree->children[2]);
 		LIST_ADD(code->instructions, i2);
 		populate_code(code, scope, tree->children[1]);
@@ -246,11 +272,18 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 									create_label_address(i1->extra.label.name),
 									populate_code(code, scope, tree->children[1]),
 									NULL));
+		LIST_ADD(code->instructions, create_label(I_LABEL, next_break));
+		next_break = prev_break;
+		next_continue = prev_contine;
 		break;
 
 	case R_WHILE:
+		prev_break = next_break;
+		prev_contine = next_continue;
 		i1 = create_label(I_LABEL, message("while_body%d", i++));
-		i2 = create_label(I_LABEL, message("while_if%d", i - 1));
+		next_continue = message("while_if%d", i - 1);
+		i2 = create_label(I_LABEL, next_continue);
+		next_break = message("break%d", i++);
 		LIST_ADD(code->instructions,
 				 create_instruction(I_JUMP,
 									create_label_address(i2->extra.label.name),
@@ -263,6 +296,9 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 									create_label_address(i1->extra.label.name),
 									populate_code(code, scope, tree->children[0]),
 									NULL));
+		LIST_ADD(code->instructions, create_label(I_LABEL, next_break));
+		next_break = prev_break;
+		next_continue = prev_contine;
 		break;
 
 	case R_CASE_GROUP:

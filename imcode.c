@@ -219,8 +219,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_IF1:
-		a1 = populate_code(code, scope, tree->children[0]);
-		a2 = create_label_address(message("%d", i++));
+		a1 = create_label_address(message("%d", i++));
+		a2 = populate_code(code, scope, tree->children[0]);
 		i1 = create_instruction(I_JUMP_FALSE, a1, a2, NULL);
 		LIST_ADD(code->instructions, i1);
 		populate_code(code, scope, tree->children[1]);
@@ -230,7 +230,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_FOR:
 		populate_code(code, scope, tree->children[0]);
 		i1 = create_label(I_LABEL, message("loop_body%d", i++));
-		i2 = create_label(I_LABEL, message("loop_if%d", i++));
+		i2 = create_label(I_LABEL, message("loop_if%d", i - 1));
 		LIST_ADD(code->instructions,
 				 create_instruction(I_JUMP,
 									create_label_address(i2->extra.label.name),
@@ -243,8 +243,25 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[1]);
 		LIST_ADD(code->instructions,
 				 create_instruction(I_JUMP_TRUE,
-									populate_code(code, scope, tree->children[1]),
 									create_label_address(i1->extra.label.name),
+									populate_code(code, scope, tree->children[1]),
+									NULL));
+		break;
+
+	case R_WHILE:
+		i1 = create_label(I_LABEL, message("while_body%d", i++));
+		i2 = create_label(I_LABEL, message("while_if%d", i - 1));
+		LIST_ADD(code->instructions,
+				 create_instruction(I_JUMP,
+									create_label_address(i2->extra.label.name),
+									NULL, NULL));
+		LIST_ADD(code->instructions, i1);
+		populate_code(code, scope, tree->children[1]);
+		LIST_ADD(code->instructions, i2);
+		LIST_ADD(code->instructions,
+				 create_instruction(I_JUMP_TRUE,
+									create_label_address(i1->extra.label.name),
+									populate_code(code, scope, tree->children[0]),
 									NULL));
 		break;
 

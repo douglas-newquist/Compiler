@@ -78,17 +78,17 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return NULL;
 
 	case LITERAL_BOOL:
-		return create_address(RE_CONST, tree->token->bval);
+		return Const(tree->token->bval);
 
 	case LITERAL_CHAR:
-		return create_address(RE_CONST, tree->token->cval);
+		return Const(tree->token->cval);
 
 	case LITERAL_DOUBLE:
 		// TODO
 		break;
 
 	case LITERAL_INT:
-		return create_address(RE_CONST, tree->token->ival);
+		return Const(tree->token->ival);
 
 	case LITERAL_STRING:
 		foreach_list(string, code->strings)
@@ -101,7 +101,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
 
 	case LITERAL_NULL:
-		return create_address(RE_CONST, 0);
+		return Const(0);
 
 	case ID:
 	case R_ACCESS1:
@@ -202,7 +202,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			a1 = create_label_address(symbol->start_label);
 		}
 
-		a2 = create_address(RE_CONST, symbol->type->info.method.count);
+		a2 = Const(symbol->type->info.method.count);
 		a3 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
 		add_instr(code, create_instruction(I_CALL, a1, a2, a3));
 		return a3;

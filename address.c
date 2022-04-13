@@ -37,6 +37,9 @@ char *region_name(int region)
 	case RE_CONST:
 		return "const";
 
+	case RE_IMMED:
+		return "literal";
+
 	case RE_LOCAL:
 		return "local";
 

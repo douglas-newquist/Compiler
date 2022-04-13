@@ -28,7 +28,7 @@
 "!="            return token(NOT_EQUAL);
 "<"             return token('<');
 "<="            return token(LESS_EQUAL);
-">"             return token('<');
+">"             return token('>');
 ">="            return token(GREATER_EQUAL);
 
 "~"             error(LEX_ERROR, "Illegal operator");

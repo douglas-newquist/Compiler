@@ -86,13 +86,9 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return create_address(RE_CONST, 0);
 
 	case R_OP1_DECREMENT:
-		a1 = populate_code(code, scope, tree->children[0]);
-		LIST_ADD(code->instructions, create_instruction(R_OP2_SUB, a1, a1, create_address(RE_CONST, 1)));
-		return a1;
-
 	case R_OP1_INCREMENT:
 		a1 = populate_code(code, scope, tree->children[0]);
-		LIST_ADD(code->instructions, create_instruction(R_OP2_ADD, a1, a1, create_address(RE_CONST, 1)));
+		LIST_ADD(code->instructions, create_instruction(tree->rule, a1, NULL, NULL));
 		return a1;
 
 	case R_OP2_ADD:
@@ -116,9 +112,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		LIST_ADD(code->instructions, create_instruction(tree->rule, a1, a2, a3));
 		return a1;
 
-	case PUBLIC:
 	case R_EMPTY:
-	case STATIC:
 		break;
 
 	case R_ARRAY2:
@@ -207,7 +201,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		scope = symbol->type->info.class.scope;
 		LIST_ADD(code->instructions, create_label(I_LABEL, symbol->start_label));
-		generate_children_code(code, scope, tree);
+		populate_code(code, scope, tree->children[1]);
 		break;
 
 	case R_METHOD1:

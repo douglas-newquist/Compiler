@@ -53,6 +53,10 @@ char *instr_name(int instruction)
 	case I_RETURN:
 		return "RETURN";
 
+	case R_OP1_DECREMENT:
+		return "DEC";
+	case R_OP1_INCREMENT:
+		return "INC";
 	case R_OP1_NEGATE:
 		return "NEGATE";
 	case R_OP1_NOT:
@@ -68,11 +72,11 @@ char *instr_name(int instruction)
 	case R_OP2_GREATER_EQUAL:
 		return "GEQ";
 	case R_OP2_GREATER:
-		return "GT";
+		return "GREATER";
 	case R_OP2_LESS_EQUAL:
 		return "LEQ";
 	case R_OP2_LESS:
-		return "LT";
+		return "LESS";
 	case R_OP2_MOD:
 		return "MOD";
 	case R_OP2_MULT:

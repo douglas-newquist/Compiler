@@ -255,9 +255,15 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_IF2:
-		next_if = message("%d", i++);
-		generate_children_code(code, scope, tree);
-		LIST_ADD(code->instructions, create_label(I_LABEL, next_if));
+	case R_IF3:
+		if (next_if)
+			generate_children_code(code, scope, tree);
+		else
+		{
+			next_if = message("%d", i++);
+			generate_children_code(code, scope, tree);
+			LIST_ADD(code->instructions, create_label(I_LABEL, next_if));
+		}
 		break;
 
 	case R_FOR:

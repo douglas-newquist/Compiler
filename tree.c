@@ -243,3 +243,25 @@ Tree *group(char *message, int rule, Tree *t1, Tree *t2)
 
 	return t;
 }
+
+Token *find_nearest(Tree *tree)
+{
+	if (tree == NULL)
+		return NULL;
+
+	if (tree->token)
+		return tree->token;
+
+	if (tree->children == NULL)
+		return NULL;
+
+	Token *token;
+	for (int i = 0; i < tree->count; i++)
+	{
+		token = find_nearest(tree->children[0]);
+		if (token != NULL)
+			return token;
+	}
+
+	return NULL;
+}

@@ -233,6 +233,9 @@ int token(int category)
 
 void set_pos(Token *token)
 {
+	if (token == NULL)
+		return;
+
 	strcpy(current_file, token->filename);
 	yytext = token->text;
 	line = token->line;

@@ -143,8 +143,7 @@ Symbol *lookup_name(SymbolTable *scope, Tree *name, int mode)
 
 	Symbol *symbol = NULL;
 
-	if (name->token)
-		set_pos(name->token);
+	set_pos(find_nearest(name));
 
 	switch (name->rule)
 	{
@@ -229,6 +228,8 @@ void define_variables(Tree *tree, Type *type)
 {
 	Symbol *symbol;
 
+	set_pos(find_nearest(tree));
+
 	switch (tree->rule)
 	{
 	case ID:
@@ -293,8 +294,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 	Symbol *symbol = NULL;
 	Type *type = NULL;
 
-	if (tree->token)
-		set_pos(tree->token);
+	set_pos(find_nearest(tree));
 
 	switch (tree->rule)
 	{
@@ -386,8 +386,7 @@ void check_table(SymbolTable *scope, Tree *tree)
 	Type *type, *t2;
 	char *message;
 
-	if (tree->token)
-		set_pos(tree->token);
+	set_pos(find_nearest(tree));
 
 	switch (tree->rule)
 	{
@@ -561,6 +560,24 @@ void check_table(SymbolTable *scope, Tree *tree)
 									type_name(symbol->type->info.method.result),
 									t2);
 			error_at(tree->token, SEMATIC_ERROR, message);
+		}
+		break;
+
+	case R_STATEMENT_GROUP:
+		for (int i = 0; i < tree->count; i++)
+		{
+			switch (tree->children[i]->rule)
+			{
+			case R_RETURN1:
+			case R_RETURN2:
+			case R_BREAK1:
+			case R_BREAK2:
+				if (i != tree->count - 1)
+				{
+					error_at(find_nearest(tree->children[i + 1]), SEMATIC_ERROR, "Unreachable code");
+				}
+				break;
+			}
 		}
 		break;
 

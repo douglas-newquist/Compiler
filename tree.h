@@ -59,4 +59,8 @@ Tree *tree(char *message, int rule, Tree *leaf, int argc, ...);
  */
 Tree *group(char *message, int rule, Tree *t1, Tree *t2);
 
+/**
+ * @brief Finds the closest token from the root of the given tree
+ */
+Token *find_nearest(Tree *tree);
 #endif

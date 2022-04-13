@@ -136,7 +136,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			break;
 
 		case R_ARG_GROUP:
-			for (int i = tree->children[1]->count - 1; i > -1; i--)
+			for (i = tree->children[1]->count - 1; i > -1; i--)
 				LIST_ADD(code->instructions,
 						 create_instruction(I_PARAM,
 											populate_code(code, scope, tree->children[1]->children[i]),
@@ -241,8 +241,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_CASE_GROUP:
-	case R_CLASS_GROUP:
 	case R_STATEMENT_GROUP:
+	case R_CLASS_GROUP:
 		generate_children_code(code, scope, tree);
 		break;
 

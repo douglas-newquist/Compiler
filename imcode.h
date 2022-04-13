@@ -14,6 +14,7 @@
 ICode
 {
 	List *strings;
+	List *globals;
 	List *instructions;
 };
 

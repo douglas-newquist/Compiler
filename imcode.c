@@ -240,12 +240,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_IF1:
-		a1 = create_label_address(message("%d", i++));
-		a2 = populate_code(code, scope, tree->children[0]);
-		i1 = create_instruction(I_JUMP_FALSE, a1, a2, NULL);
-		LIST_ADD(code->instructions, i1);
+		i1 = create_label(I_LABEL, message("%d", i++));
+		LIST_ADD(code->instructions,
+				 create_instruction(I_JUMP_FALSE,
+									create_label_address(i1->extra.label.name),
+									populate_code(code, scope, tree->children[0]),
+									NULL));
 		populate_code(code, scope, tree->children[1]);
-		LIST_ADD(code->instructions, create_label(I_LABEL, a2->label));
+		LIST_ADD(code->instructions, i1);
 		break;
 
 	case R_FOR:

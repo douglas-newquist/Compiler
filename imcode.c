@@ -68,20 +68,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 
 	switch (tree->rule)
 	{
-	case ID:
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+	case R_EMPTY:
+		break;
 
-		if (tree->token->symbol)
-		{
-			symbol = tree->token->symbol;
-			if (symbol->attributes & ATR_VARIABLE)
-			{
-				i1 = create_instruction(I_ASSIGN, symbol->address, Const(0), NULL);
-				add_instr(code, i1);
-			}
-		}
-
-		return symbol->address;
+	case CONTINUE:
+		if (next_continue == NULL)
+			error(SEMATIC_ERROR, "Cannot continue here");
+		add_instr(code, create_instruction(I_JUMP, create_label_address(next_continue), NULL, NULL));
+		break;
 
 	case LITERAL_BOOL:
 		return create_address(RE_CONST, tree->token->bval);
@@ -109,34 +103,42 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case LITERAL_NULL:
 		return create_address(RE_CONST, 0);
 
-	case R_OP1_DECREMENT:
-	case R_OP1_INCREMENT:
-		a1 = populate_code(code, scope, tree->children[0]);
-		add_instr(code, create_instruction(tree->rule, a1, NULL, NULL));
-		return a1;
+	case ID:
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 
-	case R_OP2_ADD:
-	case R_OP2_AND:
-	case R_OP2_DIV:
-	case R_OP2_EQUALS:
-	case R_OP2_GREATER_EQUAL:
-	case R_OP2_GREATER:
-	case R_OP2_LESS_EQUAL:
-	case R_OP2_LESS:
-	case R_OP2_MOD:
-	case R_OP2_MULT:
-	case R_OP2_NOT_EQUAL:
-	case R_OP2_OR:
-	case R_OP2_SUB:
-		a3 = populate_code(code, scope, tree->children[1]);
-	case R_OP1_NEGATE:
-	case R_OP1_NOT:
-		a2 = populate_code(code, scope, tree->children[0]);
-		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
-		add_instr(code, create_instruction(tree->rule, a1, a2, a3));
-		return a1;
+		if (tree->token->symbol)
+		{
+			symbol = tree->token->symbol;
+			if (symbol->attributes & ATR_VARIABLE)
+			{
+				i1 = create_instruction(I_ASSIGN, symbol->address, Const(0), NULL);
+				add_instr(code, i1);
+			}
+		}
 
-	case R_EMPTY:
+		return symbol->address;
+
+	case R_ACCESS1:
+		// TODO
+		break;
+
+	case R_ACCESS2:
+		// TODO
+		break;
+
+	case R_ACCESS3:
+		// TODO
+		break;
+
+	case R_ARG_DEF_GROUP:
+		// TODO
+		break;
+
+	case R_ARG_GROUP:
+		generate_children_code(code, scope, tree);
+		break;
+
+	case R_ARRAY1:
 		break;
 
 	case R_ARRAY2:
@@ -158,6 +160,10 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		a1 = populate_code(code, scope, tree->children[0]);
 		a2 = populate_code(code, scope, tree->children[1]);
 		add_instr(code, create_instruction(I_ASSIGN, a1, a2, a3));
+		break;
+
+	case R_ASSIGN2:
+		// TODO
 		break;
 
 	case R_BREAK1:
@@ -208,10 +214,30 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		add_instr(code, create_instruction(I_CALL, a1, a2, a3));
 		return a3;
 
-	case CONTINUE:
-		if (next_continue == NULL)
-			error(SEMATIC_ERROR, "Cannot continue here");
-		add_instr(code, create_instruction(I_JUMP, create_label_address(next_continue), NULL, NULL));
+	case R_CALL2:
+		// TODO
+		break;
+
+	case R_CASE_GROUP:
+		generate_children_code(code, scope, tree);
+		break;
+
+	case R_CASE:
+		// TODO
+		break;
+
+	case R_CLASS_GROUP:
+		generate_children_code(code, scope, tree);
+		break;
+
+	case R_CLASS1:
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		scope = symbol->type->info.class.scope;
+		add_instr(code, create_label(I_LABEL, symbol->start_label));
+		populate_code(code, scope, tree->children[1]);
+		break;
+
+	case R_DEFINE1:
 		break;
 
 	case R_DEFINE2:
@@ -231,57 +257,14 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[1]);
 		break;
 
+	case R_EXP_GROUP:
+		// TODO
+		break;
+
 	case R_FIELD:
 		code_region = RE_GLOBAL;
 		populate_code(code, scope, tree->children[3]);
 		code_region = RE_LOCAL;
-		break;
-
-	case R_CLASS1:
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
-		scope = symbol->type->info.class.scope;
-		add_instr(code, create_label(I_LABEL, symbol->start_label));
-		populate_code(code, scope, tree->children[1]);
-		break;
-
-	case R_METHOD1:
-		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
-		scope = symbol->type->info.method.scope;
-		offset = scope->symbols->count;
-		if (strcmp(tree->token->text, "main") == 0)
-		{
-			has_main = TRUE;
-			add_instr(code, create_label(I_LABEL, "start"));
-		}
-		add_instr(code, create_label(I_LABEL, symbol->start_label));
-		populate_code(code, scope, tree->children[4]);
-		add_instr(code, create_instruction(I_RETURN, NULL, NULL, NULL));
-		break;
-
-	case R_IF1:
-		i1 = create_label(I_LABEL, message("%d", i++));
-		add_instr(code,
-				  create_instruction(I_JUMP_FALSE,
-									 create_label_address(i1->extra.label.name),
-									 populate_code(code, scope, tree->children[0]),
-									 NULL));
-		populate_code(code, scope, tree->children[1]);
-		if (next_if)
-			add_instr(code,
-					  create_instruction(I_JUMP, create_label_address(next_if), NULL, NULL));
-		add_instr(code, i1);
-		break;
-
-	case R_IF2:
-	case R_IF3:
-		if (next_if)
-			generate_children_code(code, scope, tree);
-		else
-		{
-			next_if = message("%d", i++);
-			generate_children_code(code, scope, tree);
-			add_instr(code, create_label(I_LABEL, next_if));
-		}
 		break;
 
 	case R_FOR:
@@ -313,6 +296,95 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		next_continue = prev_contine;
 		break;
 
+	case R_IF1:
+		i1 = create_label(I_LABEL, message("%d", i++));
+		add_instr(code,
+				  create_instruction(I_JUMP_FALSE,
+									 create_label_address(i1->extra.label.name),
+									 populate_code(code, scope, tree->children[0]),
+									 NULL));
+		populate_code(code, scope, tree->children[1]);
+		if (next_if)
+			add_instr(code,
+					  create_instruction(I_JUMP, create_label_address(next_if), NULL, NULL));
+		add_instr(code, i1);
+		break;
+
+	case R_IF2:
+	case R_IF3:
+		if (next_if)
+			generate_children_code(code, scope, tree);
+		else
+		{
+			next_if = message("%d", i++);
+			generate_children_code(code, scope, tree);
+			add_instr(code, create_label(I_LABEL, next_if));
+		}
+		break;
+
+	case R_METHOD1:
+		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
+		scope = symbol->type->info.method.scope;
+		offset = scope->symbols->count;
+		if (strcmp(tree->token->text, "main") == 0)
+		{
+			has_main = TRUE;
+			add_instr(code, create_label(I_LABEL, "start"));
+		}
+		add_instr(code, create_label(I_LABEL, symbol->start_label));
+		populate_code(code, scope, tree->children[4]);
+		add_instr(code, create_instruction(I_RETURN, NULL, NULL, NULL));
+		break;
+
+	case R_METHOD2:
+		// TODO
+		break;
+
+	case R_OP1_DECREMENT:
+	case R_OP1_INCREMENT:
+		a1 = populate_code(code, scope, tree->children[0]);
+		add_instr(code, create_instruction(tree->rule, a1, NULL, NULL));
+		return a1;
+
+	case R_OP2_ADD:
+	case R_OP2_AND:
+	case R_OP2_DIV:
+	case R_OP2_EQUALS:
+	case R_OP2_GREATER_EQUAL:
+	case R_OP2_GREATER:
+	case R_OP2_LESS_EQUAL:
+	case R_OP2_LESS:
+	case R_OP2_MOD:
+	case R_OP2_MULT:
+	case R_OP2_NOT_EQUAL:
+	case R_OP2_OR:
+	case R_OP2_SUB:
+		a3 = populate_code(code, scope, tree->children[1]);
+	case R_OP1_NEGATE:
+	case R_OP1_NOT:
+		a2 = populate_code(code, scope, tree->children[0]);
+		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+		add_instr(code, create_instruction(tree->rule, a1, a2, a3));
+		return a1;
+
+	case R_RETURN2:
+		a1 = populate_code(code, scope, tree->children[0]);
+	case R_RETURN1:
+		add_instr(code, create_instruction(I_RETURN, a1, NULL, NULL));
+		break;
+
+	case R_STATEMENT_GROUP:
+		generate_children_code(code, scope, tree);
+		break;
+
+	case R_SWITCH:
+		// TODO
+		break;
+
+	case R_VAR_GROUP:
+		// TODO
+		break;
+
 	case R_WHILE:
 		prev_break = next_break;
 		prev_contine = next_continue;
@@ -337,18 +409,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		next_continue = prev_contine;
 		break;
 
-	case R_CASE_GROUP:
-	case R_STATEMENT_GROUP:
-	case R_CLASS_GROUP:
-		generate_children_code(code, scope, tree);
-		break;
-
-	case R_RETURN2:
-		a1 = populate_code(code, scope, tree->children[0]);
-	case R_RETURN1:
-		add_instr(code, create_instruction(I_RETURN, a1, NULL, NULL));
-		break;
-
 	default:
 		error(SEMATIC_ERROR, message("Undefined code generation rule %d", tree->rule));
 		break;
@@ -363,6 +423,7 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 
 	ICode *code = alloc(sizeof(ICode));
 	code->strings = NULL;
+	code->globals = NULL;
 	code->instructions = NULL;
 
 	add_instr(code, create_instruction(I_JUMP, create_label_address("start"), NULL, NULL));

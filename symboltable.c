@@ -758,5 +758,9 @@ SymbolTable *generate_symboltable(Tree *tree)
 
 	check_table(table, tree);
 
+#ifdef DEBUG
+	printf("Symbol table generation done\n");
+#endif
+
 	return table;
 }

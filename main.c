@@ -93,6 +93,10 @@ void read_yyin()
 	if (yyparse() != 0)
 		error(SYNTAX_ERROR, "Invalid syntax");
 
+#ifdef DEBUG
+	printf("Tree generation done\n");
+#endif
+
 	post_read();
 }
 

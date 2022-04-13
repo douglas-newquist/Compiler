@@ -40,7 +40,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	Symbol *symbol = NULL;
 	Instruction *i1, *i2;
 	Address *a1 = NULL, *a2 = NULL, *a3 = NULL;
-	int i = 0;
+	int j = 0;
 
 	set_pos(find_nearest(tree));
 
@@ -76,8 +76,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		foreach_list(string, code->strings)
 		{
 			if (strcmp((char *)string->value, tree->token->sval) == 0)
-				return create_address(RE_STRINGS, i * BYTE_SIZE);
-			i++;
+				return create_address(RE_STRINGS, j * BYTE_SIZE);
+			j++;
 		}
 		LIST_ADD(code->strings, tree->token->sval);
 		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
@@ -144,10 +144,10 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			break;
 
 		case R_ARG_GROUP:
-			for (i = tree->children[1]->count - 1; i > -1; i--)
+			for (j = tree->children[1]->count - 1; j > -1; j--)
 				LIST_ADD(code->instructions,
 						 create_instruction(I_PARAM,
-											populate_code(code, scope, tree->children[1]->children[i]),
+											populate_code(code, scope, tree->children[1]->children[j]),
 											NULL,
 											NULL));
 			break;

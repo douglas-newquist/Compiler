@@ -20,6 +20,7 @@ int offset = 0;
 char *next_continue = NULL;
 // Stores the label of the next break point
 char *next_break = NULL;
+char *next_if = NULL;
 
 Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree);
 
@@ -247,7 +248,16 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 									populate_code(code, scope, tree->children[0]),
 									NULL));
 		populate_code(code, scope, tree->children[1]);
+		if (next_if)
+			LIST_ADD(code->instructions,
+					 create_instruction(I_JUMP, create_label_address(next_if), NULL, NULL));
 		LIST_ADD(code->instructions, i1);
+		break;
+
+	case R_IF2:
+		next_if = message("%d", i++);
+		generate_children_code(code, scope, tree);
+		LIST_ADD(code->instructions, create_label(I_LABEL, next_if));
 		break;
 
 	case R_FOR:

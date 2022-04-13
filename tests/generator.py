@@ -258,7 +258,7 @@ patterns = {
                                      "int i"]),
                            ";",
                            Optional(["true",
-                                     "args.length"]),
+                                     "i < 10"]),
                            ";",
                            Optional("i++"),
                            ")",

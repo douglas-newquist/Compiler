@@ -40,6 +40,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	Symbol *symbol = NULL;
 	Instruction *i1, *i2;
 	Address *a1 = NULL, *a2 = NULL, *a3 = NULL;
+	int i = 0;
 
 	if (tree->token)
 		set_pos(tree->token);
@@ -65,10 +66,20 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case LITERAL_CHAR:
 		return create_address(RE_CONST, tree->token->cval);
 
+	case LITERAL_DOUBLE:
+		// TODO
+		return NULL;
+
 	case LITERAL_INT:
 		return create_address(RE_CONST, tree->token->ival);
 
 	case LITERAL_STRING:
+		foreach_list(string, code->strings)
+		{
+			if (strcmp((char *)string->value, tree->token->sval) == 0)
+				return create_address(RE_STRINGS, i * BYTE_SIZE);
+			i++;
+		}
 		LIST_ADD(code->strings, tree->token->sval);
 		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
 
@@ -125,6 +136,12 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			break;
 
 		case R_ARG_GROUP:
+			for (int i = tree->children[1]->count - 1; i > -1; i--)
+				LIST_ADD(code->instructions,
+						 create_instruction(I_PARAM,
+											populate_code(code, scope, tree->children[1]->children[i]),
+											NULL,
+											NULL));
 			break;
 
 		default:
@@ -186,7 +203,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		if (strcmp(tree->token->text, "main") == 0)
 		{
 			has_main = TRUE;
-			LIST_ADD(code->instructions, create_label(I_LABEL, "start:"));
+			LIST_ADD(code->instructions, create_label(I_LABEL, "start"));
 		}
 		LIST_ADD(code->instructions, create_label(I_LABEL, symbol->start_label));
 		populate_code(code, scope, tree->children[4]);
@@ -195,7 +212,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 
 	case R_IF1:
 		a1 = populate_code(code, scope, tree->children[0]);
-		a2 = create_label_address(message("%d:", i++));
+		a2 = create_label_address(message("%d", i++));
 		i1 = create_instruction(I_JUMP_FALSE, a1, a2, NULL);
 		LIST_ADD(code->instructions, i1);
 		populate_code(code, scope, tree->children[1]);
@@ -204,8 +221,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 
 	case R_FOR:
 		populate_code(code, scope, tree->children[0]);
-		i1 = create_label(I_LABEL, message("loop_body%d:", i++));
-		i2 = create_label(I_LABEL, message("loop_if%d:", i++));
+		i1 = create_label(I_LABEL, message("loop_body%d", i++));
+		i2 = create_label(I_LABEL, message("loop_if%d", i++));
 		LIST_ADD(code->instructions,
 				 create_instruction(I_JUMP,
 									create_label_address(i2->extra.label.name),
@@ -251,7 +268,7 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 	code->strings = NULL;
 	code->instructions = NULL;
 
-	LIST_ADD(code->instructions, create_instruction(I_JUMP, create_label_address("start:"), NULL, NULL));
+	LIST_ADD(code->instructions, create_instruction(I_JUMP, create_label_address("start"), NULL, NULL));
 
 	populate_code(code, scope, tree);
 

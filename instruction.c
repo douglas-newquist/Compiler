@@ -41,7 +41,7 @@ char *instr_name(int instruction)
 	case I_JUMP_IF:
 		return "BIF";
 	case I_JUMP:
-		return "JUMP";
+		return "GOTO";
 	case I_JUMP_FALSE:
 		return "JUMPF";
 	case I_JUMP_TRUE:
@@ -89,27 +89,38 @@ char *instr_name(int instruction)
 
 void print_instruction(Instruction *instr)
 {
+	char *line;
+
 	switch (instr->code)
 	{
 	case I_LABEL:
 	case I_DATA:
 	case I_REGION:
-		printf("%s\n", instr->extra.label.name);
+		printf("%s:\n", instr->extra.label.name);
 		break;
 
 	default:
-#ifdef DEBUG
-		printf("    %s %s, %s, %s\n",
-			   instr_name(instr->code),
-			   address_name(instr->a1),
-			   address_name(instr->a2),
-			   address_name(instr->a3));
-#else
-		printf("    %s %s %s %s\n",
-			   instr_name(instr->code),
-			   address_name(instr->a1),
-			   address_name(instr->a2),
-			   address_name(instr->a3));
-#endif
+		line = alloc(sizeof(char) * 128);
+		sprintf(line, "    %s", instr_name(instr->code));
+
+		do
+		{
+			strcat(line, " ");
+		} while (strlen(line) < 12);
+		strcat(line, address_name(instr->a1));
+
+		/*	do
+		{
+		} while (strlen(line) < 24);*/
+		strcat(line, " ");
+		strcat(line, address_name(instr->a2));
+
+		/*		do
+		{
+		} while (strlen(line) < 36);*/
+		strcat(line, " ");
+		strcat(line, address_name(instr->a3));
+
+		printf("%s\n", line);
 	}
 }

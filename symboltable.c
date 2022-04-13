@@ -305,7 +305,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		if (name_matches(tree->token) == FALSE)
 			error_at(tree->token, SEMATIC_ERROR, "Class name does not match filename");
 		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
-		symbol->start_label = message("%s:", tree->token->text);
+		symbol->start_label = message("%s", tree->token->text);
 		tree->token->symbol = symbol;
 		symbol->scope = scope;
 		symbol->type->info.class.name = tree->token->text;
@@ -343,7 +343,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree));
-		symbol->start_label = message("%s_%s:", scope->name, tree->token->text);
+		symbol->start_label = message("%s_%s", scope->name, tree->token->text);
 		add_symbol(symbol);
 		symbol->type->info.method.scope = enter_scope(symbol->text, TYPE_METHOD);
 		scan_children(tree);

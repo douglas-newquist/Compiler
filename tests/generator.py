@@ -457,7 +457,14 @@ patterns = {
                                   "continue;",
                                   "break;"]),
                           prefix=main_prefix,
-                          suffix=main_suffix)
+                          suffix=main_suffix),
+        "switch": Wrap(Switch(Group([Optional("case 1: return;\n"),
+                                     Optional("case 3: break;\n"),
+                                     Optional("case 4: return;\n"),
+                                     Optional("default: break;\n")]),
+                              "case 1: break;\ncase 1: return;"),
+                       prefix=main_prefix + "int i = 4; switch(i){\n",
+                       suffix="\n}" + main_suffix)
     }
 }
 

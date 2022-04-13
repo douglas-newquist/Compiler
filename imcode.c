@@ -42,8 +42,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	Address *a1 = NULL, *a2 = NULL, *a3 = NULL;
 	int i = 0;
 
-	if (tree->token)
-		set_pos(tree->token);
+	set_pos(find_nearest(tree));
 
 	switch (tree->rule)
 	{

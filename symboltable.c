@@ -312,7 +312,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol->attributes |= ATR_PUBLIC;
 		add_symbol(symbol);
 		enter_scope(symbol->text, TYPE_CLASS);
-		scope->region = RE_CLASS;
+		scope->region = RE_GLOBAL;
 		symbol->type->info.class.scope = scope;
 		scan_children(tree);
 		exit_scope();
@@ -322,10 +322,10 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree->children[0]));
-		symbol->address = create_address(RE_PARAM, 0);
 		symbol->scope = scope;
 		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
+		symbol->address->region = RE_PARAM;
 		return NULL;
 
 	case R_FIELD:

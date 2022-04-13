@@ -34,9 +34,6 @@ char *region_name(int region)
 	case RE_GLOBAL:
 		return "global";
 
-	case RE_CLASS:
-		return "class";
-
 	case RE_CONST:
 		return "const";
 

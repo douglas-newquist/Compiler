@@ -17,7 +17,6 @@
 enum regions
 {
 	RE_GLOBAL = 4000,
-	RE_CLASS,
 	RE_CONST,
 	RE_IMMED,
 	RE_LOCAL,

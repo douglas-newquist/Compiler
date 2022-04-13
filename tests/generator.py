@@ -393,6 +393,22 @@ patterns = {
                      prefix=class_prefix +
                      "public static int method(int i, String s){return 33;}\npublic static void main(String[] args){\nint i; String s;\nmethod(",
                      suffix=");"+main_suffix),
+        "if": Wrap(Switch(None,
+                          ["if(3){}",
+                           "if(false){}else if(2){}",
+                           "if(false){}else if(false){}else if(3){}"]),
+                   prefix=main_prefix,
+                   suffix=main_suffix),
+        "for": Wrap(Switch(["return;", "break;", "continue;"],
+                           ["return 61;",
+                           Group(["return;", "int a;"])]),
+                    prefix=main_prefix + "for(int i=0;i<10;i++){",
+                    suffix="}" + main_suffix),
+        "while": Wrap(Switch(["return;", "break;", "continue;"],
+                             ["return 61;",
+                              Group(["return;", "int a;"])]),
+                      prefix=main_prefix + "while(true){",
+                      suffix="}" + main_suffix),
         "op": Wrap(Switch([ops2(["14", "'f'", "43.51d", '"tsLRlkxnQtkwmmQUwFLU"',
                                  "i", "d", "c", "s"],
                                 ["14", "'f'", "43.51d", '"aXCwxJWglaSaCqKR"',
@@ -435,7 +451,13 @@ patterns = {
                            ]),
                    prefix=main_prefix +
                    'int i = 64;\nchar c = \'O\';\ndouble d = 71.87d;\nString s = "CjxDkIN";\nint[] ints = null;\n\n',
-                   suffix=main_suffix)
+                   suffix=main_suffix),
+        "statement": Wrap(Switch(None,
+                                 ["return 60;",
+                                  "continue;",
+                                  "break;"]),
+                          prefix=main_prefix,
+                          suffix=main_suffix)
     }
 }
 

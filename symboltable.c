@@ -548,12 +548,16 @@ void check_table(SymbolTable *scope, Tree *tree)
 	case R_RETURN1:
 		symbol = lookup(scope->parent, scope->name, SCOPE_SYMBOLS);
 		if (!type_matches(symbol->type->info.method.result, create_type(TYPE_VOID)))
-			error_at(tree->token, SEMATIC_ERROR, "Cannot return a non-void value from a void method");
+			error(SEMATIC_ERROR, "Cannot return void from a non-void method");
 		break;
 
 	case R_RETURN2:
 		symbol = lookup(scope->parent, scope->name, SCOPE_SYMBOLS);
 		t2 = parse_type(scope, tree->children[0]);
+		if (t2 == NULL)
+			error(SEMATIC_ERROR, "Null pointer");
+		if (type_matches(symbol->type->info.method.result, create_type(TYPE_VOID)))
+			error(SEMATIC_ERROR, "Cannot return non-void from a void method");
 		if (!type_fuzzy_match(symbol->type->info.method.result, t2))
 		{
 			message = error_message("Return type mismatch %s and %s",

@@ -9,6 +9,8 @@
 
 #include "address.h"
 
+#define BYTE_SIZE 8
+
 enum
 {
 	I_ADD = 5000,
@@ -16,7 +18,9 @@ enum
 	I_CALL,
 	I_DATA,
 	I_DIV,
+	I_JUMP_FALSE,
 	I_JUMP_IF,
+	I_JUMP_TRUE,
 	I_JUMP,
 	I_LABEL,
 	I_LOAD,

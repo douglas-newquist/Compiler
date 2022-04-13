@@ -23,6 +23,7 @@ Token *create_token(int category)
 	token->category = category;
 	token->line = line;
 	token->column = column;
+	token->symbol = NULL;
 
 	token->filename = alloc(sizeof(char) * (strlen(current_file) + 1));
 	strcpy(token->filename, current_file);

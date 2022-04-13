@@ -22,6 +22,7 @@ enum regions
 	RE_IMMED,
 	RE_LOCAL,
 	RE_PARAM,
+	RE_STRINGS,
 	RE_STRUCT,
 };
 
@@ -35,6 +36,8 @@ Address
  * @brief Create an address in the given region and offset
  */
 Address *create_address(int region, int offset);
+
+#define Const(x) create_address(RE_CONST, x)
 
 Address *create_label_address(char *name);
 

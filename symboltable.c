@@ -234,6 +234,8 @@ void define_variables(Tree *tree, Type *type)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   type);
+
+		tree->token->symbol = symbol;
 		symbol->scope = scope;
 		symbol->attributes |= ATR_VARIABLE;
 		add_symbol(symbol);
@@ -243,6 +245,8 @@ void define_variables(Tree *tree, Type *type)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   type);
+
+		tree->token->symbol = symbol;
 		symbol->scope = scope;
 		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
@@ -255,6 +259,7 @@ void define_variables(Tree *tree, Type *type)
 								   tree->children[i]->token->text,
 								   type);
 
+			tree->children[i]->token->symbol = symbol;
 			symbol->scope = scope;
 			symbol->attributes |= ATR_VARIABLE;
 
@@ -299,6 +304,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		if (name_matches(tree->token) == FALSE)
 			error_at(tree->token, SEMATIC_ERROR, "Class name does not match filename");
 		symbol = simple_symbol(tree->token, NULL, TYPE_CLASS);
+		tree->token->symbol = symbol;
 		symbol->scope = scope;
 		symbol->type->info.class.name = tree->token->text;
 		symbol->attributes |= ATR_PUBLIC;
@@ -314,6 +320,7 @@ SymbolTable *populate_symboltable(Tree *tree)
 		symbol = create_symbol(tree->token,
 							   tree->token->text,
 							   parse_type(scope, tree->children[0]));
+		symbol->address = create_address(RE_PARAM, 0);
 		symbol->scope = scope;
 		symbol->attributes |= ATR_DEFINED | ATR_VARIABLE;
 		add_symbol(symbol);
@@ -534,6 +541,24 @@ void check_table(SymbolTable *scope, Tree *tree)
 		check_types(tree->rule, 2,
 					parse_type(scope, tree->children[0]),
 					parse_type(scope, tree->children[1]));
+		break;
+
+	case R_RETURN1:
+		symbol = lookup(scope->parent, scope->name, SCOPE_SYMBOLS);
+		if (!type_matches(symbol->type->info.method.result, create_type(TYPE_VOID)))
+			error_at(tree->token, SEMATIC_ERROR, "Cannot return a non-void value from a void method");
+		break;
+
+	case R_RETURN2:
+		symbol = lookup(scope->parent, scope->name, SCOPE_SYMBOLS);
+		t2 = parse_type(scope, tree->children[0]);
+		if (!type_fuzzy_match(symbol->type->info.method.result, t2))
+		{
+			error_message("Return type mismatch %s and %s",
+						  type_name(symbol->type->info.method.result),
+						  t2);
+			error_at(tree->token, SEMATIC_ERROR, message);
+		}
 		break;
 
 	case PUBLIC:

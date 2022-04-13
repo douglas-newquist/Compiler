@@ -7,6 +7,7 @@
 #define Token struct token
 
 #include "list.h"
+#include "symbol.h"
 
 List *tokens;
 
@@ -17,6 +18,8 @@ Token
 	char *text;
 	int line, column;
 	char *filename;
+
+	Symbol *symbol;
 
 	// Integer value
 	int ival;

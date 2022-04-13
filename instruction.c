@@ -8,6 +8,7 @@
 #include "instruction.h"
 #include "main.h"
 #include "mmemory.h"
+#include "rules.h"
 
 Instruction *create_instruction(int instruction, Address *a1, Address *a2, Address *a3)
 {
@@ -31,26 +32,56 @@ char *instr_name(int instruction)
 {
 	switch (instruction)
 	{
-	case I_ADD:
-		return "ADD";
 	case I_ASSIGN:
 		return "ASSIGN";
 	case I_CALL:
 		return "CALL";
 	case I_DATA:
 		return "DATA";
-	case I_DIV:
-		return "DIV";
 	case I_JUMP_IF:
 		return "BIF";
-	case I_MULT:
-		return "MULT";
+	case I_JUMP:
+		return "JUMP";
+	case I_JUMP_FALSE:
+		return "JUMPF";
+	case I_JUMP_TRUE:
+		return "JUMPT";
 	case I_PARAM:
 		return "PARAM";
 	case I_RETURN:
 		return "RETURN";
-	case I_SUB:
+
+	case R_OP1_NEGATE:
+		return "NEGATE";
+	case R_OP1_NOT:
+		return "LNOT";
+	case R_OP2_ADD:
+		return "ADD";
+	case R_OP2_AND:
+		return "LAND";
+	case R_OP2_DIV:
+		return "DIV";
+	case R_OP2_EQUALS:
+		return "EQ";
+	case R_OP2_GREATER_EQUAL:
+		return "GEQ";
+	case R_OP2_GREATER:
+		return "GT";
+	case R_OP2_LESS_EQUAL:
+		return "LEQ";
+	case R_OP2_LESS:
+		return "LT";
+	case R_OP2_MOD:
+		return "MOD";
+	case R_OP2_MULT:
+		return "MULT";
+	case R_OP2_NOT_EQUAL:
+		return "NEQ";
+	case R_OP2_OR:
+		return "LOR";
+	case R_OP2_SUB:
 		return "SUB";
+
 	default:
 		return message("%d", instruction);
 	}
@@ -67,10 +98,18 @@ void print_instruction(Instruction *instr)
 		break;
 
 	default:
+#ifdef DEBUG
+		printf("    %s %s, %s, %s\n",
+			   instr_name(instr->code),
+			   address_name(instr->a1),
+			   address_name(instr->a2),
+			   address_name(instr->a3));
+#else
 		printf("    %s %s %s %s\n",
 			   instr_name(instr->code),
 			   address_name(instr->a1),
 			   address_name(instr->a2),
 			   address_name(instr->a3));
+#endif
 	}
 }

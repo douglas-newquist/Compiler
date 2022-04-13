@@ -581,6 +581,14 @@ void check_table(SymbolTable *scope, Tree *tree)
 		}
 		break;
 
+	case R_IF1:
+	case R_IF2:
+	case R_IF3:
+	case R_IF4:
+		if (!type_matches(create_type(TYPE_BOOL), parse_type(scope, tree->children[0])))
+			error(SEMATIC_ERROR, "If condition must evaluate to a boolean");
+		break;
+
 	case PUBLIC:
 	case STATIC:
 	case VOID:

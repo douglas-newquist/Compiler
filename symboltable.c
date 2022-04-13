@@ -8,6 +8,7 @@
 #include "attributes.h"
 #include "errors.h"
 #include "id.h"
+#include "instruction.h"
 #include "jzero.tab.h"
 #include "list.h"
 #include "main.h"
@@ -191,7 +192,7 @@ Symbol *add_symbol(Symbol *symbol)
 	if (table_contains(scope, symbol, LOCAL_SYMBOLS))
 		error_at(symbol->token, SEMATIC_ERROR, "Redefined symbol");
 
-	symbol->address = create_address(scope->region, scope->symbols->count * 8);
+	symbol->address = create_address(scope->region, scope->symbols->count * BYTE_SIZE);
 	hashtable_add(scope->symbols, symbol);
 
 	return symbol;
@@ -554,9 +555,9 @@ void check_table(SymbolTable *scope, Tree *tree)
 		t2 = parse_type(scope, tree->children[0]);
 		if (!type_fuzzy_match(symbol->type->info.method.result, t2))
 		{
-			error_message("Return type mismatch %s and %s",
-						  type_name(symbol->type->info.method.result),
-						  t2);
+			message = error_message("Return type mismatch %s and %s",
+									type_name(symbol->type->info.method.result),
+									t2);
 			error_at(tree->token, SEMATIC_ERROR, message);
 		}
 		break;

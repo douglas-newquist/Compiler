@@ -22,7 +22,7 @@ Address *create_address(int region, int offset)
 Address *create_label_address(char *name)
 {
 	Address *address = create_address(RE_IMMED, 0);
-	address->label = alloc(sizeof(char) * strlen(name));
+	address->label = alloc(sizeof(char) * (strlen(name) + 1));
 	strcpy(address->label, name);
 	return address;
 }
@@ -42,6 +42,12 @@ char *region_name(int region)
 
 	case RE_LOCAL:
 		return "local";
+
+	case RE_PARAM:
+		return "param";
+
+	case RE_STRINGS:
+		return "string";
 
 	default:
 		return message("%d", region);

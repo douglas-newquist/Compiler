@@ -128,8 +128,12 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return symbol->address;
 
 	case R_ACCESS3:
-		// TODO
-		break;
+		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+		a2 = populate_code(code, scope, tree->children[0]);
+		a3 = populate_code(code, scope, tree->children[1]);
+		add_instr(code, create_instruction(R_OP2_MULT, a3, a3, Literal(BYTE_SIZE)));
+		add_instr(code, create_instruction(I_LOAD, a1, a2, a3));
+		return a1;
 
 	case R_ARG_DEF_GROUP:
 		break;
@@ -342,10 +346,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[4]);
 		add_instr(code, create_instruction(I_RETURN, NULL, NULL, NULL));
 		return NULL;
-
-		//	case R_METHOD2:
-		//		// TODO
-		//		break;
 
 	case R_OP1_DECREMENT:
 	case R_OP1_INCREMENT:

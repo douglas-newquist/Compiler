@@ -14,13 +14,13 @@
 #include "rules.h"
 
 int i = 0;
-int has_main = FALSE;
 int offset = 0;
 // Stores the label of the next continue point
 char *next_continue = NULL;
 // Stores the label of the next break point
 char *next_break = NULL;
 char *next_if = NULL;
+char *main_label = NULL;
 int code_region = RE_LOCAL;
 
 void add_instr(ICode *code, Instruction *instruction)
@@ -84,20 +84,26 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return Literal(tree->token->cval);
 
 	case LITERAL_DOUBLE:
-		// TODO
-		break;
+		foreach_list(element, code->data)
+		{
+			if (strcmp(((Token *)element->value)->text, tree->token->text) == 0)
+				return create_address(RE_CONST, j * BYTE_SIZE);
+			j++;
+		}
+		LIST_ADD(code->data, tree->token);
+		return create_address(RE_CONST, (code->data->size - 1) * BYTE_SIZE);
 
 	case LITERAL_INT:
 		return Literal(tree->token->ival);
 
 	case LITERAL_STRING:
-		foreach_list(string, code->strings)
+		foreach_list(element, code->strings)
 		{
-			if (strcmp((char *)string->value, tree->token->sval) == 0)
+			if (strcmp(((Token *)element->value)->text, tree->token->text) == 0)
 				return create_address(RE_STRINGS, j * BYTE_SIZE);
 			j++;
 		}
-		LIST_ADD(code->strings, tree->token->sval);
+		LIST_ADD(code->strings, tree->token);
 		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
 
 	case LITERAL_NULL:
@@ -333,10 +339,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		scope = symbol->type->info.method.scope;
 		offset = scope->symbols->count;
 		if (strcmp(tree->token->text, "main") == 0)
-		{
-			has_main = TRUE;
-			add_instr(code, create_label(I_LABEL, "start"));
-		}
+			main_label = symbol->start_label;
 		add_instr(code, create_label(I_LABEL, symbol->start_label));
 		populate_code(code, scope, tree->children[4]);
 		add_instr(code, create_instruction(I_RETURN, NULL, NULL, NULL));
@@ -430,15 +433,16 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 
 	ICode *code = alloc(sizeof(ICode));
 	code->strings = NULL;
+	code->data = NULL;
 	code->globals = NULL;
 	code->instructions = NULL;
 
-	add_instr(code, create_instruction(I_JUMP, create_label_address("start"), NULL, NULL));
-
 	populate_code(code, scope, tree);
 
-	if (!has_main)
+	if (!main_label)
 		error_at(tree->token, SEMATIC_ERROR, "Program does not contain a main method");
+
+	LIST_ADD(code->globals, create_instruction(I_JUMP, create_label_address(main_label), NULL, NULL));
 
 #ifdef DEBUG
 	printf("Intermediate code generation done\n");
@@ -449,10 +453,15 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 
 void print_code(ICode *code)
 {
-	printf(".string\n");
+	printf(".strings\n");
 
 	foreach_list(instr, code->strings)
-		printf("    %s\\0\n", (char *)instr->value);
+		printf("    %s\\0\n", ((Token *)instr->value)->sval);
+
+	printf(".data\n");
+
+	foreach_list(instr, code->data)
+		printf("    %lf\n", ((Token *)instr->value)->dval);
 
 	printf(".code\n");
 

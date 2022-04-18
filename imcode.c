@@ -132,7 +132,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_ARG_DEF_GROUP:
-		// TODO
 		break;
 
 	case R_ARG_GROUP:
@@ -243,7 +242,6 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 			switch (tree->children[j]->rule)
 			{
 			case R_METHOD1:
-			case R_METHOD2:
 				populate_code(code, scope, tree->children[j]);
 				break;
 			}
@@ -273,7 +271,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return NULL;
 
 	case R_EXP_GROUP:
-		// TODO
+		generate_children_code(code, scope, tree);
 		break;
 
 	case R_FIELD:
@@ -345,9 +343,9 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		add_instr(code, create_instruction(I_RETURN, NULL, NULL, NULL));
 		return NULL;
 
-	case R_METHOD2:
-		// TODO
-		break;
+		//	case R_METHOD2:
+		//		// TODO
+		//		break;
 
 	case R_OP1_DECREMENT:
 	case R_OP1_INCREMENT:

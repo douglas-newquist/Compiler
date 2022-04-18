@@ -35,7 +35,6 @@ enum RULES
 	R_IF2,				 // R_IF1 else R_STATEMENT_GROUP
 	R_IF3,				 // (R_IF1 | R_IF3) else R_IF1
 	R_METHOD1,			 // Type ID(R_ARG_GROUP) R_STATEMENT_GROUP
-	R_METHOD2,			 // public ID(R_ARG_GROUP) R_STATEMENT_GROUP
 	R_NEW1,				 // new Type(R_ARG_GROUP)
 	R_OP1_DECREMENT,	 // a--
 	R_OP1_INCREMENT,	 // a++

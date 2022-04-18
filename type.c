@@ -307,7 +307,6 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case ID:
 	case R_ACCESS2:
 	case R_DEFINE3:
-	case R_METHOD2:
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		if (symbol == NULL)
 			error_at(tree->token, SEMATIC_ERROR, "Unknown type");

@@ -460,10 +460,12 @@ patterns = {
                           suffix=main_suffix),
         "switch": Wrap(Switch(Group([Optional("case 1: return;\n"),
                                      Optional("case 3: break;\n"),
-                                     Optional("case 4: return;\n"),
-                                     Optional("default: break;\n")]),
+                                     Optional("default: break;\n"),
+                                     Optional(
+                                         'case 4: System.out.println("YreWQiNz");\n')
+                                     ]),
                               "case 1: break;\ncase 1: return;"),
-                       prefix=main_prefix + "int i = 4; switch(i){\n",
+                       prefix=main_prefix + "int i = 3; switch(i+1){\n",
                        suffix="\n}" + main_suffix)
     }
 }

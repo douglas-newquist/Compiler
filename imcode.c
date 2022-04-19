@@ -20,8 +20,10 @@ char *next_continue = NULL;
 // Stores the label of the next break point
 char *next_break = NULL;
 char *next_if = NULL;
+char *next_default = NULL;
 char *main_label = NULL;
 int code_region = RE_LOCAL;
+Address *a4 = NULL;
 
 void add_instr(ICode *code, Instruction *instruction)
 {
@@ -48,8 +50,46 @@ void generate_children_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[i]);
 }
 
-void builtin_call(ICode *code, Symbol *function, Tree *tree)
+Address *get_token_address(ICode *code, SymbolTable *scope, Token *token)
 {
+	int j = 0;
+
+	switch (token->category)
+	{
+	case LITERAL_BOOL:
+		return Literal(token->bval);
+
+	case LITERAL_CHAR:
+		return Literal(token->cval);
+
+	case LITERAL_DOUBLE:
+		foreach_list(element, code->data)
+		{
+			if (strcmp(((Token *)element->value)->text, token->text) == 0)
+				return create_address(RE_CONST, j * BYTE_SIZE);
+			j++;
+		}
+		LIST_ADD(code->data, token);
+		return create_address(RE_CONST, (code->data->size - 1) * BYTE_SIZE);
+
+	case LITERAL_INT:
+		return Literal(token->ival);
+
+	case LITERAL_STRING:
+		foreach_list(element, code->strings)
+		{
+			if (strcmp(((Token *)element->value)->text, token->text) == 0)
+				return create_address(RE_STRINGS, j * BYTE_SIZE);
+			j++;
+		}
+		LIST_ADD(code->strings, token);
+		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
+
+	case LITERAL_NULL:
+		return Literal(0);
+	}
+
+	return NULL;
 }
 
 Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
@@ -78,36 +118,12 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		return NULL;
 
 	case LITERAL_BOOL:
-		return Literal(tree->token->bval);
-
 	case LITERAL_CHAR:
-		return Literal(tree->token->cval);
-
 	case LITERAL_DOUBLE:
-		foreach_list(element, code->data)
-		{
-			if (strcmp(((Token *)element->value)->text, tree->token->text) == 0)
-				return create_address(RE_CONST, j * BYTE_SIZE);
-			j++;
-		}
-		LIST_ADD(code->data, tree->token);
-		return create_address(RE_CONST, (code->data->size - 1) * BYTE_SIZE);
-
 	case LITERAL_INT:
-		return Literal(tree->token->ival);
-
 	case LITERAL_STRING:
-		foreach_list(element, code->strings)
-		{
-			if (strcmp(((Token *)element->value)->text, tree->token->text) == 0)
-				return create_address(RE_STRINGS, j * BYTE_SIZE);
-			j++;
-		}
-		LIST_ADD(code->strings, tree->token);
-		return create_address(RE_STRINGS, (code->strings->size - 1) * BYTE_SIZE);
-
 	case LITERAL_NULL:
-		return Literal(0);
+		return get_token_address(code, scope, tree->token);
 
 	case ID:
 	case R_ACCESS1:
@@ -202,14 +218,9 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		}
 
 		if (symbol->attributes & ATR_BUILTIN)
-		{
-			builtin_call(code, symbol, tree);
 			a1 = create_label_address(symbol->text);
-		}
 		else
-		{
 			a1 = create_label_address(symbol->start_label);
-		}
 
 		a2 = Literal(symbol->type->info.method.count);
 		a3 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
@@ -221,12 +232,51 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		break;
 
 	case R_CASE_GROUP:
-		generate_children_code(code, scope, tree);
+		for (j = 0; j < tree->count; j++)
+		{
+			switch (tree->children[j]->rule)
+			{
+			case R_CASE:
+				next_if = message("%d", i++);
+				populate_code(code, scope, tree->children[j]);
+				add_instr(code, create_label(I_LABEL, next_if));
+				break;
+
+			case R_DEFAULT_CASE:
+				break;
+			}
+		}
 		return NULL;
 
 	case R_CASE:
-		// TODO
-		break;
+#ifdef DEBUG
+		add_instr(code, create_label(I_LABEL, message("case_%s", tree->token->text)));
+#endif
+		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+		add_instr(code, create_instruction(R_OP2_EQUALS,
+										   a1,
+										   a4,
+										   get_token_address(code, scope, tree->token)));
+		if (next_if)
+		{
+			add_instr(code, create_instruction(I_JUMP_FALSE,
+											   create_label_address(next_if),
+											   a1,
+											   NULL));
+		}
+		else
+		{
+			add_instr(code, create_instruction(I_JUMP_FALSE,
+											   create_label_address(next_break),
+											   a1,
+											   NULL));
+		}
+		populate_code(code, scope, tree->children[0]);
+		add_instr(code, create_instruction(I_JUMP,
+										   create_label_address(next_break),
+										   NULL,
+										   NULL));
+		return NULL;
 
 	case R_CLASS_GROUP:
 		code_region = RE_GLOBAL;
@@ -256,6 +306,17 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		symbol = lookup(scope, tree->token->text, SCOPE_SYMBOLS);
 		scope = symbol->type->info.class.scope;
 		return populate_code(code, scope, tree->children[1]);
+
+	case R_DEFAULT_CASE:
+#ifdef DEBUG
+		add_instr(code, create_label(I_LABEL, "default"));
+#endif
+		populate_code(code, scope, tree->children[0]);
+		add_instr(code, create_instruction(I_JUMP,
+										   create_label_address(next_break),
+										   NULL,
+										   NULL));
+		return NULL;
 
 	case R_DEFINE2:
 		generate_children_code(code, scope, tree);
@@ -387,7 +448,8 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_SWITCH:
 		prev_break = next_break;
 		next_break = message("break%d", i++);
-		// TODO
+		a4 = populate_code(code, scope, tree->children[0]);
+		populate_code(code, scope, tree->children[1]);
 		add_instr(code, create_label(I_LABEL, next_break));
 		next_break = prev_break;
 		return NULL;

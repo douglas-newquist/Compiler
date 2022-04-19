@@ -72,7 +72,7 @@ char *instr_name(int instruction)
 	case R_OP2_DIV:
 		return "DIV";
 	case R_OP2_EQUALS:
-		return "EQ";
+		return "EQUAL";
 	case R_OP2_GREATER_EQUAL:
 		return "GEQ";
 	case R_OP2_GREATER:

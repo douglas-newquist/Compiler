@@ -52,6 +52,44 @@ void generate_children_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[i]);
 }
 
+Address *cast(ICode *code, SymbolTable *scope, Address *value, Type *t1, Type *t2)
+{
+	Address *a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
+
+	switch (t2->base)
+	{
+	case TYPE_CLASS:
+		if (strcmp(t2->info.class.name, "String") == 0)
+			switch (t1->base)
+			{
+			case TYPE_BOOL:
+			case TYPE_CHAR:
+			case TYPE_CLASS:
+			case TYPE_DOUBLE:
+			case TYPE_INT:
+			case TYPE_NULL:
+				add_instr(code, create_instruction(I_PARAM, value, NULL, NULL));
+				add_instr(code, create_instruction(I_CALL,
+												   create_label_address("tostr"),
+												   Literal(1),
+												   a1));
+				return a1;
+			}
+		break;
+	}
+
+	return value;
+}
+
+Address *smart_cast(ICode *code, SymbolTable *scope, Address *address, Tree *value, Tree *result)
+{
+	Type *t1 = parse_type(scope, value);
+	Type *t2 = parse_type(scope, result);
+	if (!type_matches(t1, t2))
+		return cast(code, scope, address, t1, t2);
+	return address;
+}
+
 Address *get_token_address(ICode *code, SymbolTable *scope, Token *token)
 {
 	int j = 0;
@@ -433,9 +471,11 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_OP2_OR:
 	case R_OP2_SUB:
 		a3 = populate_code(code, scope, tree->children[1]);
+		a3 = smart_cast(code, scope, a3, tree->children[1], tree);
 	case R_OP1_NEGATE:
 	case R_OP1_NOT:
 		a2 = populate_code(code, scope, tree->children[0]);
+		a2 = smart_cast(code, scope, a2, tree->children[0], tree);
 		a1 = create_address(RE_LOCAL, (offset++) * BYTE_SIZE);
 		add_instr(code, create_instruction(tree->rule, a1, a2, a3));
 		return a1;

@@ -174,7 +174,7 @@ void populate_params(SymbolTable *scope, Tree *tree, Type *type)
  */
 Type *parse_type(SymbolTable *scope, Tree *tree)
 {
-	Type *type;
+	Type *type, *t2 = NULL;
 	Symbol *symbol;
 
 	if (tree == NULL)
@@ -212,14 +212,156 @@ Type *parse_type(SymbolTable *scope, Tree *tree)
 	case R_OP2_OR:
 		return create_type(TYPE_BOOL);
 
-	case R_OP1_DECREMENT:
-	case R_OP1_INCREMENT:
-	case R_OP1_NEGATE:
 	case R_OP2_ADD:
+		type = parse_type(scope, tree->children[0]);
+		t2 = parse_type(scope, tree->children[1]);
+		switch (type->base)
+		{
+		case TYPE_ARRAY:
+			break;
+
+		case TYPE_BOOL:
+			switch (t2->base)
+			{
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+			}
+			break;
+
+		case TYPE_CHAR:
+		case TYPE_INT:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+				return create_type(TYPE_INT);
+
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+
+			case TYPE_DOUBLE:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_INT:
+				return create_type(TYPE_INT);
+			}
+			break;
+
+		case TYPE_CLASS:
+			switch (t2->base)
+			{
+			case TYPE_BOOL:
+			case TYPE_CHAR:
+			case TYPE_CLASS:
+			case TYPE_DOUBLE:
+			case TYPE_INT:
+			case TYPE_NULL:
+				return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+			}
+			break;
+
+		case TYPE_DOUBLE:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+
+			case TYPE_DOUBLE:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_INT:
+				return create_type(TYPE_DOUBLE);
+			}
+			break;
+		}
+		break;
+
 	case R_OP2_DIV:
 	case R_OP2_MOD:
 	case R_OP2_MULT:
 	case R_OP2_SUB:
+		type = parse_type(scope, tree->children[0]);
+		t2 = parse_type(scope, tree->children[1]);
+		switch (type->base)
+		{
+		case TYPE_ARRAY:
+			break;
+
+		case TYPE_BOOL:
+			switch (t2->base)
+			{
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+			}
+			break;
+
+		case TYPE_CHAR:
+		case TYPE_INT:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+				return create_type(TYPE_INT);
+
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+
+			case TYPE_DOUBLE:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_INT:
+				return create_type(TYPE_INT);
+			}
+			break;
+
+		case TYPE_CLASS:
+			switch (t2->base)
+			{
+			case TYPE_BOOL:
+			case TYPE_CHAR:
+			case TYPE_CLASS:
+			case TYPE_DOUBLE:
+			case TYPE_INT:
+			case TYPE_NULL:
+				return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+			}
+			break;
+
+		case TYPE_DOUBLE:
+			switch (t2->base)
+			{
+			case TYPE_CHAR:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_CLASS:
+				if (strcmp(t2->info.class.name, "String") == 0)
+					return lookup(scope, "String", SCOPE_SYMBOLS)->type;
+				break;
+
+			case TYPE_DOUBLE:
+				return create_type(TYPE_DOUBLE);
+
+			case TYPE_INT:
+				return create_type(TYPE_DOUBLE);
+			}
+			break;
+		}
+		break;
+
+	case R_OP1_DECREMENT:
+	case R_OP1_INCREMENT:
+	case R_OP1_NEGATE:
 	case R_RETURN2:
 		return parse_type(scope, tree->children[0]);
 

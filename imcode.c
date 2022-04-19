@@ -39,6 +39,8 @@ void add_instr(ICode *code, Instruction *instruction)
 	}
 }
 
+#define add_goto(code, label) add_instr(code, create_instruction(I_JUMP, create_label_address(label), NULL, NULL))
+
 Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree);
 
 void generate_children_code(ICode *code, SymbolTable *scope, Tree *tree)
@@ -192,10 +194,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 	case R_BREAK2:
 		if (next_break == NULL)
 			error(SEMATIC_ERROR, "Cannot break here");
-		add_instr(code, create_instruction(I_JUMP,
-										   create_label_address(next_break),
-										   NULL,
-										   NULL));
+		add_goto(code, next_break);
 		return NULL;
 
 	case R_CALL1:
@@ -243,8 +242,25 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 				break;
 
 			case R_DEFAULT_CASE:
+				if ((j + 1) != tree->count)
+				{
+					// Default is not the last case
+					next_default = message("%d", i++);
+					next_if = message("%d", i++);
+					add_goto(code, next_if);
+					add_instr(code, create_label(I_LABEL, next_default));
+					populate_code(code, scope, tree->children[j]);
+					add_instr(code, create_label(I_LABEL, next_if));
+				}
+				else
+					populate_code(code, scope, tree->children[j]);
 				break;
 			}
+		}
+		if (next_default)
+		{
+			add_goto(code, next_default);
+			next_default = NULL;
 		}
 		return NULL;
 
@@ -272,10 +288,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 											   NULL));
 		}
 		populate_code(code, scope, tree->children[0]);
-		add_instr(code, create_instruction(I_JUMP,
-										   create_label_address(next_break),
-										   NULL,
-										   NULL));
+		add_goto(code, next_break);
 		return NULL;
 
 	case R_CLASS_GROUP:
@@ -312,10 +325,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		add_instr(code, create_label(I_LABEL, "default"));
 #endif
 		populate_code(code, scope, tree->children[0]);
-		add_instr(code, create_instruction(I_JUMP,
-										   create_label_address(next_break),
-										   NULL,
-										   NULL));
+		add_goto(code, next_break);
 		return NULL;
 
 	case R_DEFINE2:
@@ -350,11 +360,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		populate_code(code, scope, tree->children[0]);
 		i1 = create_label(I_LABEL, message("loop_body%d", i++));
 		i2 = create_label(I_LABEL, message("loop_if%d", i - 1));
-		add_instr(code,
-				  create_instruction(I_JUMP,
-									 create_label_address(i2->extra.label.name),
-									 NULL,
-									 NULL));
+		add_goto(code, i2->extra.label.name);
 		add_instr(code, i1);
 		populate_code(code, scope, tree->children[3]);
 		add_instr(code, create_label(I_LABEL, next_continue));
@@ -380,8 +386,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 									 NULL));
 		populate_code(code, scope, tree->children[1]);
 		if (next_if)
-			add_instr(code,
-					  create_instruction(I_JUMP, create_label_address(next_if), NULL, NULL));
+			add_goto(code, next_if);
 		add_instr(code, i1);
 		return NULL;
 
@@ -465,10 +470,7 @@ Address *populate_code(ICode *code, SymbolTable *scope, Tree *tree)
 		next_continue = message("while_if%d", i - 1);
 		i2 = create_label(I_LABEL, next_continue);
 		next_break = message("break%d", i++);
-		add_instr(code,
-				  create_instruction(I_JUMP,
-									 create_label_address(i2->extra.label.name),
-									 NULL, NULL));
+		add_goto(code, i2->extra.label.name);
 		add_instr(code, i1);
 		populate_code(code, scope, tree->children[1]);
 		add_instr(code, i2);
@@ -502,6 +504,7 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 	if (!main_label)
 		error_at(tree->token, SEMATIC_ERROR, "Program does not contain a main method");
 
+	add_goto(code, main_label);
 	LIST_ADD(code->globals, create_instruction(I_JUMP, create_label_address(main_label), NULL, NULL));
 
 #ifdef DEBUG

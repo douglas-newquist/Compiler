@@ -76,7 +76,12 @@ void post_read()
 		print_symbols(table);
 
 	ICode *code = generate_code(table, program);
-	print_code(code);
+
+	if (has_flags(options, CODE_FLAG))
+		print_code(code);
+
+	char *filename = message("%s.ic", program->token->text);
+	write_code(code, filename);
 }
 
 /*

@@ -569,8 +569,35 @@ void print_code(ICode *code)
 	printf(".code\n");
 
 	foreach_list(instr, code->globals)
-		print_instruction((Instruction *)instr->value);
+		print_instruction((Instruction *)instr->value, stdout);
 
 	foreach_list(instr, code->instructions)
-		print_instruction((Instruction *)instr->value);
+		print_instruction((Instruction *)instr->value, stdout);
+}
+
+void write_code(ICode *code, char *filename)
+{
+	FILE *file = fopen(filename, "w");
+
+	fprintf(file, ".strings\n");
+
+	foreach_list(instr, code->strings)
+		fprintf(file, "    %s\\0\n", ((Token *)instr->value)->sval);
+
+	fprintf(file, ".data\n");
+
+	foreach_list(instr, code->data)
+		fprintf(file, "    %lf\n", ((Token *)instr->value)->dval);
+
+	fprintf(file, ".code\n");
+
+	foreach_list(instr, code->globals)
+		print_instruction((Instruction *)instr->value, file);
+
+	foreach_list(instr, code->instructions)
+		print_instruction((Instruction *)instr->value, file);
+
+#ifdef DEBUG
+	printf("Intermediate code writing done\n");
+#endif
 }

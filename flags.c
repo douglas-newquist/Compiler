@@ -27,6 +27,7 @@ int get_flag_code(char *arg)
 	check_flag(arg, "-dot", DOT_FLAG);
 	check_flag(arg, "-symbols", SYMBOLS_FLAG);
 	check_flag(arg, "-symtab", SYMBOLS_FLAG);
+	check_flag(arg, "-code", CODE_FLAG);
 
 	return 0;
 }

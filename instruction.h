@@ -6,10 +6,10 @@
 #define _INSTRUCTION
 
 #define Instruction struct instruction
-
-#include "address.h"
-
 #define BYTE_SIZE 8
+
+#include <stdio.h>
+#include "address.h"
 
 enum
 {
@@ -52,5 +52,5 @@ Instruction *create_instruction(int instruction, Address *a1, Address *a2, Addre
 
 Instruction *create_label(int instruction, char *name);
 
-void print_instruction(Instruction *instr);
+void print_instruction(Instruction *instr, FILE *file);
 #endif

@@ -97,7 +97,7 @@ char *instr_name(int instruction)
 	}
 }
 
-void print_instruction(Instruction *instr)
+void print_instruction(Instruction *instr, FILE *file)
 {
 	char *line;
 
@@ -106,7 +106,7 @@ void print_instruction(Instruction *instr)
 	case I_LABEL:
 	case I_DATA:
 	case I_REGION:
-		printf("%s:\n", instr->extra.label.name);
+		fprintf(file, "%s:\n", instr->extra.label.name);
 		break;
 
 	default:
@@ -119,18 +119,12 @@ void print_instruction(Instruction *instr)
 		} while (strlen(line) < 12);
 		strcat(line, address_name(instr->a1));
 
-		/*	do
-		{
-		} while (strlen(line) < 24);*/
 		strcat(line, " ");
 		strcat(line, address_name(instr->a2));
 
-		/*		do
-		{
-		} while (strlen(line) < 36);*/
 		strcat(line, " ");
 		strcat(line, address_name(instr->a3));
 
-		printf("%s\n", line);
+		fprintf(file, "%s\n", line);
 	}
 }

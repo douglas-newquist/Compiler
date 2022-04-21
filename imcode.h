@@ -22,4 +22,5 @@ ICode
 ICode *generate_code(SymbolTable *scope, Tree *tree);
 
 void print_code(ICode *code);
+void write_code(ICode *code, char *filename);
 #endif

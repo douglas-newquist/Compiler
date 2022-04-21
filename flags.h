@@ -10,6 +10,7 @@
 #define BISON_FLAG (1 << 3)
 #define DOT_FLAG (1 << 4)
 #define SYMBOLS_FLAG (1 << 5)
+#define CODE_FLAG (1 << 6)
 
 int options, flag_count;
 

@@ -13,3 +13,6 @@ tests/*/*.java
 j0
 j0lex.l
 unicon**
+
+*.asm
+*.ic

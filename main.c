@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "errors.h"
+#include "final_code.h"
 #include "flags.h"
 #include "imcode.h"
 #include "jzero.tab.h"
@@ -82,6 +83,9 @@ void post_read()
 
 	char *filename = message("%s.ic", program->token->text);
 	write_code(code, filename);
+
+	char *output = message("%s.asm", program->token->text);
+	write_final_code(code, output);
 }
 
 /*

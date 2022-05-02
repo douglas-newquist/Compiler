@@ -544,8 +544,15 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 	if (!main_label)
 		error_at(tree->token, SEMATIC_ERROR, "Program does not contain a main method");
 
-	add_goto(code, main_label);
-	LIST_ADD(code->globals, create_instruction(I_JUMP, create_label_address(main_label), NULL, NULL));
+	code_region = RE_GLOBAL;
+	add_instr(code, create_instruction(I_MAIN,
+									   create_label_address(main_label),
+									   NULL,
+									   NULL));
+	add_instr(code, create_instruction(I_EXIT,
+									   NULL,
+									   NULL,
+									   NULL));
 
 #ifdef DEBUG
 	printf("Intermediate code generation done\n");
@@ -596,6 +603,8 @@ void write_code(ICode *code, char *filename)
 
 	foreach_list(instr, code->instructions)
 		print_instruction((Instruction *)instr->value, file);
+
+	fclose(file);
 
 #ifdef DEBUG
 	printf("Intermediate code writing done\n");

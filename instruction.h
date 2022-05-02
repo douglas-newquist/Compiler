@@ -17,12 +17,14 @@ enum
 	I_ASSIGN,
 	I_CALL,
 	I_DATA,
+	I_EXIT,
 	I_JUMP_FALSE,
 	I_JUMP_IF,
 	I_JUMP_TRUE,
 	I_JUMP,
 	I_LABEL,
 	I_LOAD,
+	I_MAIN,
 	I_PARAM,
 	I_REGION,
 	I_RETURN,
@@ -49,6 +51,8 @@ Instruction
 };
 
 Instruction *create_instruction(int instruction, Address *a1, Address *a2, Address *a3);
+
+char *instr_name(int instruction);
 
 Instruction *create_label(int instruction, char *name);
 

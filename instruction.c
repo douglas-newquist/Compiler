@@ -40,6 +40,8 @@ char *instr_name(int instruction)
 		return "CALL";
 	case I_DATA:
 		return "DATA";
+	case I_EXIT:
+		return "EXIT";
 	case I_JUMP:
 		return "GOTO";
 	case I_JUMP_FALSE:
@@ -50,6 +52,8 @@ char *instr_name(int instruction)
 		return "JUMPT";
 	case I_LOAD:
 		return "LOAD";
+	case I_MAIN:
+		return "MAIN";
 	case I_PARAM:
 		return "PARAM";
 	case I_RETURN:

@@ -84,7 +84,7 @@ void post_read()
 	char *filename = message("%s.ic", program->token->text);
 	write_code(code, filename);
 
-	char *output = message("%s.asm", program->token->text);
+	char *output = message("%s.s", program->token->text);
 	write_final_code(code, output);
 }
 

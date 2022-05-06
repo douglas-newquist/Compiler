@@ -547,8 +547,8 @@ ICode *generate_code(SymbolTable *scope, Tree *tree)
 	code_region = RE_GLOBAL;
 	add_instr(code, create_instruction(I_MAIN,
 									   create_label_address(main_label),
-									   NULL,
-									   NULL));
+									   Literal(1),
+									   Literal(0)));
 	add_instr(code, create_instruction(I_EXIT,
 									   NULL,
 									   NULL,
